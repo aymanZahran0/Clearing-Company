@@ -1,0 +1,36 @@
+import { List, Skeleton, Tag } from "antd";
+import { useListOwnNotificationLogsQuery } from "../../api/notificationsApi";
+import { formatDateTime } from "../../lib/formatters";
+
+// T178: customer-visible notification history (FR-069 read scope) — the
+// customer sees which events were sent to them, never other customers'
+// logs, and never the underlying recipient/PII payload.
+export default function Notifications() {
+  const { data, isLoading } = useListOwnNotificationLogsQuery();
+
+  if (isLoading) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Skeleton active />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6">
+      <h1 className="mb-4 text-xl font-semibold">Notifications</h1>
+      <List
+        dataSource={data}
+        renderItem={(log) => (
+          <List.Item>
+            <div>
+              <div className="font-medium">{log.templateKey}</div>
+              <div className="text-sm text-gray-500">{formatDateTime(log.createdAt, "en")}</div>
+              <Tag>{log.status}</Tag>
+            </div>
+          </List.Item>
+        )}
+      />
+    </div>
+  );
+}

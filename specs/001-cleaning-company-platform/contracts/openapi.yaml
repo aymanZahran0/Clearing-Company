@@ -1,0 +1,1449 @@
+openapi: 3.0.3
+info:
+  title: Nuqaa Asir Cleaning Booking & Operations Platform API
+  version: "1.0.0"
+  description: >
+    REST API for the customer booking portal and admin operations dashboard.
+    Two roles only: CUSTOMER and ADMIN. All endpoints are under /api/v1.
+servers:
+  - url: /api/v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Customers
+  - name: Addresses
+  - name: Catalog
+  - name: Pricing
+  - name: Availability
+  - name: Quotes
+  - name: Bookings
+  - name: Checklists
+  - name: Reviews
+  - name: QualityIssues
+  - name: Subscriptions
+  - name: Commercial
+  - name: Payments
+  - name: DiscountCodes
+  - name: Notifications
+  - name: Content
+  - name: Settings
+  - name: Reports
+  - name: AuditLogs
+
+paths:
+  # ---------------------------------------------------------------- Auth
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new customer account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, phone, password]
+              properties:
+                fullName: { type: string }
+                phone: { type: string, description: Saudi mobile number }
+                email: { type: string, format: email, nullable: true }
+                password: { type: string, minLength: 8 }
+                marketingConsent: { type: boolean, default: false }
+      responses:
+        "201": { description: Account created, description-full: returns access token + sets refresh cookie, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in (customer or admin)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: email or phone }
+                password: { type: string }
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange a valid refresh-token cookie for a new access token
+      security: []
+      responses:
+        "200":
+          description: New access token issued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current refresh token
+      responses:
+        "204": { description: Logged out }
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset link
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier]
+              properties:
+                identifier: { type: string, description: email or phone }
+      responses:
+        "202": { description: Reset instructions sent if account exists (no enumeration) }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Complete a password reset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        "200": { description: Password updated }
+        "400": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current authenticated user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+
+  # ---------------------------------------------------------------- Customers
+  /customers/me:
+    get:
+      tags: [Customers]
+      summary: Get own customer profile
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { $ref: "#/components/schemas/CustomerProfile" } } }
+    patch:
+      tags: [Customers]
+      summary: Update own profile
+      requestBody:
+        content: { application/json: { schema: { $ref: "#/components/schemas/CustomerProfileUpdate" } } }
+      responses:
+        "200": { description: Updated }
+
+  /customers:
+    get:
+      tags: [Customers]
+      summary: List customers (Admin)
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - in: query
+          name: search
+          schema: { type: string }
+          description: matches phone or name
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { $ref: "#/components/schemas/CustomerListResponse" } } }
+
+  /customers/{id}:
+    get:
+      tags: [Customers]
+      summary: Get a customer (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CustomerProfile" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Customers]
+      summary: Update a customer (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content: { application/json: { schema: { $ref: "#/components/schemas/CustomerProfileUpdate" } } }
+      responses:
+        "200": { description: Updated }
+
+  /customers/{id}/merge:
+    post:
+      tags: [Customers]
+      summary: Merge a duplicate customer into this one (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [duplicateCustomerId]
+              properties:
+                duplicateCustomerId: { type: string, format: uuid }
+      responses:
+        "200": { description: Merged; booking history preserved }
+
+  # ---------------------------------------------------------------- Addresses
+  /addresses/me:
+    get:
+      tags: [Addresses]
+      summary: List own addresses
+      responses: { "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Address" } } } } } }
+    post:
+      tags: [Addresses]
+      summary: Add an address
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/AddressInput" } } } }
+      responses: { "201": { description: Created } }
+
+  /addresses/me/{id}:
+    patch:
+      tags: [Addresses]
+      summary: Update own address
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/AddressInput" } } } }
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Addresses]
+      summary: Remove own address
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Deleted } }
+
+  /customers/{customerId}/addresses:
+    get:
+      tags: [Addresses]
+      summary: List a customer's addresses (Admin)
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+
+  # ---------------------------------------------------------------- Catalog
+  /service-categories:
+    get:
+      tags: [Catalog]
+      summary: List categories (public)
+      security: []
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Catalog]
+      summary: Create category (Admin)
+      responses: { "201": { description: Created } }
+
+  /service-categories/{id}:
+    patch:
+      tags: [Catalog]
+      summary: Update category (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Catalog]
+      summary: Disable category (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Disabled } }
+
+  /services:
+    get:
+      tags: [Catalog]
+      summary: List services (public)
+      security: []
+      parameters:
+        - in: query
+          name: categoryId
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Service" } } } }
+    post:
+      tags: [Catalog]
+      summary: Create service (Admin)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ServiceInput" } } } }
+      responses: { "201": { description: Created } }
+
+  /services/{slug}:
+    get:
+      tags: [Catalog]
+      summary: Get service detail by slug (public)
+      security: []
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Service" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /services/{id}:
+    patch:
+      tags: [Catalog]
+      summary: Update service (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ServiceInput" } } } }
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Catalog]
+      summary: Disable service (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Disabled } }
+
+  /services/{id}/images:
+    post:
+      tags: [Catalog]
+      summary: Upload a service image (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                altTextAr: { type: string }
+                altTextEn: { type: string }
+      responses: { "201": { description: Uploaded } }
+
+  /services/{id}/images/{imageId}:
+    delete:
+      tags: [Catalog]
+      summary: Remove a service image (Admin)
+      parameters:
+        - { $ref: "#/components/parameters/IdParam" }
+        - in: path
+          name: imageId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "204": { description: Deleted } }
+
+  /service-add-ons:
+    get:
+      tags: [Catalog]
+      summary: List add-ons (public), filterable by serviceId
+      security: []
+      parameters:
+        - in: query
+          name: serviceId
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Catalog]
+      summary: Create add-on (Admin)
+      responses: { "201": { description: Created } }
+
+  /service-add-ons/{id}:
+    patch:
+      tags: [Catalog]
+      summary: Update add-on (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Catalog]
+      summary: Disable add-on (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Disabled } }
+
+  /service-areas:
+    get:
+      tags: [Catalog]
+      summary: List service areas (public)
+      security: []
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Catalog]
+      summary: Create service area (Admin)
+      responses: { "201": { description: Created } }
+
+  /service-areas/{id}:
+    patch:
+      tags: [Catalog]
+      summary: Update service area (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  # ---------------------------------------------------------------- Pricing
+  /pricing-rules:
+    get:
+      tags: [Pricing]
+      summary: List pricing rules (Admin)
+      parameters:
+        - in: query
+          name: serviceId
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Pricing]
+      summary: Create pricing rule (Admin)
+      responses: { "201": { description: Created } }
+
+  /pricing-rules/{id}:
+    patch:
+      tags: [Pricing]
+      summary: Update pricing rule (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Pricing]
+      summary: Disable pricing rule (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Disabled } }
+
+  /discount-codes:
+    get:
+      tags: [DiscountCodes]
+      summary: List discount codes (Admin)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [DiscountCodes]
+      summary: Create discount code (Admin)
+      responses: { "201": { description: Created } }
+
+  /discount-codes/{id}:
+    patch:
+      tags: [DiscountCodes]
+      summary: Update discount code (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [DiscountCodes]
+      summary: Disable discount code (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "204": { description: Disabled } }
+
+  /discount-codes/validate:
+    post:
+      tags: [DiscountCodes]
+      summary: Validate a discount code against a quote (Customer)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, quoteId]
+              properties:
+                code: { type: string }
+                quoteId: { type: string, format: uuid }
+      responses:
+        "200": { description: Valid, returns adjusted price breakdown }
+        "422": { description: Invalid, expired, or usage-limit-exceeded code }
+
+  # ---------------------------------------------------------------- Availability
+  /availability:
+    get:
+      tags: [Availability]
+      summary: Available dates/time slots for a service + area (public)
+      security: []
+      parameters:
+        - in: query
+          name: serviceId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: serviceAreaId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TimeSlot" }
+
+  /operating-hours:
+    get:
+      tags: [Availability]
+      summary: Get weekly operating hours (Admin)
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Availability]
+      summary: Replace weekly operating hours (Admin)
+      responses: { "200": { description: Updated } }
+
+  /closed-dates:
+    get:
+      tags: [Availability]
+      summary: List closed dates (Admin)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Availability]
+      summary: Add closed date (Admin)
+      responses: { "201": { description: Created } }
+
+  /time-slots:
+    get:
+      tags: [Availability]
+      summary: List/manage time slots (Admin)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Availability]
+      summary: Create/generate time slots (Admin)
+      responses: { "201": { description: Created } }
+
+  /time-slots/{id}:
+    patch:
+      tags: [Availability]
+      summary: Adjust slot capacity (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  # ---------------------------------------------------------------- Quotes
+  /quotes/estimate:
+    post:
+      tags: [Quotes]
+      summary: Calculate a price estimate (public/customer)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuoteRequest" }
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { $ref: "#/components/schemas/Quote" } } }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /quotes/{id}:
+    get:
+      tags: [Quotes]
+      summary: Get a quote (owner or Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Quote" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ---------------------------------------------------------------- Bookings
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: List bookings (Customer sees own; Admin sees all, filterable)
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - in: query
+          name: status
+          schema: { $ref: "#/components/schemas/BookingStatus" }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { $ref: "#/components/schemas/BookingListResponse" } } }
+    post:
+      tags: [Bookings]
+      summary: Create a booking (Customer, self-service web flow)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookingCreateRequest" }
+        description: Idempotency-Key header required to prevent duplicate submissions
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string }
+      responses:
+        "201":
+          description: Booking created
+          content: { application/json: { schema: { $ref: "#/components/schemas/Booking" } } }
+        "409": { description: Service area/time slot no longer available }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /bookings/admin:
+    post:
+      tags: [Bookings]
+      summary: Create a booking on behalf of a phone/WhatsApp caller (Admin)
+      requestBody:
+        content: { application/json: { schema: { $ref: "#/components/schemas/AdminBookingCreateRequest" } } }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Booking" } } } }
+
+  /bookings/reference/{referenceNumber}:
+    get:
+      tags: [Bookings]
+      summary: Public booking lookup by reference + verification token
+      security: []
+      parameters:
+        - in: path
+          name: referenceNumber
+          required: true
+          schema: { type: string }
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+          description: unguessable verification token issued at booking creation (FR-077)
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BookingSummary" } } } }
+        "403": { description: Token missing or invalid }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: Get booking detail (owner or Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Booking" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Bookings]
+      summary: Edit booking details prior to confirmation (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  /bookings/{id}/confirm:
+    post:
+      tags: [Bookings]
+      summary: Confirm a pending booking, optionally overriding price (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priceOverride: { type: integer, nullable: true, description: minor units }
+                priceOverrideReason: { type: string, nullable: true }
+      responses:
+        "200": { description: Confirmed }
+        "409": { description: Missing required fields (FR-034) }
+
+  /bookings/{id}/reject:
+    post:
+      tags: [Bookings]
+      summary: Reject a pending booking (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } }
+      responses: { "200": { description: Rejected } }
+
+  /bookings/{id}/schedule:
+    post:
+      tags: [Bookings]
+      summary: Set planned start/end time and optional internal handling note (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduledStartAt, scheduledEndAt]
+              properties:
+                scheduledStartAt: { type: string, format: date-time }
+                scheduledEndAt: { type: string, format: date-time }
+                internalHandlingNote: { type: string, nullable: true }
+                overrideCapacity: { type: boolean, default: false }
+      responses:
+        "200": { description: Scheduled }
+        "409": { description: Time-slot capacity exceeded and overrideCapacity=false (FR-030) }
+
+  /bookings/{id}/reschedule:
+    post:
+      tags: [Bookings]
+      summary: Reschedule to a new date/time (Admin, or Customer request routed to Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newDate, reason]
+              properties:
+                newDate: { type: string, format: date }
+                newTimeSlotId: { type: string, format: uuid, nullable: true }
+                reason: { type: string }
+      responses: { "200": { description: Rescheduled } }
+
+  /bookings/{id}/cancel:
+    post:
+      tags: [Bookings]
+      summary: Cancel a booking (Customer own booking, or Admin any booking) - always free, no fee (FR-040)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } }
+      responses: { "200": { description: Cancelled } }
+
+  /bookings/{id}/en-route:
+    post:
+      tags: [Bookings]
+      summary: Mark en route (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Marked en route } }
+
+  /bookings/{id}/arrive:
+    post:
+      tags: [Bookings]
+      summary: Mark arrived (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Marked arrived } }
+
+  /bookings/{id}/start:
+    post:
+      tags: [Bookings]
+      summary: Mark job started; transitions status to IN_PROGRESS (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200": { description: Started }
+        "409": { description: Arrival not yet recorded (FR-036) }
+
+  /bookings/{id}/complete:
+    post:
+      tags: [Bookings]
+      summary: Mark job complete; requires checklist review passed (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200": { description: Completed; queues customer feedback notification }
+        "409": { description: Required checklist items unfinished (FR-048, FR-051) }
+
+  /bookings/{id}/history:
+    get:
+      tags: [Bookings]
+      summary: Booking status history (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses:
+        "200":
+          description: OK
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BookingStatusHistoryEntry" } } } }
+
+  # ---------------------------------------------------------------- Checklists
+  /services/{id}/checklist-template:
+    get:
+      tags: [Checklists]
+      summary: Get current checklist template for a service (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Checklists]
+      summary: Publish a new checklist template version (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: New version published } }
+
+  /bookings/{id}/checklist:
+    get:
+      tags: [Checklists]
+      summary: Get the checklist run for a booking (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ChecklistRun" } } } } }
+    patch:
+      tags: [Checklists]
+      summary: Submit/update checklist item results (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items: { $ref: "#/components/schemas/ChecklistResultInput" }
+      responses: { "200": { description: Updated } }
+
+  /bookings/{id}/checklist/review:
+    post:
+      tags: [Checklists]
+      summary: Mark the checklist reviewed (Admin self-review, no separate approver role)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Reviewed } }
+
+  # ---------------------------------------------------------------- Reviews & Quality
+  /bookings/{id}/review:
+    post:
+      tags: [Reviews]
+      summary: Submit a rating/review for a completed booking (Customer)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string, nullable: true }
+      responses:
+        "201": { description: Review recorded }
+        "409": { description: Booking not completed, or already reviewed }
+
+  /reviews:
+    get:
+      tags: [Reviews]
+      summary: List reviews (Admin)
+      responses: { "200": { description: OK } }
+
+  /bookings/{id}/complaints:
+    post:
+      tags: [QualityIssues]
+      summary: File a complaint against a booking (Customer, or Admin on caller's behalf)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, description]
+              properties:
+                category: { type: string }
+                description: { type: string }
+      responses: { "201": { description: Complaint recorded, sets booking status to COMPLAINT_OPENED } }
+
+  /quality-issues:
+    get:
+      tags: [QualityIssues]
+      summary: List quality issues (Admin)
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [OPEN, IN_REVIEW, RESOLVED, CLOSED] }
+      responses: { "200": { description: OK } }
+
+  /quality-issues/{id}:
+    patch:
+      tags: [QualityIssues]
+      summary: Triage/update a quality issue (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content: { application/json: { schema: { $ref: "#/components/schemas/QualityIssueUpdate" } } }
+      responses: { "200": { description: Updated } }
+
+  /quality-issues/{id}/rework:
+    post:
+      tags: [QualityIssues]
+      summary: Create a linked rework booking (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "201": { description: Rework booking created and linked } }
+
+  # ---------------------------------------------------------------- Subscriptions
+  /subscriptions:
+    get:
+      tags: [Subscriptions]
+      summary: List subscriptions (Customer sees own; Admin sees all)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Subscriptions]
+      summary: Create a recurring subscription (Admin)
+      responses: { "201": { description: Created } }
+
+  /subscriptions/{id}:
+    patch:
+      tags: [Subscriptions]
+      summary: Update subscription config (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  /subscriptions/{id}/pause:
+    post:
+      tags: [Subscriptions]
+      summary: Pause a subscription (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Paused } }
+
+  /subscriptions/{id}/resume:
+    post:
+      tags: [Subscriptions]
+      summary: Resume a subscription (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Resumed } }
+
+  /subscriptions/{id}/cancel:
+    post:
+      tags: [Subscriptions]
+      summary: Cancel a subscription; preserves history (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Cancelled } }
+
+  /subscriptions/{id}/occurrences/{bookingId}:
+    patch:
+      tags: [Subscriptions]
+      summary: Adjust a single generated occurrence without affecting the schedule (Admin)
+      parameters:
+        - { $ref: "#/components/parameters/IdParam" }
+        - in: path
+          name: bookingId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: Occurrence updated } }
+
+  # ---------------------------------------------------------------- Commercial
+  /commercial-accounts:
+    get:
+      tags: [Commercial]
+      summary: List commercial accounts (Admin)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Commercial]
+      summary: Create commercial account (Admin)
+      responses: { "201": { description: Created } }
+
+  /commercial-accounts/{id}:
+    patch:
+      tags: [Commercial]
+      summary: Update commercial account (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  /contracts:
+    get:
+      tags: [Commercial]
+      summary: List contracts (Admin)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Commercial]
+      summary: Create contract (Admin)
+      responses: { "201": { description: Created } }
+
+  # ---------------------------------------------------------------- Payments
+  /bookings/{id}/payments:
+    get:
+      tags: [Payments]
+      summary: List payments for a booking (owner or Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Payments]
+      summary: Manually record a payment (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PaymentInput" } } } }
+      responses: { "201": { description: Recorded } }
+
+  /bookings/{id}/invoice:
+    get:
+      tags: [Payments]
+      summary: Get the non-fiscal receipt/invoice for a booking (owner or Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Invoice" } } } } }
+
+  # ---------------------------------------------------------------- Notifications
+  /notification-templates:
+    get:
+      tags: [Notifications]
+      summary: List message templates (Admin)
+      responses: { "200": { description: OK } }
+
+  /notification-templates/{id}:
+    patch:
+      tags: [Notifications]
+      summary: Edit a message template (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  /notifications/log:
+    get:
+      tags: [Notifications]
+      summary: Notification attempt log (Admin)
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [SENT, FAILED, PENDING] }
+      responses: { "200": { description: OK } }
+
+  /bookings/{id}/notifications/send:
+    post:
+      tags: [Notifications]
+      summary: Prepare/send a templated notification for a booking (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [templateKey, channel]
+              properties:
+                templateKey: { type: string }
+                channel: { type: string, enum: [WHATSAPP, SMS, EMAIL] }
+      responses:
+        "200": { description: Prepared/logged; a failure here never rolls back the booking action it relates to (FR-068) }
+
+  # ---------------------------------------------------------------- Content & Settings
+  /website-content:
+    get:
+      tags: [Content]
+      summary: List content blocks (public read for active blocks; Admin sees all)
+      security: []
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Content]
+      summary: Create content block (Admin)
+      responses: { "201": { description: Created } }
+
+  /website-content/{id}:
+    patch:
+      tags: [Content]
+      summary: Update content block (Admin)
+      parameters: [ { $ref: "#/components/parameters/IdParam" } ]
+      responses: { "200": { description: Updated } }
+
+  /faqs:
+    get:
+      tags: [Content]
+      summary: List FAQs (public read for active; Admin sees all)
+      security: []
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Content]
+      summary: Create FAQ (Admin)
+      responses: { "201": { description: Created } }
+
+  /settings:
+    get:
+      tags: [Settings]
+      summary: List system settings (Admin)
+      responses: { "200": { description: OK } }
+    patch:
+      tags: [Settings]
+      summary: Update a system setting (Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, value]
+              properties:
+                key: { type: string }
+                value: {}
+      responses: { "200": { description: Updated } }
+
+  # ---------------------------------------------------------------- Reports & Audit
+  /reports/operations-summary:
+    get:
+      tags: [Reports]
+      summary: Today's bookings, unscheduled confirmed, overdue (Admin)
+      responses: { "200": { description: OK } }
+
+  /reports/revenue:
+    get:
+      tags: [Reports]
+      summary: Revenue by day/week/month, average order value (Admin)
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses: { "200": { description: OK } }
+
+  /reports/services:
+    get:
+      tags: [Reports]
+      summary: Bookings/revenue by service (Admin)
+      responses: { "200": { description: OK } }
+
+  /reports/quality:
+    get:
+      tags: [Reports]
+      summary: Completion rate, cancellation rate, average rating, complaint rate (Admin)
+      responses: { "200": { description: OK } }
+
+  /reports/export.csv:
+    get:
+      tags: [Reports]
+      summary: Export a filtered report as CSV/spreadsheet-compatible file (Admin)
+      parameters:
+        - in: query
+          name: report
+          required: true
+          schema: { type: string, enum: [bookings, revenue, customers, quality] }
+      responses:
+        "200":
+          description: OK
+          content:
+            text/csv:
+              schema: { type: string }
+
+  /audit-logs:
+    get:
+      tags: [AuditLogs]
+      summary: List audit log entries (Admin)
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - in: query
+          name: entityType
+          schema: { type: string }
+      responses: { "200": { description: OK } }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Forbidden:
+      description: Authenticated but not permitted (e.g., Customer accessing another customer's booking, or Customer on an Admin-only route)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: Conflicting state (e.g., duplicate account)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: BOOKING_SLOT_UNAVAILABLE }
+            message: { type: string }
+            fieldErrors: { type: object, additionalProperties: { type: array, items: { type: string } } }
+            requestId: { type: string }
+
+    BookingStatus:
+      type: string
+      enum: [DRAFT, PENDING, CONFIRMED, RESCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED, REJECTED, COMPLAINT_OPENED]
+
+    Role:
+      type: string
+      enum: [CUSTOMER, ADMIN]
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        role: { $ref: "#/components/schemas/Role" }
+        status: { type: string, enum: [ACTIVE, INVITED, SUSPENDED] }
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+
+    CustomerProfile:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        fullName: { type: string }
+        phone: { type: string }
+        email: { type: string, nullable: true }
+        preferredChannel: { type: string, enum: [PHONE, WHATSAPP, EMAIL] }
+        marketingConsent: { type: boolean }
+        customerType: { type: string, enum: [INDIVIDUAL, COMMERCIAL] }
+        tags: { type: array, items: { type: string } }
+
+    CustomerProfileUpdate:
+      type: object
+      properties:
+        fullName: { type: string }
+        email: { type: string, nullable: true }
+        preferredChannel: { type: string, enum: [PHONE, WHATSAPP, EMAIL] }
+        marketingConsent: { type: boolean }
+        tags: { type: array, items: { type: string } }
+        internalNotes: { type: string, nullable: true, description: Admin-only field }
+
+    CustomerListResponse:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/CustomerProfile" } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    Address:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        label: { type: string, nullable: true }
+        city: { type: string }
+        neighborhood: { type: string }
+        street: { type: string, nullable: true }
+        buildingNumber: { type: string, nullable: true }
+        unitNumber: { type: string, nullable: true }
+        landmark: { type: string, nullable: true }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        mapUrl: { type: string, nullable: true }
+        serviceAreaId: { type: string, format: uuid }
+        isDefault: { type: boolean }
+
+    AddressInput:
+      allOf:
+        - $ref: "#/components/schemas/Address"
+      required: [city, neighborhood, serviceAreaId]
+
+    Service:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        slug: { type: string }
+        nameAr: { type: string }
+        nameEn: { type: string }
+        descriptionAr: { type: string }
+        descriptionEn: { type: string }
+        pricingType: { type: string, enum: [FIXED, PROPERTY_SIZE, HOURLY, QUANTITY, CUSTOM_QUOTE] }
+        basePrice: { type: integer, nullable: true }
+        minimumPrice: { type: integer, nullable: true }
+        defaultDurationMinutes: { type: integer }
+        requiresManualQuote: { type: boolean }
+        active: { type: boolean }
+        images: { type: array, items: { type: object, properties: { id: { type: string }, url: { type: string } } } }
+
+    ServiceInput:
+      allOf:
+        - $ref: "#/components/schemas/Service"
+      required: [categoryId, nameAr, nameEn, pricingType]
+
+    QuoteRequest:
+      type: object
+      required: [serviceId, propertyType, addressId, requestedDate]
+      properties:
+        serviceId: { type: string, format: uuid }
+        addOnIds: { type: array, items: { type: string, format: uuid } }
+        propertyType: { type: string, enum: [APARTMENT, VILLA, OFFICE, SHOP, CLINIC, FURNISHED_UNIT, OTHER] }
+        propertySizeInput: { type: object }
+        addressId: { type: string, format: uuid, nullable: true }
+        serviceAreaId: { type: string, format: uuid, description: required when addressId not yet known }
+        requestedDate: { type: string, format: date }
+        requestedTimeSlotId: { type: string, format: uuid, nullable: true }
+        discountCode: { type: string, nullable: true }
+
+    Quote:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        priceBreakdown:
+          type: object
+          properties:
+            subtotal: { type: integer }
+            addOns: { type: integer }
+            discount: { type: integer }
+            travelFee: { type: integer }
+            tax: { type: integer }
+            total: { type: integer }
+        requiresManualReview: { type: boolean }
+        expiresAt: { type: string, format: date-time }
+
+    BookingCreateRequest:
+      type: object
+      required: [quoteId, addressId, propertyType, preferredDate, contactName, contactPhone, consentAccepted]
+      properties:
+        quoteId: { type: string, format: uuid }
+        addressId: { type: string, format: uuid }
+        propertyType: { type: string, enum: [APARTMENT, VILLA, OFFICE, SHOP, CLINIC, FURNISHED_UNIT, OTHER] }
+        propertyDetails: { type: object }
+        preferredDate: { type: string, format: date }
+        preferredTimeSlotId: { type: string, format: uuid, nullable: true }
+        contactName: { type: string }
+        contactPhone: { type: string }
+        customerNotes: { type: string, nullable: true }
+        consentAccepted: { type: boolean }
+
+    AdminBookingCreateRequest:
+      allOf:
+        - $ref: "#/components/schemas/BookingCreateRequest"
+      properties:
+        customerId: { type: string, format: uuid, nullable: true, description: existing customer, or omit to create a new INVITED customer }
+        newCustomer:
+          type: object
+          nullable: true
+          properties:
+            fullName: { type: string }
+            phone: { type: string }
+
+    Booking:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        referenceNumber: { type: string }
+        status: { $ref: "#/components/schemas/BookingStatus" }
+        customerId: { type: string, format: uuid }
+        addressId: { type: string, format: uuid }
+        propertyType: { type: string }
+        scheduledStartAt: { type: string, format: date-time, nullable: true }
+        scheduledEndAt: { type: string, format: date-time, nullable: true }
+        internalHandlingNote: { type: string, nullable: true }
+        enRouteAt: { type: string, format: date-time, nullable: true }
+        arrivedAt: { type: string, format: date-time, nullable: true }
+        startedAt: { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        totalSnapshot: { type: integer }
+        currency: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    BookingSummary:
+      type: object
+      description: Reduced-PII view returned by the public reference lookup endpoint
+      properties:
+        referenceNumber: { type: string }
+        status: { $ref: "#/components/schemas/BookingStatus" }
+        scheduledStartAt: { type: string, format: date-time, nullable: true }
+        serviceName: { type: string }
+
+    BookingListResponse:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Booking" } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    BookingStatusHistoryEntry:
+      type: object
+      properties:
+        fromStatus: { $ref: "#/components/schemas/BookingStatus" }
+        toStatus: { $ref: "#/components/schemas/BookingStatus" }
+        reason: { type: string, nullable: true }
+        actorUserId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+
+    TimeSlot:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: string }
+        capacity: { type: integer }
+        remaining: { type: integer }
+
+    ChecklistResultInput:
+      type: object
+      required: [templateItemId, value]
+      properties:
+        templateItemId: { type: string, format: uuid }
+        value: {}
+        isIssue: { type: boolean, default: false }
+        issueNote: { type: string, nullable: true }
+
+    ChecklistRun:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        bookingId: { type: string, format: uuid }
+        completedAt: { type: string, format: date-time, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              templateItemId: { type: string, format: uuid }
+              label: { type: string }
+              required: { type: boolean }
+              value: {}
+              isIssue: { type: boolean }
+
+    QualityIssueUpdate:
+      type: object
+      properties:
+        category: { type: string }
+        severity: { type: string, enum: [LOW, MEDIUM, HIGH] }
+        status: { type: string, enum: [OPEN, IN_REVIEW, RESOLVED, CLOSED] }
+        ownerUserId: { type: string, format: uuid }
+        resolution: { type: string, description: required before status can become CLOSED }
+
+    PaymentInput:
+      type: object
+      required: [method, amount]
+      properties:
+        method: { type: string, enum: [CASH, BANK_TRANSFER, POS, COMPLIMENTARY, OTHER] }
+        amount: { type: integer }
+        reference: { type: string, nullable: true }
+        paidAt: { type: string, format: date-time, nullable: true }
+
+    Invoice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        invoiceNumber: { type: string }
+        issuedAt: { type: string, format: date-time }
+        subtotal: { type: integer }
+        discount: { type: integer }
+        travelFee: { type: integer }
+        tax: { type: integer }
+        total: { type: integer }
+        pdfUrl: { type: string, nullable: true }

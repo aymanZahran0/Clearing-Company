@@ -1,0 +1,115 @@
+import { useState } from "react";
+import { Button, Descriptions, Form, Input, List, Modal, Select, Skeleton, Tag, message } from "antd";
+import { useParams } from "react-router-dom";
+import {
+  useCreateContractMutation,
+  useGetCommercialAccountQuery,
+  useUpdateContractMutation,
+} from "../../../api/commercialApi";
+import { formatDateTime } from "../../../lib/formatters";
+
+interface ContractFormValues {
+  startDate: string;
+  endDate?: string;
+  documentReference?: string;
+}
+
+// T154 (US7): a commercial account's locations + contracts, with contract
+// creation and status updates.
+export default function Contracts() {
+  const { id } = useParams<{ id: string }>();
+  const { data: account, isLoading, refetch } = useGetCommercialAccountQuery(id ?? "", { skip: !id });
+  const [createContract, { isLoading: isCreating }] = useCreateContractMutation();
+  const [updateContract] = useUpdateContractMutation();
+  const [open, setOpen] = useState(false);
+
+  if (isLoading || !account) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Skeleton active />
+      </div>
+    );
+  }
+
+  async function onFinish(values: ContractFormValues) {
+    if (!id) return;
+    try {
+      await createContract({
+        accountId: id,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        documentReference: values.documentReference,
+        pricingTerms: {},
+      }).unwrap();
+      setOpen(false);
+      message.success("Contract created");
+    } catch {
+      message.error("Could not create the contract");
+    }
+  }
+
+  return (
+    <div className="p-4 sm:p-6">
+      <h1 className="mb-4 text-xl font-semibold">{account.companyName}</h1>
+      <Descriptions column={1} bordered size="middle" className="mb-6">
+        <Descriptions.Item label="Billing Contact">
+          {account.billingContactName} — {account.billingContactPhone}
+        </Descriptions.Item>
+        <Descriptions.Item label="Email">{account.billingContactEmail ?? "—"}</Descriptions.Item>
+      </Descriptions>
+
+      <h2 className="mb-2 text-base font-medium">Locations</h2>
+      <List
+        dataSource={account.locations}
+        renderItem={(location) => <List.Item>{location.label ?? location.addressId}</List.Item>}
+        className="mb-6"
+      />
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-base font-medium">Contracts</h2>
+        <Button type="primary" onClick={() => setOpen(true)}>
+          New Contract
+        </Button>
+      </div>
+      <List
+        dataSource={account.contracts}
+        renderItem={(contract) => (
+          <List.Item
+            actions={[
+              <Select
+                key="status"
+                size="small"
+                value={contract.status}
+                style={{ width: 120 }}
+                options={["ACTIVE", "EXPIRED", "TERMINATED"].map((s) => ({ value: s, label: s }))}
+                onChange={(status) =>
+                  updateContract({ id: contract.id, body: { status } }).then(() => refetch())
+                }
+              />,
+            ]}
+          >
+            {formatDateTime(contract.startDate, "en")}
+            {contract.endDate ? ` – ${formatDateTime(contract.endDate, "en")}` : ""} <Tag>{contract.status}</Tag>
+          </List.Item>
+        )}
+      />
+
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="New Contract">
+        <Form<ContractFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
+          <Form.Item name="startDate" label="Start Date" rules={[{ required: true }]}>
+            <Input type="date" size="large" />
+          </Form.Item>
+          <Form.Item name="endDate" label="End Date">
+            <Input type="date" size="large" />
+          </Form.Item>
+          <Form.Item name="documentReference" label="Document Reference">
+            <Input size="large" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" size="large" block loading={isCreating}>
+            Create
+          </Button>
+        </Form>
+      </Modal>
+    </div>
+  );
+}

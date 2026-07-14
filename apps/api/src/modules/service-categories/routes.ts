@@ -1,0 +1,47 @@
+import { Router } from "express";
+import { authenticate } from "../../middleware/authenticate.js";
+import { requireRole } from "../../middleware/requireRole.js";
+import { validateRequest } from "../../middleware/validateRequest.js";
+import { asyncHandler } from "../../lib/asyncHandler.js";
+import { requireParam } from "../../lib/params.js";
+import { createServiceCategorySchema, updateServiceCategorySchema } from "./schema.js";
+import * as service from "./service.js";
+
+export const serviceCategoriesRouter = Router();
+
+serviceCategoriesRouter.get(
+  "/service-categories",
+  asyncHandler(async (_req, res) => {
+    res.json(await service.listActiveCategories());
+  })
+);
+
+serviceCategoriesRouter.post(
+  "/service-categories",
+  authenticate,
+  requireRole("ADMIN"),
+  validateRequest({ body: createServiceCategorySchema }),
+  asyncHandler(async (req, res) => {
+    res.status(201).json(await service.createCategory(req.body));
+  })
+);
+
+serviceCategoriesRouter.patch(
+  "/service-categories/:id",
+  authenticate,
+  requireRole("ADMIN"),
+  validateRequest({ body: updateServiceCategorySchema }),
+  asyncHandler(async (req, res) => {
+    res.json(await service.updateCategory(requireParam(req, "id"), req.body));
+  })
+);
+
+serviceCategoriesRouter.delete(
+  "/service-categories/:id",
+  authenticate,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    await service.disableCategory(requireParam(req, "id"));
+    res.status(204).send();
+  })
+);

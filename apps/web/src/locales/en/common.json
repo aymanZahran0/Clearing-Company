@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "Nuqaa Asir"
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "bookings": "My Bookings",
+    "profile": "Profile",
+    "login": "Log In",
+    "register": "Register",
+    "logout": "Log Out",
+    "adminDashboard": "Admin Dashboard"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Register",
+    "fullName": "Full Name",
+    "phone": "Mobile Number",
+    "email": "Email (optional)",
+    "password": "Password",
+    "identifier": "Mobile number or email",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset Password",
+    "marketingConsent": "I agree to receive marketing offers",
+    "submit": "Submit"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  }
+}

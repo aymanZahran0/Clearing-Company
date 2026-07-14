@@ -1,0 +1,884 @@
+// Prisma schema for apps/api.
+// Models are added incrementally per tasks.md: this file currently covers
+// Phase 2 (Foundational) — User/RefreshToken/PasswordResetToken/AuditLog/
+// SystemSetting/NotificationTemplate/NotificationLog. Each User Story phase
+// appends its own entities per data-model.md as implementation proceeds.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
+// Authentication/account record for both roles (data-model.md §1).
+// Deviation from data-model.md: `fullName` lives here (not only on
+// CustomerProfile) since both CUSTOMER and ADMIN accounts need a display
+// name — data-model.md only specified it on CustomerProfile because that
+// document predates splitting Admin login into its own concern.
+model User {
+  id                  String     @id @default(uuid())
+  fullName            String
+  email               String?    @unique
+  phoneNormalized     String?    @unique
+  passwordHash        String?
+  role                Role
+  status              UserStatus @default(ACTIVE)
+  lastLoginAt         DateTime?
+  refreshTokenVersion Int        @default(0)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  customerProfile     CustomerProfile?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogEntries     AuditLog[]
+  updatedSettings     SystemSetting[]
+
+  @@index([role])
+}
+
+// data-model.md §2, pulled forward from Phase 3 into Foundational because
+// POST /auth/register (a CUSTOMER-only endpoint) is not functionally
+// complete without somewhere to store marketingConsent/preferredChannel.
+// CustomerAddress and the remaining catalog/booking entities stay in
+// Phase 3 as originally planned.
+model CustomerProfile {
+  userId              String   @id
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredChannel    String   @default("WHATSAPP")
+  marketingConsent    Boolean  @default(false)
+  customerType        String   @default("INDIVIDUAL")
+  tags                String[] @default([])
+  internalNotes       String?
+  commercialAccountId String?
+
+  addresses     CustomerAddress[]
+  quotes        Quote[]
+  bookings      Booking[]
+  reviews       Review[]
+  subscriptions Subscription[]
+}
+
+// JWT refresh-token rotation (research.md R3).
+model RefreshToken {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash         String    @unique
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  replacedByTokenId String?
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// FR-004/FR-005: audit entry for every sensitive action.
+model AuditLog {
+  id                 String   @id @default(uuid())
+  actorUserId        String
+  actor              User     @relation(fields: [actorUserId], references: [id])
+  action             String
+  entityType         String
+  entityId           String
+  beforeSnapshotJson Json?
+  afterSnapshotJson  Json?
+  ipAddress          String?
+  userAgent          String?
+  createdAt          DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([createdAt])
+}
+
+// FR-025 (tax rate), booking-generation horizon, and other Admin-configurable values.
+model SystemSetting {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  value           Json
+  description     String?
+  updatedByUserId String?
+  updatedByUser   User?    @relation(fields: [updatedByUserId], references: [id])
+  updatedAt       DateTime @updatedAt
+}
+
+// FR-065: Arabic-first message templates for booking events.
+model NotificationTemplate {
+  id      String              @id @default(uuid())
+  key     String              @unique
+  channel NotificationChannel
+  bodyAr  String
+  bodyEn  String
+  active  Boolean             @default(true)
+
+  logs NotificationLog[]
+}
+
+// FR-067/FR-070: every notification attempt is logged; failure never blocks
+// the booking action it relates to.
+model NotificationLog {
+  id              String                @id @default(uuid())
+  bookingId       String?
+  customerId      String?
+  channel         NotificationChannel
+  templateKey     String
+  template        NotificationTemplate? @relation(fields: [templateKey], references: [key])
+  recipient       String
+  payloadSnapshot Json
+  status          NotificationStatus
+  failureReason   String?
+  createdAt       DateTime              @default(now())
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+// ============================================================================
+// Phase 3 (User Story 1): catalog, pricing, availability, quotes, bookings
+// ============================================================================
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  OFFICE
+  SHOP
+  CLINIC
+  FURNISHED_UNIT
+  OTHER
+}
+
+enum PricingType {
+  FIXED
+  PROPERTY_SIZE
+  HOURLY
+  QUANTITY
+  CUSTOM_QUOTE
+}
+
+enum PricingRuleType {
+  PROPERTY_TYPE
+  AREA_BAND
+  DAY_TIME
+  CONDITION_MODIFIER
+}
+
+enum CalculationType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum QuoteStatus {
+  ACTIVE
+  EXPIRED
+  CONVERTED
+}
+
+// research.md R5: exact 9-value list directed by /speckit-plan. Finer-grained
+// execution sub-states (en route/arrived/started, checklist review) live as
+// separate timestamp/child-record fields, not as extra enum values.
+enum BookingStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  RESCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REJECTED
+  COMPLAINT_OPENED
+}
+
+enum BookingSource {
+  WEB
+  ADMIN_PHONE
+}
+
+// data-model.md §3.
+model CustomerAddress {
+  id             String          @id @default(uuid())
+  customerId     String
+  customer       CustomerProfile @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+  label          String?
+  city           String
+  neighborhood   String
+  street         String?
+  buildingNumber String?
+  unitNumber     String?
+  landmark       String?
+  latitude       Float?
+  longitude      Float?
+  mapUrl         String?
+  serviceAreaId  String
+  serviceArea    ServiceArea     @relation(fields: [serviceAreaId], references: [id])
+  isDefault      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  bookings            Booking[]
+  quotes              Quote[]
+  subscriptions       Subscription[]
+  commercialLocations CommercialLocation[]
+
+  @@index([customerId])
+}
+
+// data-model.md §4.
+model ServiceArea {
+  id        String  @id @default(uuid())
+  nameAr    String
+  nameEn    String
+  city      String
+  travelFee Int     @default(0)
+  active    Boolean @default(true)
+
+  addresses CustomerAddress[]
+
+  @@index([active])
+}
+
+// data-model.md §5.
+model ServiceCategory {
+  id        String  @id @default(uuid())
+  nameAr    String
+  nameEn    String
+  slug      String  @unique
+  sortOrder Int     @default(0)
+  active    Boolean @default(true)
+
+  services Service[]
+}
+
+// data-model.md §6.
+model Service {
+  id                     String          @id @default(uuid())
+  categoryId             String
+  category               ServiceCategory @relation(fields: [categoryId], references: [id])
+  slug                   String          @unique
+  nameAr                 String
+  nameEn                 String
+  descriptionAr          String?
+  descriptionEn          String?
+  pricingType            PricingType
+  basePrice              Int?
+  minimumPrice           Int?
+  defaultDurationMinutes Int             @default(60)
+  requiresManualQuote    Boolean         @default(false)
+  active                 Boolean         @default(true)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  images             ServiceImage[]
+  addOns             ServiceAddOn[]
+  pricingRules       PricingRule[]
+  bookingItems       BookingItem[]
+  quotes             Quote[]
+  checklistTemplates ChecklistTemplate[]
+
+  @@index([categoryId])
+  @@index([active])
+}
+
+// data-model.md §7.
+model ServiceImage {
+  id        String  @id @default(uuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  url       String
+  altTextAr String?
+  altTextEn String?
+  sortOrder Int     @default(0)
+
+  @@index([serviceId])
+}
+
+// data-model.md §8.
+enum AddOnPricingMode {
+  FIXED
+  PER_QUANTITY
+}
+
+model ServiceAddOn {
+  id                    String           @id @default(uuid())
+  serviceId             String
+  service               Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  nameAr                String
+  nameEn                String
+  pricingMode           AddOnPricingMode @default(FIXED)
+  unitPrice             Int
+  durationImpactMinutes Int              @default(0)
+  active                Boolean          @default(true)
+
+  bookingItems BookingItem[]
+
+  @@index([serviceId])
+}
+
+// data-model.md §9.
+model PricingRule {
+  id              String          @id @default(uuid())
+  serviceId       String
+  service         Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  ruleType        PricingRuleType
+  conditionsJson  Json
+  calculationType CalculationType
+  amount          Decimal
+  priority        Int             @default(0)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  active          Boolean         @default(true)
+
+  @@index([serviceId, active])
+}
+
+// data-model.md §10.
+model DiscountCode {
+  id              String       @id @default(uuid())
+  code            String       @unique
+  type            DiscountType
+  amount          Decimal
+  minOrderValue   Int?
+  validFrom       DateTime
+  validTo         DateTime
+  usageLimit      Int?
+  usageCount      Int          @default(0)
+  active          Boolean      @default(true)
+  createdByUserId String?
+
+  bookings Booking[]
+
+  @@index([active])
+}
+
+// data-model.md §11.
+model Quote {
+  id                   String           @id @default(uuid())
+  customerId           String?
+  customer             CustomerProfile? @relation(fields: [customerId], references: [userId])
+  serviceId            String
+  service              Service          @relation(fields: [serviceId], references: [id])
+  addOnIds             String[]         @default([])
+  propertyType         PropertyType
+  propertySizeInput    Json
+  addressId            String?
+  address              CustomerAddress? @relation(fields: [addressId], references: [id])
+  requestedDate        DateTime
+  requestedTimeSlotId  String?
+  requestedTimeSlot    TimeSlot?        @relation(fields: [requestedTimeSlotId], references: [id])
+  priceBreakdownJson   Json
+  requiresManualReview Boolean          @default(false)
+  discountCodeId       String?
+  status               QuoteStatus      @default(ACTIVE)
+  expiresAt            DateTime
+  createdAt            DateTime         @default(now())
+
+  bookings Booking[]
+
+  @@index([customerId])
+  @@index([status])
+}
+
+// data-model.md §12. Central operational record.
+// `scheduledTimeSlotId` (Phase 6/US4 addition, not in data-model.md verbatim):
+// links a scheduled booking to the TimeSlot whose bookedCount is
+// incremented/decremented for capacity accounting (FR-030). data-model.md
+// only specifies scheduledStartAt/scheduledEndAt as free datetimes; this
+// field is the minimal addition needed to enforce "TimeSlot.bookedCount <=
+// capacity" without re-deriving which slot a booking occupies from raw
+// timestamps.
+model Booking {
+  id                   String          @id @default(uuid())
+  referenceNumber      String          @unique
+  verificationToken    String          @unique
+  customerId           String
+  customer             CustomerProfile @relation(fields: [customerId], references: [userId])
+  addressId            String
+  address              CustomerAddress @relation(fields: [addressId], references: [id])
+  quoteId              String?
+  quote                Quote?          @relation(fields: [quoteId], references: [id])
+  source               BookingSource   @default(WEB)
+  status               BookingStatus   @default(DRAFT)
+  propertyType         PropertyType
+  propertyDetailsJson  Json
+  customerNotes        String?
+  internalNotes        String?
+  preferredDate        DateTime
+  preferredTimeSlotId  String?
+  preferredTimeSlot    TimeSlot?       @relation("PreferredSlot", fields: [preferredTimeSlotId], references: [id])
+  scheduledTimeSlotId  String?
+  scheduledTimeSlot    TimeSlot?       @relation("ScheduledSlot", fields: [scheduledTimeSlotId], references: [id])
+  scheduledStartAt     DateTime?
+  scheduledEndAt       DateTime?
+  internalHandlingNote String?
+  enRouteAt            DateTime?
+  arrivedAt            DateTime?
+  startedAt            DateTime?
+  completedAt          DateTime?
+  subtotalSnapshot     Int?
+  discountSnapshot     Int             @default(0)
+  travelFeeSnapshot    Int             @default(0)
+  taxSnapshot          Int             @default(0)
+  totalSnapshot        Int?
+  currency             String          @default("SAR")
+  discountCodeId       String?
+  discountCode         DiscountCode?   @relation(fields: [discountCodeId], references: [id])
+  quoteExpiresAt       DateTime?
+  cancellationReason   String?
+  cancelledByRole      Role?
+  rejectionReason      String?
+  originalBookingId    String?
+  originalBooking      Booking?        @relation("Rework", fields: [originalBookingId], references: [id])
+  reworkBookings       Booking[]       @relation("Rework")
+  subscriptionId       String?
+  subscription         Subscription?   @relation(fields: [subscriptionId], references: [id])
+  occurrenceDate       DateTime?
+  idempotencyKey       String?         @unique
+  createdByUserId      String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  items         BookingItem[]
+  statusHistory BookingStatusHistory[]
+  payments      Payment[]
+  invoice       Invoice?
+  checklistRun  ChecklistRun?
+  qualityIssues QualityIssue[]
+  review        Review?
+
+  @@unique([subscriptionId, occurrenceDate])
+  @@index([customerId])
+  @@index([status])
+  @@index([scheduledStartAt])
+}
+
+// data-model.md §13.
+model BookingItem {
+  id                      String        @id @default(uuid())
+  bookingId               String
+  booking                 Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  serviceId               String
+  service                 Service       @relation(fields: [serviceId], references: [id])
+  addOnId                 String?
+  addOn                   ServiceAddOn? @relation(fields: [addOnId], references: [id])
+  descriptionSnapshot     String
+  quantity                Int           @default(1)
+  unitPriceSnapshot       Int
+  totalSnapshot           Int
+  durationMinutesSnapshot Int
+
+  @@index([bookingId])
+}
+
+// data-model.md §14.
+model BookingStatusHistory {
+  id          String         @id @default(uuid())
+  bookingId   String
+  booking     Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromStatus  BookingStatus?
+  toStatus    BookingStatus
+  reason      String?
+  actorUserId String?
+  createdAt   DateTime       @default(now())
+
+  @@index([bookingId])
+}
+
+// data-model.md §15.
+model OperatingHours {
+  id        String  @id @default(uuid())
+  weekday   Int // 0=Sunday..6=Saturday
+  openTime  String // "HH:mm"
+  closeTime String // "HH:mm"
+  active    Boolean @default(true)
+
+  @@unique([weekday])
+}
+
+model ClosedDate {
+  id     String   @id @default(uuid())
+  date   DateTime
+  reason String?
+
+  @@unique([date])
+}
+
+model TimeSlot {
+  id          String   @id @default(uuid())
+  date        DateTime
+  startTime   String
+  endTime     String
+  capacity    Int
+  bookedCount Int      @default(0)
+  active      Boolean  @default(true)
+
+  preferredByBookings Booking[] @relation("PreferredSlot")
+  scheduledBookings   Booking[] @relation("ScheduledSlot")
+  quotes              Quote[]
+
+  @@unique([date, startTime])
+  @@index([date])
+}
+
+// ============================================================================
+// Phase 5 (User Story 3): payments and non-fiscal invoices
+// ============================================================================
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  POS
+  COMPLIMENTARY
+  OTHER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED_RECORDED
+  WAIVED
+}
+
+// data-model.md §22. FR-060-FR-063: manual-only, no online gateway (FR-064).
+model Payment {
+  id               String        @id @default(uuid())
+  bookingId        String
+  booking          Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  method           PaymentMethod
+  status           PaymentStatus @default(UNPAID)
+  amount           Int
+  reference        String?
+  paidAt           DateTime?
+  recordedByUserId String
+  createdAt        DateTime      @default(now())
+
+  @@index([bookingId])
+}
+
+// data-model.md §23. Non-fiscal internal receipt — explicitly NOT
+// ZATCA-compliant e-invoicing (FR-064, Clarifications).
+model Invoice {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  invoiceNumber String   @unique
+  issuedAt      DateTime @default(now())
+  subtotal      Int
+  discount      Int
+  travelFee     Int
+  tax           Int
+  total         Int
+  notes         String?
+  pdfUrl        String?
+}
+
+// ============================================================================
+// Phase 7 (User Story 5): execution tracking and the quality checklist
+// ============================================================================
+
+// data-model.md §16: PHOTO intentionally excluded (spec.md Clarifications,
+// photo capture out of scope).
+enum ChecklistItemType {
+  YES_NO
+  TEXT
+  NUMBER
+  SIGNATURE
+  ISSUE_FLAG
+}
+
+enum QualityIssueSource {
+  REVIEW
+  COMPLAINT
+  CHECKLIST_FAILURE
+}
+
+enum QualityIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum QualityIssueStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+// data-model.md §16. `labelAr`/`labelEn` (bilingual pair, not a single
+// `label` as data-model.md lists) to stay consistent with every other
+// customer/Admin-facing text field in this schema (FR-075).
+model ChecklistTemplate {
+  id        String   @id @default(uuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  version   Int      @default(1)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  items ChecklistTemplateItem[]
+  runs  ChecklistRun[]
+
+  @@index([serviceId, active])
+}
+
+model ChecklistTemplateItem {
+  id         String            @id @default(uuid())
+  templateId String
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  labelAr    String
+  labelEn    String
+  type       ChecklistItemType
+  required   Boolean           @default(true)
+  sortOrder  Int               @default(0)
+
+  results ChecklistResult[]
+
+  @@index([templateId])
+}
+
+// data-model.md §17. One run per booking; the template version is snapshotted
+// at run start (FR-046) so editing the template mid-run never changes an
+// in-flight run's item set.
+model ChecklistRun {
+  id                      String            @id @default(uuid())
+  bookingId               String            @unique
+  booking                 Booking           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  templateId              String
+  template                ChecklistTemplate @relation(fields: [templateId], references: [id])
+  templateVersionSnapshot Int
+  completedByUserId       String?
+  completedAt             DateTime?
+  reviewedByUserId        String?
+  reviewedAt              DateTime?
+  createdAt               DateTime          @default(now())
+
+  results ChecklistResult[]
+}
+
+model ChecklistResult {
+  id             String                @id @default(uuid())
+  checklistRunId String
+  checklistRun   ChecklistRun          @relation(fields: [checklistRunId], references: [id], onDelete: Cascade)
+  templateItemId String
+  templateItem   ChecklistTemplateItem @relation(fields: [templateItemId], references: [id])
+  value          Json?
+  isIssue        Boolean               @default(false)
+  issueNote      String?
+
+  @@unique([checklistRunId, templateItemId])
+}
+
+// data-model.md §18. Created from a failed/flagged checklist item
+// (source = CHECKLIST_FAILURE, Phase 7) or from a customer review/complaint
+// (source ∈ {REVIEW, COMPLAINT}, Phase 8) — same entity either way so the
+// Admin quality queue (T137) is a single unified view.
+model QualityIssue {
+  id              String               @id @default(uuid())
+  bookingId       String
+  booking         Booking              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  source          QualityIssueSource
+  category        String
+  severity        QualityIssueSeverity @default(MEDIUM)
+  description     String
+  status          QualityIssueStatus   @default(OPEN)
+  ownerUserId     String?
+  resolution      String?
+  reworkBookingId String?              @unique
+  resolvedAt      DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+// ============================================================================
+// Phase 8 (User Story 6): customer feedback, complaints, and rework
+// ============================================================================
+
+// data-model.md §19. One review per completed booking.
+model Review {
+  id               String          @id @default(uuid())
+  bookingId        String          @unique
+  booking          Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId       String
+  customer         CustomerProfile @relation(fields: [customerId], references: [userId])
+  rating           Int
+  comment          String?
+  submittedAt      DateTime        @default(now())
+  followUpRequired Boolean         @default(false)
+
+  @@index([customerId])
+}
+
+// ============================================================================
+// Phase 9 (User Story 7): recurring subscriptions and commercial accounts
+// ============================================================================
+
+enum SubscriptionFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+enum ContractStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+// data-model.md §20. The generation job produces `Booking` rows up to an
+// 8-week rolling horizon (FR-056), keyed by the `(subscriptionId,
+// occurrenceDate)` unique constraint on `Booking` for idempotency under
+// retries. `lastGeneratedAt` (not in data-model.md verbatim, replaces the
+// document's `nextGenerationAt` framing) records when this subscription was
+// last processed — simpler than a separate job-run table since generation
+// is scoped per subscription, not global.
+model Subscription {
+  id                       String                @id @default(uuid())
+  customerId               String
+  customer                 CustomerProfile       @relation(fields: [customerId], references: [userId])
+  addressId                String
+  address                  CustomerAddress       @relation(fields: [addressId], references: [id])
+  serviceConfigurationJson Json
+  frequency                SubscriptionFrequency
+  preferredWeekday         Int?
+  preferredTimeWindow      String?
+  priceSnapshot            Int
+  startsAt                 DateTime
+  endsAt                   DateTime?
+  status                   SubscriptionStatus    @default(ACTIVE)
+  lastGeneratedAt          DateTime?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+
+  bookings Booking[]
+
+  @@index([status])
+}
+
+// data-model.md §21.
+model CommercialAccount {
+  id                  String   @id @default(uuid())
+  companyName         String
+  billingContactName  String
+  billingContactPhone String
+  billingContactEmail String?
+  notes               String?
+  createdAt           DateTime @default(now())
+
+  locations CommercialLocation[]
+  contracts Contract[]
+}
+
+model CommercialLocation {
+  id                  String            @id @default(uuid())
+  commercialAccountId String
+  commercialAccount   CommercialAccount @relation(fields: [commercialAccountId], references: [id], onDelete: Cascade)
+  addressId           String
+  address             CustomerAddress   @relation(fields: [addressId], references: [id])
+  label               String?
+
+  @@index([commercialAccountId])
+}
+
+model Contract {
+  id                  String            @id @default(uuid())
+  commercialAccountId String
+  commercialAccount   CommercialAccount @relation(fields: [commercialAccountId], references: [id], onDelete: Cascade)
+  startDate           DateTime
+  endDate             DateTime?
+  pricingTermsJson    Json
+  documentReference   String?
+  status              ContractStatus    @default(ACTIVE)
+  createdAt           DateTime          @default(now())
+
+  @@index([commercialAccountId])
+}
+
+// ============================================================================
+// Phase 11 (Polish): CMS content and system settings
+// ============================================================================
+
+enum WebsiteContentBlockType {
+  PAGE
+  SECTION
+}
+
+// data-model.md §25.
+model WebsiteContentBlock {
+  id        String                  @id @default(uuid())
+  key       String                  @unique
+  type      WebsiteContentBlockType
+  titleAr   String
+  titleEn   String
+  bodyAr    String
+  bodyEn    String
+  sortOrder Int                     @default(0)
+  active    Boolean                 @default(true)
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+}
+
+model FaqItem {
+  id         String   @id @default(uuid())
+  questionAr String
+  questionEn String
+  answerAr   String
+  answerEn   String
+  sortOrder  Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

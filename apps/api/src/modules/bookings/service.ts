@@ -1,0 +1,668 @@
+import { timingSafeEqual } from "node:crypto";
+import { ApiError } from "@nuqaa-asir/shared";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "../../lib/prisma.js";
+import { generateBookingReference, generateVerificationToken } from "../../lib/bookingReference.js";
+import { assertTransition } from "../../lib/bookingStateMachine.js";
+import { recordAuditEntry } from "../../middleware/auditLogger.js";
+import { createInvitedCustomer } from "../customers/service.js";
+import { assertChecklistComplete, markChecklistCompleted } from "../checklists/service.js";
+import type {
+  AdminBookingCreateInput,
+  BookingCreateInput,
+  ScheduleBookingInput,
+} from "./schema.js";
+
+interface ActorContext {
+  actorUserId: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+interface CreateBookingOptions {
+  source: "WEB" | "ADMIN_PHONE";
+  createdByUserId?: string;
+  idempotencyKey?: string;
+}
+
+async function resolveCustomerId(
+  input: AdminBookingCreateInput,
+  fallbackCustomerId: string | undefined
+): Promise<string> {
+  if (fallbackCustomerId) return fallbackCustomerId;
+  if (input.customerId) return input.customerId;
+
+  if (input.newCustomer) {
+    const user = await createInvitedCustomer(input.newCustomer);
+    return user.id;
+  }
+
+  throw new ApiError(422, "VALIDATION_ERROR", "customerId or newCustomer is required");
+}
+
+export async function createBooking(
+  input: BookingCreateInput | AdminBookingCreateInput,
+  requestingCustomerId: string | undefined,
+  options: CreateBookingOptions
+) {
+  if (options.idempotencyKey) {
+    const existing = await prisma.booking.findUnique({
+      where: { idempotencyKey: options.idempotencyKey },
+    });
+    if (existing) return existing; // FR-013: safe to retry
+  }
+
+  const customerId = await resolveCustomerId(input as AdminBookingCreateInput, requestingCustomerId);
+
+  const quote = await prisma.quote.findUnique({ where: { id: input.quoteId } });
+  if (!quote) {
+    throw new ApiError(404, "NOT_FOUND", "Quote not found");
+  }
+  if (quote.status !== "ACTIVE" || quote.expiresAt < new Date()) {
+    throw new ApiError(409, "CONFLICT", "This quote has expired; request a new estimate");
+  }
+
+  const address = await prisma.customerAddress.findUnique({ where: { id: input.addressId } });
+  if (!address || address.customerId !== customerId) {
+    throw new ApiError(404, "NOT_FOUND", "Address not found");
+  }
+
+  const service = await prisma.service.findUniqueOrThrow({ where: { id: quote.serviceId } });
+  const addOns = quote.addOnIds.length
+    ? await prisma.serviceAddOn.findMany({ where: { id: { in: quote.addOnIds } } })
+    : [];
+
+  const breakdown = quote.priceBreakdownJson as unknown as {
+    subtotal: number;
+    addOnsTotal: number;
+    discount: number;
+    travelFee: number;
+    tax: number;
+    total: number;
+  };
+
+  const booking = await prisma.$transaction(async (tx) => {
+    const created = await tx.booking.create({
+      data: {
+        referenceNumber: generateBookingReference(),
+        verificationToken: generateVerificationToken(),
+        customerId,
+        addressId: input.addressId,
+        quoteId: quote.id,
+        source: options.source,
+        status: "DRAFT",
+        propertyType: input.propertyType,
+        propertyDetailsJson: input.propertyDetails as Prisma.InputJsonValue,
+        customerNotes: input.customerNotes,
+        preferredDate: input.preferredDate,
+        preferredTimeSlotId: input.preferredTimeSlotId,
+        subtotalSnapshot: breakdown.subtotal + breakdown.addOnsTotal,
+        discountSnapshot: breakdown.discount,
+        travelFeeSnapshot: breakdown.travelFee,
+        taxSnapshot: breakdown.tax,
+        totalSnapshot: breakdown.total,
+        discountCodeId: quote.discountCodeId,
+        idempotencyKey: options.idempotencyKey,
+        createdByUserId: options.createdByUserId,
+        items: {
+          create: [
+            {
+              serviceId: service.id,
+              descriptionSnapshot: service.nameEn,
+              quantity: 1,
+              unitPriceSnapshot: breakdown.subtotal,
+              totalSnapshot: breakdown.subtotal,
+              durationMinutesSnapshot: service.defaultDurationMinutes,
+            },
+            ...addOns.map((addOn) => ({
+              serviceId: service.id,
+              addOnId: addOn.id,
+              descriptionSnapshot: addOn.nameEn,
+              quantity: 1,
+              unitPriceSnapshot: addOn.unitPrice,
+              totalSnapshot: addOn.unitPrice,
+              durationMinutesSnapshot: addOn.durationImpactMinutes,
+            })),
+          ],
+        },
+      },
+    });
+
+    assertTransition("DRAFT", "PENDING");
+    const submitted = await tx.booking.update({
+      where: { id: created.id },
+      data: { status: "PENDING" },
+    });
+
+    await tx.bookingStatusHistory.createMany({
+      data: [
+        { bookingId: created.id, fromStatus: null, toStatus: "DRAFT", reason: "Booking created" },
+        {
+          bookingId: created.id,
+          fromStatus: "DRAFT",
+          toStatus: "PENDING",
+          reason: "Booking submitted",
+          actorUserId: options.createdByUserId,
+        },
+      ],
+    });
+
+    await tx.quote.update({ where: { id: quote.id }, data: { status: "CONVERTED" } });
+    if (quote.discountCodeId) {
+      await tx.discountCode.update({
+        where: { id: quote.discountCodeId },
+        data: { usageCount: { increment: 1 } },
+      });
+    }
+
+    return submitted;
+  });
+
+  // FR-070: notification failure never blocks the booking action that
+  // triggered it — logged best-effort, outside the DB transaction above.
+  await prisma.notificationLog
+    .create({
+      data: {
+        bookingId: booking.id,
+        customerId,
+        channel: "WHATSAPP",
+        templateKey: "BOOKING_CONFIRMED",
+        recipient: "", // populated once the templating module resolves the customer's phone in Polish (T177)
+        payloadSnapshot: { referenceNumber: booking.referenceNumber },
+        status: "PENDING",
+      },
+    })
+    .catch(() => undefined);
+
+  return booking;
+}
+
+export async function getBookingById(id: string, requestingUser: { id: string; role: string }) {
+  const booking = await prisma.booking.findUnique({ where: { id }, include: { items: true } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (requestingUser.role === "CUSTOMER" && booking.customerId !== requestingUser.id) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  return booking;
+}
+
+export async function listOwnBookings(
+  customerId: string,
+  filters: { status?: string; page: number; pageSize: number }
+) {
+  const where = { customerId, ...(filters.status ? { status: filters.status as never } : {}) };
+  const [items, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (filters.page - 1) * filters.pageSize,
+      take: filters.pageSize,
+    }),
+    prisma.booking.count({ where }),
+  ]);
+  return { items, total, page: filters.page, pageSize: filters.pageSize };
+}
+
+export async function listAllBookings(filters: {
+  status?: string;
+  from?: Date;
+  to?: Date;
+  scheduledFrom?: Date;
+  scheduledTo?: Date;
+  needsScheduling?: boolean;
+  page: number;
+  pageSize: number;
+}) {
+  const where = {
+    ...(filters.status ? { status: filters.status as never } : {}),
+    ...(filters.from || filters.to
+      ? { createdAt: { gte: filters.from, lte: filters.to } }
+      : {}),
+    ...(filters.scheduledFrom || filters.scheduledTo
+      ? { scheduledStartAt: { gte: filters.scheduledFrom, lte: filters.scheduledTo } }
+      : {}),
+    ...(filters.needsScheduling
+      ? { status: "CONFIRMED" as never, scheduledStartAt: null }
+      : {}),
+  };
+  const [items, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (filters.page - 1) * filters.pageSize,
+      take: filters.pageSize,
+    }),
+    prisma.booking.count({ where }),
+  ]);
+  return { items, total, page: filters.page, pageSize: filters.pageSize };
+}
+
+// FR-077: reference alone is never sufficient; requires the unguessable
+// verification token issued at creation.
+export async function getBookingByReference(referenceNumber: string, token: string) {
+  const booking = await prisma.booking.findUnique({
+    where: { referenceNumber },
+    include: { items: { include: { service: true }, take: 1 } },
+  });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (!constantTimeEquals(booking.verificationToken, token)) {
+    throw new ApiError(403, "FORBIDDEN", "Invalid verification token");
+  }
+
+  return {
+    referenceNumber: booking.referenceNumber,
+    status: booking.status,
+    scheduledStartAt: booking.scheduledStartAt,
+    serviceName: booking.items[0]?.service.nameEn ?? "",
+  };
+}
+
+// Constant-time comparison so response timing can't reveal how much of
+// the verification token matched (FR-077).
+function constantTimeEquals(a: string, b: string): boolean {
+  const bufferA = Buffer.from(a);
+  const bufferB = Buffer.from(b);
+  if (bufferA.length !== bufferB.length) return false;
+  return timingSafeEqual(bufferA, bufferB);
+}
+
+// FR-034: cannot confirm without price, address, service date, and valid
+// contact — all are already guaranteed non-null by the DB schema once a
+// booking exists (addressId, preferredDate, totalSnapshot), except the
+// price, which needs an explicit check since it's nullable until quoted.
+export async function confirmBooking(
+  id: string,
+  input: { priceOverride?: number; priceOverrideReason?: string },
+  actor: ActorContext
+) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+
+  if (booking.totalSnapshot == null) {
+    throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Booking has no price to confirm");
+  }
+  if (input.priceOverride != null && !input.priceOverrideReason) {
+    throw new ApiError(422, "VALIDATION_ERROR", "priceOverrideReason is required when overriding price");
+  }
+
+  assertTransition(booking.status, "CONFIRMED");
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.booking.update({
+      where: { id },
+      data:
+        input.priceOverride != null
+          ? { status: "CONFIRMED", totalSnapshot: input.priceOverride }
+          : { status: "CONFIRMED" },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "CONFIRMED",
+        reason: input.priceOverrideReason ?? "Confirmed by Admin",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+
+  if (input.priceOverride != null) {
+    await recordAuditEntry({
+      actorUserId: actor.actorUserId,
+      action: "PRICE_OVERRIDE",
+      entityType: "Booking",
+      entityId: id,
+      beforeSnapshot: { totalSnapshot: booking.totalSnapshot },
+      afterSnapshot: { totalSnapshot: input.priceOverride, reason: input.priceOverrideReason },
+      ipAddress: actor.ipAddress,
+      userAgent: actor.userAgent,
+    });
+  }
+
+  return updated;
+}
+
+export async function rejectBooking(id: string, reason: string, actor: ActorContext) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  assertTransition(booking.status, "REJECTED");
+
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.booking.update({
+      where: { id },
+      data: { status: "REJECTED", rejectionReason: reason },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "REJECTED",
+        reason,
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+}
+
+// FR-029/FR-030/T110: sets the planned time + internal handling note on a
+// CONFIRMED booking, checking the target TimeSlot's remaining capacity.
+// Exceeding capacity requires an explicit `overrideCapacity` flag, recorded
+// on both the status-history reason and an AuditLog entry (constitution
+// Principle I: every capacity override must be auditable).
+export async function scheduleBooking(
+  id: string,
+  input: ScheduleBookingInput,
+  actor: ActorContext
+) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (booking.status !== "CONFIRMED") {
+    throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Only confirmed bookings can be scheduled");
+  }
+  if (booking.scheduledStartAt) {
+    throw new ApiError(409, "CONFLICT", "Booking is already scheduled; use reschedule instead");
+  }
+
+  const slot = await prisma.timeSlot.findUnique({ where: { id: input.timeSlotId } });
+  if (!slot || !slot.active) {
+    throw new ApiError(404, "NOT_FOUND", "Time slot not found");
+  }
+
+  const atCapacity = slot.bookedCount >= slot.capacity;
+  if (atCapacity && !input.overrideCapacity) {
+    throw new ApiError(409, "BOOKING_SLOT_UNAVAILABLE", "This time slot is at full capacity");
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.booking.update({
+      where: { id },
+      data: {
+        scheduledTimeSlotId: slot.id,
+        scheduledStartAt: combineDateAndTime(slot.date, slot.startTime),
+        scheduledEndAt: combineDateAndTime(slot.date, slot.endTime),
+        internalHandlingNote: input.internalHandlingNote ?? booking.internalHandlingNote,
+      },
+    });
+    await tx.timeSlot.update({ where: { id: slot.id }, data: { bookedCount: { increment: 1 } } });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: booking.status,
+        reason: atCapacity ? "Scheduled with capacity override" : "Scheduled",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+
+  if (atCapacity) {
+    await recordAuditEntry({
+      actorUserId: actor.actorUserId,
+      action: "CAPACITY_OVERRIDE",
+      entityType: "Booking",
+      entityId: id,
+      afterSnapshot: { timeSlotId: slot.id, capacity: slot.capacity, bookedCount: slot.bookedCount + 1 },
+      ipAddress: actor.ipAddress,
+      userAgent: actor.userAgent,
+    });
+  }
+
+  return updated;
+}
+
+// T111: moves an already-scheduled booking to a different time slot,
+// releasing capacity on the old slot and re-checking capacity on the new
+// one. Passes through the RESCHEDULED state per the state machine
+// (CONFIRMED -> RESCHEDULED -> CONFIRMED) so the transition is audited via
+// BookingStatusHistory like every other status change.
+export async function rescheduleBooking(
+  id: string,
+  input: ScheduleBookingInput,
+  actor: ActorContext
+) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (!booking.scheduledStartAt) {
+    throw new ApiError(409, "CONFLICT", "Booking has not been scheduled yet; use schedule instead");
+  }
+  assertTransition(booking.status, "RESCHEDULED");
+
+  const slot = await prisma.timeSlot.findUnique({ where: { id: input.timeSlotId } });
+  if (!slot || !slot.active) {
+    throw new ApiError(404, "NOT_FOUND", "Time slot not found");
+  }
+
+  const atCapacity = slot.bookedCount >= slot.capacity;
+  if (atCapacity && !input.overrideCapacity) {
+    throw new ApiError(409, "BOOKING_SLOT_UNAVAILABLE", "This time slot is at full capacity");
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    if (booking.scheduledTimeSlotId) {
+      await tx.timeSlot.update({
+        where: { id: booking.scheduledTimeSlotId },
+        data: { bookedCount: { decrement: 1 } },
+      });
+    }
+    await tx.timeSlot.update({ where: { id: slot.id }, data: { bookedCount: { increment: 1 } } });
+
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "RESCHEDULED",
+        reason: "Rescheduled",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    await tx.booking.update({ where: { id }, data: { status: "RESCHEDULED" } });
+
+    const result = await tx.booking.update({
+      where: { id },
+      data: {
+        status: "CONFIRMED",
+        scheduledTimeSlotId: slot.id,
+        scheduledStartAt: combineDateAndTime(slot.date, slot.startTime),
+        scheduledEndAt: combineDateAndTime(slot.date, slot.endTime),
+        internalHandlingNote: input.internalHandlingNote ?? booking.internalHandlingNote,
+      },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: "RESCHEDULED",
+        toStatus: "CONFIRMED",
+        reason: atCapacity ? "Rescheduled with capacity override" : "Rescheduled",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+
+  if (atCapacity) {
+    await recordAuditEntry({
+      actorUserId: actor.actorUserId,
+      action: "CAPACITY_OVERRIDE",
+      entityType: "Booking",
+      entityId: id,
+      afterSnapshot: { timeSlotId: slot.id, capacity: slot.capacity, bookedCount: slot.bookedCount + 1 },
+      ipAddress: actor.ipAddress,
+      userAgent: actor.userAgent,
+    });
+  }
+
+  return updated;
+}
+
+// FR-037/FR-040: cancellable by Customer (own booking) or Admin; no fee
+// logic applied regardless of timing. Releases capacity on the scheduled
+// slot, if any.
+export async function cancelBooking(
+  id: string,
+  reason: string,
+  cancelledByRole: "CUSTOMER" | "ADMIN",
+  actor: ActorContext
+) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  assertTransition(booking.status, "CANCELLED");
+
+  return prisma.$transaction(async (tx) => {
+    if (booking.scheduledTimeSlotId) {
+      await tx.timeSlot.update({
+        where: { id: booking.scheduledTimeSlotId },
+        data: { bookedCount: { decrement: 1 } },
+      });
+    }
+    const result = await tx.booking.update({
+      where: { id },
+      data: { status: "CANCELLED", cancellationReason: reason, cancelledByRole },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "CANCELLED",
+        reason,
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+}
+
+function combineDateAndTime(date: Date, time: string): Date {
+  const [hoursStr, minutesStr] = time.split(":");
+  const combined = new Date(date);
+  combined.setUTCHours(Number(hoursStr), Number(minutesStr), 0, 0);
+  return combined;
+}
+
+// T122 (US5): en-route/arrive are sub-state timestamps only — they do not
+// change `status`, which stays CONFIRMED until `/start` (research.md R5).
+export async function markEnRoute(id: string, actor: ActorContext) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (booking.status !== "CONFIRMED") {
+    throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Only confirmed bookings can be marked en route");
+  }
+  return prisma.booking.update({ where: { id }, data: { enRouteAt: new Date() } });
+}
+
+export async function markArrived(id: string, actor: ActorContext) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (booking.status !== "CONFIRMED") {
+    throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Only confirmed bookings can be marked arrived");
+  }
+  return prisma.booking.update({ where: { id }, data: { arrivedAt: new Date() } });
+}
+
+// FR-036: `arrivedAt` must already be set before entering IN_PROGRESS.
+export async function startExecution(id: string, actor: ActorContext) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  if (!booking.arrivedAt) {
+    throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Cannot start before arrival is recorded");
+  }
+  assertTransition(booking.status, "IN_PROGRESS");
+
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.booking.update({
+      where: { id },
+      data: { status: "IN_PROGRESS", startedAt: new Date() },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "IN_PROGRESS",
+        reason: "Execution started",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+}
+
+// FR-048/FR-051/T124: blocks completion unless every required checklist
+// item has been answered; queues the FEEDBACK_REQUEST notification
+// best-effort (FR-070: a notification failure never blocks the booking
+// action itself).
+export async function completeBooking(id: string, actor: ActorContext) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  assertTransition(booking.status, "COMPLETED");
+  await assertChecklistComplete(id);
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.booking.update({
+      where: { id },
+      data: { status: "COMPLETED", completedAt: new Date() },
+    });
+    await tx.bookingStatusHistory.create({
+      data: {
+        bookingId: id,
+        fromStatus: booking.status,
+        toStatus: "COMPLETED",
+        reason: "Execution completed",
+        actorUserId: actor.actorUserId,
+      },
+    });
+    return result;
+  });
+
+  await markChecklistCompleted(id, actor.actorUserId);
+
+  await prisma.notificationLog
+    .create({
+      data: {
+        bookingId: id,
+        customerId: booking.customerId,
+        channel: "WHATSAPP",
+        templateKey: "FEEDBACK_REQUEST",
+        recipient: "",
+        payloadSnapshot: { referenceNumber: booking.referenceNumber },
+        status: "PENDING",
+      },
+    })
+    .catch(() => undefined);
+
+  return updated;
+}
+
+export async function getBookingHistory(bookingId: string) {
+  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+  if (!booking) {
+    throw new ApiError(404, "NOT_FOUND", "Booking not found");
+  }
+  return prisma.bookingStatusHistory.findMany({
+    where: { bookingId },
+    orderBy: { createdAt: "asc" },
+  });
+}
