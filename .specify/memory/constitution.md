@@ -1,22 +1,27 @@
 <!--
 Sync Impact Report
-Version change: [TEMPLATE] → 1.0.0
-Modified principles: N/A (initial ratification from template placeholders)
-Added sections:
-  - I. Production-Grade Code Quality
-  - II. Mobile-First Responsive Design
-  - III. Bilingual & RTL-Correct Internationalization
-  - IV. Accessibility & Phone-Booking Parity
-  - V. Performance & SEO by Default
-  - Technology & Platform Constraints
-  - Development Workflow & Quality Gates
-  - Governance
-Removed sections: none (all placeholder tokens replaced)
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - IV. Accessibility & Phone-Booking Parity — "customer-service agent" reworded to "Admin"
+    to match the two-role (Customer/Admin) model finalized in spec.md; no other staff
+    accounts exist in the system.
+  - Technology & Platform Constraints — replaced the originally-named Next.js/React 19
+    monolith with the actual, plan-approved decoupled stack: React 18 + Vite 5 SPA
+    (`apps/web`) + Express 4/Prisma REST API (`apps/api`) + shared Zod/TS package
+    (`packages/shared`), npm workspaces, Vitest/RTL/Supertest/Playwright testing.
+Added sections: none
+Removed sections: none
+Rationale for MINOR bump: no principle was added or removed, but the Technology &
+Platform Constraints section changed substantively (not just wording) to reflect the
+architecture actually implemented, per the explicit follow-up recommendation recorded in
+plan.md's Constitution Check and research.md R9. Principle IV's terminology fix is a
+same-scope clarification riding along with this amendment.
 Templates requiring updates:
   ✅ .specify/templates/plan-template.md (generic Constitution Check gate already accommodates these principles; no edits required)
   ✅ .specify/templates/spec-template.md (locale/accessibility/performance criteria fit existing Success Criteria & Requirements sections; no edits required)
   ✅ .specify/templates/tasks-template.md (Polish phase already covers i18n/perf/accessibility-shaped tasks generically; no edits required)
-  ✅ .specify/plan.md (already aligns with these principles: Arabic-first RTL, Next.js/React stack, WhatsApp/phone-friendly flows)
+  ✅ specs/001-cleaning-company-platform/plan.md (already documents this stack; the deviation this amendment resolves was recorded there under Complexity Tracking/Constitution Check)
+  ✅ specs/001-cleaning-company-platform/research.md (R9 explicitly recommended this amendment; no further edits needed there)
 Follow-up TODOs: none
 -->
 
@@ -75,16 +80,15 @@ The platform MUST meet WCAG 2.1 AA for all public-facing and booking-critical fl
 sufficient color contrast, visible focus states, full keyboard operability, semantic
 HTML/ARIA labeling, and screen-reader-friendly form errors. Because a meaningful share of
 customers — particularly older customers — will book by calling in rather than using the
-website directly, every booking flow MUST also be operable end-to-end by a customer-service
-agent on behalf of a caller: no step may require the customer to be physically present at a
-screen (e.g. no customer-side-only OTP as the sole confirmation path, no drag-only
-interactions without a keyboard/click equivalent). Text MUST remain legible when browser
-zoom is increased to 200%.
+website directly, every booking flow MUST also be operable end-to-end by Admin on behalf of
+a caller: no step may require the customer to be physically present at a screen (e.g. no
+customer-side-only OTP as the sole confirmation path, no drag-only interactions without a
+keyboard/click equivalent). Text MUST remain legible when browser zoom is increased to 200%.
 
 **Rationale**: This is a phone-first-in-practice business even though the product is a web
-platform — front-desk and call-center staff are a primary booking channel alongside the
-website itself, and older customers are an explicit target demographic per the business
-proposal.
+platform — Admin, the platform's single internal role, is a primary booking channel
+(phone/WhatsApp) alongside the website itself, and older customers are an explicit target
+demographic per the business proposal.
 
 ### V. Performance & SEO by Default
 
@@ -102,11 +106,19 @@ market where competitors are one search result away.
 
 ## Technology & Platform Constraints
 
-The stack is TypeScript 5.x on Node.js 22 LTS, Next.js 15+ with React 19+, Tailwind CSS,
-Prisma ORM against PostgreSQL 16+, Zod for validation, and Vitest/React Testing
-Library/Playwright for testing, as established in the implementation plan. Any deviation
-from this stack for a new subsystem MUST be justified in that feature's plan under
-Complexity Tracking. Secrets and credentials MUST NOT be committed to the repository;
+The stack is TypeScript 5.x on Node.js 22 LTS, delivered as a decoupled monorepo: `apps/web`
+— React 18 + Vite 5 single-page application (React Router 6, Redux Toolkit/RTK Query,
+Tailwind CSS, Ant Design, react-i18next) — and `apps/api` — Express 4 REST API with Prisma
+ORM against PostgreSQL 16+, Zod validation, JWT access/refresh authentication, `helmet` and
+`express-rate-limit`, and `pino` structured logging. `packages/shared` holds the Zod schemas
+and TypeScript types both apps import, so client- and server-side validation cannot drift.
+Testing is Vitest + React Testing Library (`apps/web`), Vitest + Supertest (`apps/api`), and
+Playwright for cross-app end-to-end coverage. Package management is npm workspaces (not
+pnpm — `corepack enable` requires elevated permissions unavailable in this environment).
+This is a two-deployable architecture — one static SPA and one Node.js API service — against
+a single PostgreSQL database: no microservices, no message broker. Any deviation from this
+stack for a new subsystem MUST be justified in that feature's plan under Complexity
+Tracking. Secrets and credentials MUST NOT be committed to the repository;
 environment-specific configuration MUST go through environment variables documented in the
 relevant plan.
 
@@ -132,4 +144,4 @@ wording fixes. All plans and PRs MUST verify compliance with this constitution; 
 or deviation MUST be justified in the plan's Complexity Tracking section rather than silently
 introduced.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-12
+**Version**: 1.1.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-14
