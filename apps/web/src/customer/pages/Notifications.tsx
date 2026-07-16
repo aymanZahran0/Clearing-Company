@@ -1,4 +1,5 @@
 import { List, Skeleton, Tag } from "antd";
+import { useTranslation } from "react-i18next";
 import { useListOwnNotificationLogsQuery } from "../../api/notificationsApi";
 import { formatDateTime } from "../../lib/formatters";
 
@@ -6,6 +7,7 @@ import { formatDateTime } from "../../lib/formatters";
 // customer sees which events were sent to them, never other customers'
 // logs, and never the underlying recipient/PII payload.
 export default function Notifications() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListOwnNotificationLogsQuery();
 
   if (isLoading) {
@@ -18,7 +20,7 @@ export default function Notifications() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Notifications</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("nav.notifications")}</h1>
       <List
         dataSource={data}
         renderItem={(log) => (

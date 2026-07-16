@@ -13,11 +13,20 @@ export interface PublicUser {
 interface AuthState {
   accessToken: string | null;
   user: PublicUser | null;
+  // A hard page load (e.g. direct URL navigation, refresh) starts with no
+  // in-memory accessToken even for an already-logged-in visitor, since the
+  // access token is intentionally never persisted to storage — only the
+  // httpOnly refresh cookie survives. Route guards must wait for the
+  // silent-refresh bootstrap attempt to finish before deciding whether to
+  // redirect to login, otherwise every reload/deep-link bounces a logged-in
+  // user out.
+  bootstrapped: boolean;
 }
 
 const initialState: AuthState = {
   accessToken: null,
   user: null,
+  bootstrapped: false,
 };
 
 const authSlice = createSlice({
@@ -38,8 +47,11 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.user = null;
     },
+    setBootstrapped: (state) => {
+      state.bootstrapped = true;
+    },
   },
 });
 
-export const { setCredentials, setAccessToken, clearAuth } = authSlice.actions;
+export const { setCredentials, setAccessToken, clearAuth, setBootstrapped } = authSlice.actions;
 export default authSlice.reducer;

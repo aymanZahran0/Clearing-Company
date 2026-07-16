@@ -97,7 +97,7 @@ export default function NewPhoneBooking() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">New Phone Booking</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:bookings.newPhoneBooking")}</h1>
       <Steps
         current={step}
         items={[{ title: "Customer" }, { title: "Service & Address" }, { title: "Confirm" }]}
@@ -127,7 +127,7 @@ export default function NewPhoneBooking() {
             )}
           />
           <div className="mt-6 border-t pt-4">
-            <h2 className="mb-2 text-base font-medium">Or create a new customer</h2>
+            <h2 className="mb-2 text-base font-medium">{t("admin:bookings.orCreateNewCustomer")}</h2>
             <Form layout="vertical" onFinish={handleCreateNewCustomer} requiredMark={false}>
               <Form.Item name="fullName" label={t("auth.fullName")} rules={[{ required: true }]}>
                 <Input size="large" />
@@ -168,10 +168,10 @@ export default function NewPhoneBooking() {
             </Form>
           ) : (
             <Form layout="vertical" onFinish={handleGetQuote} requiredMark={false}>
-              <Form.Item name="propertyType" label="Property Type" rules={[{ required: true }]}>
+              <Form.Item name="propertyType" label={t("admin:bookings.propertyType")} rules={[{ required: true }]}>
                 <Radio.Group>
-                  <Radio value="APARTMENT">Apartment</Radio>
-                  <Radio value="VILLA">Villa</Radio>
+                  <Radio value="APARTMENT">{t("admin:bookings.apartment")}</Radio>
+                  <Radio value="VILLA">{t("admin:bookings.villa")}</Radio>
                 </Radio.Group>
               </Form.Item>
               <Form.Item
@@ -181,10 +181,13 @@ export default function NewPhoneBooking() {
               >
                 <Input type="date" size="large" />
               </Form.Item>
-              <Form.Item label="Service" required>
+              <Form.Item
+                name="serviceId"
+                label="Service"
+                rules={[{ required: true, message: "Service is required" }]}
+              >
                 <Select
                   size="large"
-                  value={serviceId ?? undefined}
                   onChange={setServiceId}
                   options={services?.map((s) => ({
                     value: s.id,

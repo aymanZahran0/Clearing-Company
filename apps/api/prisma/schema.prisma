@@ -54,11 +54,13 @@ model User {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
-  customerProfile     CustomerProfile?
-  refreshTokens       RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
-  auditLogEntries     AuditLog[]
-  updatedSettings     SystemSetting[]
+  customerProfile             CustomerProfile?
+  refreshTokens               RefreshToken[]
+  passwordResetTokens         PasswordResetToken[]
+  auditLogEntries             AuditLog[]
+  updatedSettings             SystemSetting[]
+  rescheduleRequestsSubmitted RescheduleRequest[]  @relation("RescheduleRequestedBy")
+  rescheduleRequestsDecided   RescheduleRequest[]  @relation("RescheduleDecidedBy")
 
   @@index([role])
 }
@@ -480,13 +482,14 @@ model Booking {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
-  items         BookingItem[]
-  statusHistory BookingStatusHistory[]
-  payments      Payment[]
-  invoice       Invoice?
-  checklistRun  ChecklistRun?
-  qualityIssues QualityIssue[]
-  review        Review?
+  items              BookingItem[]
+  statusHistory      BookingStatusHistory[]
+  payments           Payment[]
+  invoice            Invoice?
+  checklistRun       ChecklistRun?
+  qualityIssues      QualityIssue[]
+  review             Review?
+  rescheduleRequests RescheduleRequest[]
 
   @@unique([subscriptionId, occurrenceDate])
   @@index([customerId])
@@ -554,9 +557,10 @@ model TimeSlot {
   bookedCount Int      @default(0)
   active      Boolean  @default(true)
 
-  preferredByBookings Booking[] @relation("PreferredSlot")
-  scheduledBookings   Booking[] @relation("ScheduledSlot")
+  preferredByBookings Booking[]           @relation("PreferredSlot")
+  scheduledBookings   Booking[]           @relation("ScheduledSlot")
   quotes              Quote[]
+  rescheduleRequests  RescheduleRequest[]
 
   @@unique([date, startTime])
   @@index([date])
@@ -881,4 +885,68 @@ model FaqItem {
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// ============================================================================
+// 002-production-readiness Phase 2 (Foundational): reschedule requests and
+// background job run visibility. See specs/002-production-readiness/data-model.md §1-2.
+// ============================================================================
+
+enum RescheduleRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  AUTO_REJECTED
+}
+
+// data-model.md §1. Approval delegates the actual slot/status mutation to
+// the existing Booking.rescheduleBooking() transaction; this table only
+// tracks the request/decision envelope.
+model RescheduleRequest {
+  id                  String                  @id @default(uuid())
+  bookingId           String
+  booking             Booking                 @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  requestedByUserId   String
+  requestedByUser     User                    @relation("RescheduleRequestedBy", fields: [requestedByUserId], references: [id])
+  requestedStartAt    DateTime
+  requestedTimeSlotId String?
+  requestedTimeSlot   TimeSlot?               @relation(fields: [requestedTimeSlotId], references: [id])
+  status              RescheduleRequestStatus @default(PENDING)
+  reason              String?
+  decidedByUserId     String?
+  decidedByUser       User?                   @relation("RescheduleDecidedBy", fields: [decidedByUserId], references: [id])
+  decidedAt           DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+enum JobName {
+  EXPIRE_STALE_QUOTES
+  FLAG_OVERDUE_BOOKINGS
+  GENERATE_SUBSCRIPTION_OCCURRENCES
+}
+
+enum JobRunStatus {
+  SUCCESS
+  FAILURE
+  SKIPPED_LOCKED
+}
+
+// data-model.md §2. One row per scheduled-job invocation, including skipped
+// (lock-contended) ones — enforces "no invocation completes without a row".
+model JobRun {
+  id            String       @id @default(uuid())
+  jobName       JobName
+  startedAt     DateTime     @default(now())
+  finishedAt    DateTime?
+  status        JobRunStatus
+  detail        Json?
+  failureReason String?
+
+  @@index([jobName])
+  @@index([status])
+  @@index([startedAt])
 }

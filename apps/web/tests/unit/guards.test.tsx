@@ -16,7 +16,7 @@ function renderWithStore(
   const store = configureStore({
     reducer: { auth: authReducer, [baseApi.reducerPath]: baseApi.reducer },
     middleware: (getDefault) => getDefault().concat(baseApi.middleware),
-    preloadedState: { auth: preloadedAuth },
+    preloadedState: { auth: { ...preloadedAuth, bootstrapped: true } },
   });
 
   return render(
@@ -24,6 +24,7 @@ function renderWithStore(
       <MemoryRouter initialEntries={["/protected"]}>
         <Routes>
           <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/admin/login" element={<div>Admin Login Page</div>} />
           <Route path="/" element={<div>Home Page</div>} />
           <Route path="/protected" element={ui} />
         </Routes>
@@ -92,13 +93,13 @@ describe("RequireRole", () => {
     expect(screen.getByText("Admin Area")).toBeInTheDocument();
   });
 
-  it("redirects to /login when unauthenticated, even for the correct role check", () => {
+  it("redirects to /admin/login when unauthenticated, even for the correct role check", () => {
     renderWithStore(
       <RequireRole role="ADMIN">
         <div>Admin Area</div>
       </RequireRole>,
       { accessToken: null, user: null }
     );
-    expect(screen.getByText("Login Page")).toBeInTheDocument();
+    expect(screen.getByText("Admin Login Page")).toBeInTheDocument();
   });
 });

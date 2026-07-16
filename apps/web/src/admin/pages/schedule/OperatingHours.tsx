@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Checkbox, Input, Table, message } from "antd";
+import { useTranslation } from "react-i18next";
 import {
   useListOperatingHoursQuery,
   useReplaceOperatingHoursMutation,
@@ -19,6 +20,7 @@ function defaultRows(): OperatingHoursEntry[] {
 
 // T113 (US4): weekly operating-hours editor.
 export default function OperatingHours() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListOperatingHoursQuery();
   const [replaceOperatingHours, { isLoading: isSaving }] = useReplaceOperatingHoursMutation();
   const [rows, setRows] = useState<OperatingHoursEntry[]>(defaultRows());
@@ -37,15 +39,15 @@ export default function OperatingHours() {
   async function onSave() {
     try {
       await replaceOperatingHours(rows).unwrap();
-      message.success("Operating hours saved");
+      message.success(t("admin:schedule.operatingHoursSaved"));
     } catch {
-      message.error("Could not save operating hours");
+      message.error(t("admin:schedule.operatingHoursSaveError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Operating Hours</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:schedule.operatingHoursTitle")}</h1>
       <Table
         loading={isLoading}
         rowKey="weekday"
@@ -53,9 +55,12 @@ export default function OperatingHours() {
         pagination={false}
         scroll={{ x: true }}
         columns={[
-          { title: "Day", render: (_: unknown, row: OperatingHoursEntry) => WEEKDAY_LABELS[row.weekday] },
           {
-            title: "Open",
+            title: t("admin:schedule.day"),
+            render: (_: unknown, row: OperatingHoursEntry) => WEEKDAY_LABELS[row.weekday],
+          },
+          {
+            title: t("admin:schedule.open"),
             render: (_: unknown, row: OperatingHoursEntry) => (
               <Input
                 size="large"
@@ -65,7 +70,7 @@ export default function OperatingHours() {
             ),
           },
           {
-            title: "Close",
+            title: t("admin:schedule.close"),
             render: (_: unknown, row: OperatingHoursEntry) => (
               <Input
                 size="large"
@@ -75,7 +80,7 @@ export default function OperatingHours() {
             ),
           },
           {
-            title: "Active",
+            title: t("admin:content.active"),
             render: (_: unknown, row: OperatingHoursEntry) => (
               <Checkbox
                 checked={row.active}
@@ -86,7 +91,7 @@ export default function OperatingHours() {
         ]}
       />
       <Button type="primary" size="large" className="mt-4" onClick={onSave} loading={isSaving}>
-        Save
+        {t("admin:common.save")}
       </Button>
     </div>
   );

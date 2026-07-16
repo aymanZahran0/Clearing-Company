@@ -18,19 +18,22 @@ export default function Dashboard() {
       <Row gutter={16} className="mb-4">
         <Col xs={24} sm={8}>
           <Card loading={isSummaryLoading}>
-            <Statistic title="Today's Bookings" value={summary?.todaysBookings ?? 0} />
+            <Statistic title={t("admin:dashboard.todaysBookings")} value={summary?.todaysBookings ?? 0} />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card loading={isSummaryLoading}>
             <Link to="/admin/bookings">
-              <Statistic title="Unscheduled (Confirmed)" value={summary?.unscheduledConfirmed ?? 0} />
+              <Statistic
+                title={t("admin:dashboard.unscheduledConfirmed")}
+                value={summary?.unscheduledConfirmed ?? 0}
+              />
             </Link>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card loading={isSummaryLoading}>
-            <Statistic title="Overdue" value={summary?.overdueBookings ?? 0} />
+            <Statistic title={t("admin:dashboard.overdue")} value={summary?.overdueBookings ?? 0} />
           </Card>
         </Col>
       </Row>
@@ -40,19 +43,24 @@ export default function Dashboard() {
           className="mt-4"
           type="warning"
           showIcon
-          message="Quality attention needed"
+          message={t("admin:dashboard.qualityAttentionNeeded")}
           description={
             <ul className="list-disc ps-4">
               {alerts.lowRatingCount > 0 && (
                 <li>
-                  <Link to="/admin/quality/reviews">{alerts.lowRatingCount} low-rating review(s)</Link> need
-                  follow-up
+                  <Link to="/admin/quality/reviews">
+                    {t("admin:dashboard.lowRatingReviewsFollowUp", { count: alerts.lowRatingCount })}
+                  </Link>
                 </li>
               )}
               {alerts.agedOpenIssues > 0 && (
                 <li>
-                  <Link to="/admin/quality/complaints">{alerts.agedOpenIssues} quality issue(s)</Link> open
-                  for more than {alerts.agedThresholdDays} days
+                  <Link to="/admin/quality/complaints">
+                    {t("admin:dashboard.agedIssuesOpen", {
+                      count: alerts.agedOpenIssues,
+                      days: alerts.agedThresholdDays,
+                    })}
+                  </Link>
                 </li>
               )}
             </ul>
@@ -62,7 +70,7 @@ export default function Dashboard() {
 
       <Link to="/admin/bookings/new">
         <Button type="primary" size="large" className="mt-4">
-          New Phone Booking
+          {t("admin:dashboard.newPhoneBooking")}
         </Button>
       </Link>
     </div>

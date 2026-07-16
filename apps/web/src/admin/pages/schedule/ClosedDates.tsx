@@ -1,5 +1,6 @@
 import { Button, DatePicker, Form, Input, List, message } from "antd";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 import { useCreateClosedDateMutation, useListClosedDatesQuery } from "../../../api/availabilityApi";
 
 interface ClosedDateFormValues {
@@ -9,6 +10,7 @@ interface ClosedDateFormValues {
 
 // T113 (US4): closed-date exceptions (holidays, planned downtime).
 export default function ClosedDates() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListClosedDatesQuery();
   const [createClosedDate, { isLoading: isSaving }] = useCreateClosedDateMutation();
   const [form] = Form.useForm<ClosedDateFormValues>();
@@ -17,25 +19,25 @@ export default function ClosedDates() {
     try {
       await createClosedDate({ date: values.date.toISOString(), reason: values.reason }).unwrap();
       form.resetFields();
-      message.success("Closed date added");
+      message.success(t("admin:schedule.closedDateAdded"));
     } catch {
-      message.error("Could not add closed date");
+      message.error(t("admin:schedule.closedDateAddError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Closed Dates</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:schedule.closedDatesTitle")}</h1>
       <Form<ClosedDateFormValues> form={form} layout="inline" onFinish={onFinish} className="mb-6">
         <Form.Item name="date" rules={[{ required: true }]}>
           <DatePicker size="large" />
         </Form.Item>
         <Form.Item name="reason">
-          <Input size="large" placeholder="Reason (optional)" />
+          <Input size="large" placeholder={t("admin:schedule.reasonOptional")} />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" size="large" loading={isSaving}>
-            Add
+            {t("admin:common.add")}
           </Button>
         </Form.Item>
       </Form>

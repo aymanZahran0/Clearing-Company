@@ -1,4 +1,5 @@
 import { List, Skeleton, Tag } from "antd";
+import { useTranslation } from "react-i18next";
 import { useListOwnSubscriptionsQuery } from "../../api/subscriptionsApi";
 import { formatCurrency, formatDateTime } from "../../lib/formatters";
 
@@ -6,6 +7,7 @@ import { formatCurrency, formatDateTime } from "../../lib/formatters";
 // "Admin Manages Recurring Subscriptions"); the customer view has no
 // edit/pause/cancel controls.
 export default function Subscriptions() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListOwnSubscriptionsQuery();
 
   if (isLoading) {
@@ -18,7 +20,7 @@ export default function Subscriptions() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">My Subscriptions</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("nav.mySubscriptions")}</h1>
       <List
         dataSource={data}
         renderItem={(subscription) => (
@@ -28,7 +30,7 @@ export default function Subscriptions() {
                 {subscription.frequency} — {formatCurrency(subscription.priceSnapshot, "en")}
               </div>
               <div className="text-sm text-gray-500">
-                Starts {formatDateTime(subscription.startsAt, "en")}
+                {t("customer:subscriptions.starts", { date: formatDateTime(subscription.startsAt, "en") })}
               </div>
               <Tag>{subscription.status}</Tag>
             </div>

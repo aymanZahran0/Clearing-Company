@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Input, List, Modal, message } from "antd";
+import { useTranslation } from "react-i18next";
 import {
   useCreateFaqItemMutation,
   useDeleteFaqItemMutation,
@@ -9,6 +10,7 @@ import {
 
 // T173 (US-Polish)
 export default function FAQs() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListAllFaqsQuery();
   const [createFaq, { isLoading: isSaving }] = useCreateFaqItemMutation();
   const [deleteFaq] = useDeleteFaqItemMutation();
@@ -18,45 +20,51 @@ export default function FAQs() {
     try {
       await createFaq(values).unwrap();
       setOpen(false);
-      message.success("FAQ item added");
+      message.success(t("admin:content.faqAdded"));
     } catch {
-      message.error("Could not add the FAQ item");
+      message.error(t("admin:content.faqAddError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">FAQs</h1>
+        <h1 className="text-xl font-semibold">{t("admin:content.faqsTitle")}</h1>
         <Button type="primary" size="large" onClick={() => setOpen(true)}>
-          New FAQ
+          {t("admin:content.newFaq")}
         </Button>
       </div>
       <List
         loading={isLoading}
         dataSource={data}
         renderItem={(item) => (
-          <List.Item actions={[<Button key="del" danger size="small" onClick={() => deleteFaq(item.id)}>Delete</Button>]}>
+          <List.Item
+            actions={[
+              <Button key="del" danger size="small" onClick={() => deleteFaq(item.id)}>
+                {t("admin:common.delete")}
+              </Button>,
+            ]}
+          >
             <List.Item.Meta title={item.questionEn} description={item.answerEn} />
           </List.Item>
         )}
       />
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="New FAQ Item">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:content.newFaqItem")}>
         <Form<FaqItemInput> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="questionAr" label="Question (Arabic)" rules={[{ required: true }]}>
+          <Form.Item name="questionAr" label={t("admin:content.questionAr")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="questionEn" label="Question (English)" rules={[{ required: true }]}>
+          <Form.Item name="questionEn" label={t("admin:content.questionEn")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="answerAr" label="Answer (Arabic)" rules={[{ required: true }]}>
+          <Form.Item name="answerAr" label={t("admin:content.answerAr")} rules={[{ required: true }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item name="answerEn" label="Answer (English)" rules={[{ required: true }]}>
+          <Form.Item name="answerEn" label={t("admin:content.answerEn")} rules={[{ required: true }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block loading={isSaving}>
-            Add
+            {t("admin:common.add")}
           </Button>
         </Form>
       </Modal>

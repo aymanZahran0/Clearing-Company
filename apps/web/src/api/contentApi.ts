@@ -44,6 +44,17 @@ export interface FaqItemInput {
 
 export const contentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Public endpoints — already filter to active-only server-side
+    // (apps/api/src/modules/website-content/service.ts's listActive*
+    // functions), so draft/inactive entries never reach these.
+    listPublicContentBlocks: builder.query<ContentBlock[], void>({
+      query: () => "/content-blocks",
+      providesTags: ["ContentBlock"],
+    }),
+    listPublicFaqs: builder.query<FaqItem[], void>({
+      query: () => "/faqs",
+      providesTags: ["Faq"],
+    }),
     listAllContentBlocks: builder.query<ContentBlock[], void>({
       query: () => "/admin/content-blocks",
       providesTags: ["ContentBlock"],
@@ -76,6 +87,8 @@ export const contentApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useListPublicContentBlocksQuery,
+  useListPublicFaqsQuery,
   useListAllContentBlocksQuery,
   useUpsertContentBlockMutation,
   useDeleteContentBlockMutation,

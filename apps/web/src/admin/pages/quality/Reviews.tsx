@@ -1,4 +1,5 @@
 import { Table, Tag } from "antd";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListQualityIssuesQuery } from "../../../api/qualityIssuesApi";
 import { formatDateTime } from "../../../lib/formatters";
@@ -9,12 +10,13 @@ import { formatDateTime } from "../../../lib/formatters";
 // checklist-failure sources, so this page is a filtered view of it rather
 // than a separate Review listing endpoint.
 export default function Reviews() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading } = useListQualityIssuesQuery({ source: "REVIEW" });
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Low-Rating Reviews</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:quality.lowRatingReviewsTitle")}</h1>
       <Table
         loading={isLoading}
         rowKey="id"
@@ -22,19 +24,19 @@ export default function Reviews() {
         onRow={(issue) => ({ onClick: () => navigate(`/admin/quality/${issue.id}`) })}
         scroll={{ x: true }}
         columns={[
-          { title: "Category", dataIndex: "category" },
+          { title: t("admin:quality.category"), dataIndex: "category" },
           {
-            title: "Severity",
+            title: t("admin:quality.severity"),
             dataIndex: "severity",
             render: (value: string) => <Tag>{value}</Tag>,
           },
           {
-            title: "Status",
+            title: t("admin:bookings.status"),
             dataIndex: "status",
             render: (value: string) => <Tag>{value}</Tag>,
           },
           {
-            title: "Created",
+            title: t("admin:bookings.created"),
             dataIndex: "createdAt",
             render: (value: string) => formatDateTime(value, "en"),
           },

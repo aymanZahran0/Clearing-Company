@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Input, Modal, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useCancelBookingMutation } from "../../../api/bookingsApi";
 
 interface CancelFormValues {
@@ -12,12 +13,13 @@ interface CancelFormValues {
 export function CancelDialog({
   bookingId,
   onDone,
-  triggerLabel = "Cancel Booking",
+  triggerLabel,
 }: {
   bookingId: string;
   onDone?: () => void;
   triggerLabel?: string;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [cancelBooking, { isLoading }] = useCancelBookingMutation();
 
@@ -27,22 +29,26 @@ export function CancelDialog({
       setOpen(false);
       onDone?.();
     } catch {
-      message.error("Could not cancel this booking");
+      message.error(t("admin:bookings.cancelError"));
     }
   }
 
   return (
     <>
       <Button danger size="large" onClick={() => setOpen(true)}>
-        {triggerLabel}
+        {triggerLabel ?? t("admin:bookings.cancelBooking")}
       </Button>
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="Cancel Booking">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:bookings.cancelBooking")}>
         <Form<CancelFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="reason" label="Cancellation Reason" rules={[{ required: true }]}>
+          <Form.Item
+            name="reason"
+            label={t("admin:bookings.cancellationReason")}
+            rules={[{ required: true }]}
+          >
             <Input.TextArea rows={3} />
           </Form.Item>
           <Button danger type="primary" htmlType="submit" size="large" block loading={isLoading}>
-            Cancel Booking
+            {t("admin:bookings.cancelBooking")}
           </Button>
         </Form>
       </Modal>

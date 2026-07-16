@@ -5,12 +5,17 @@
   "nav": {
     "home": "Home",
     "services": "Services",
+    "serviceAreas": "Service Areas",
+    "faq": "FAQ",
     "bookings": "My Bookings",
     "profile": "Profile",
     "login": "Log In",
     "register": "Register",
     "logout": "Log Out",
-    "adminDashboard": "Admin Dashboard"
+    "adminDashboard": "Admin Dashboard",
+    "mySubscriptions": "My Subscriptions",
+    "notifications": "Notifications",
+    "invoices": "Invoices"
   },
   "auth": {
     "login": "Log In",
@@ -30,6 +35,8 @@
     "error": "Something went wrong",
     "save": "Save",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
   }
 }

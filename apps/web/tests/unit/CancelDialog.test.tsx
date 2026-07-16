@@ -5,6 +5,10 @@ import { configureStore } from "@reduxjs/toolkit";
 import { baseApi } from "../../src/api/baseApi";
 import authReducer from "../../src/features/auth/authSlice";
 import { CancelDialog } from "../../src/admin/pages/bookings/CancelDialog";
+// Side-effect import: initializes the real i18next instance (Arabic
+// default locale) so CancelDialog's t() calls resolve to actual text
+// instead of react-i18next's raw-key fallback when no instance exists.
+import "../../src/lib/i18n";
 
 function renderWithStore(ui: React.ReactElement) {
   const store = configureStore({
@@ -21,10 +25,10 @@ describe("CancelDialog", () => {
   it("opens with a required reason field and no submission without it", async () => {
     renderWithStore(<CancelDialog bookingId="booking-1" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Cancel Booking" }));
-    await waitFor(() => expect(screen.getByLabelText("Cancellation Reason")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "إلغاء الحجز" }));
+    await waitFor(() => expect(screen.getByLabelText("سبب الإلغاء")).toBeInTheDocument());
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Cancel Booking" })[1]!);
+    fireEvent.click(screen.getAllByRole("button", { name: "إلغاء الحجز" })[1]!);
 
     await waitFor(() =>
       expect(screen.getByText(/required/i)).toBeInTheDocument()

@@ -7,6 +7,8 @@ import { assertTransition } from "../../lib/bookingStateMachine.js";
 import { recordAuditEntry } from "../../middleware/auditLogger.js";
 import { createInvitedCustomer } from "../customers/service.js";
 import { assertChecklistComplete, markChecklistCompleted } from "../checklists/service.js";
+import { notify } from "../notifications/service.js";
+import { autoRejectPendingRequestsForBooking } from "../reschedule-requests/service.js";
 import type {
   AdminBookingCreateInput,
   BookingCreateInput,
@@ -23,6 +25,14 @@ interface CreateBookingOptions {
   source: "WEB" | "ADMIN_PHONE";
   createdByUserId?: string;
   idempotencyKey?: string;
+}
+
+async function resolveCustomerWhatsAppRecipient(customerId: string): Promise<string> {
+  const profile = await prisma.customerProfile.findUnique({
+    where: { userId: customerId },
+    select: { user: { select: { phoneNormalized: true } } },
+  });
+  return profile?.user.phoneNormalized ?? "";
 }
 
 async function resolveCustomerId(
@@ -160,19 +170,14 @@ export async function createBooking(
 
   // FR-070: notification failure never blocks the booking action that
   // triggered it — logged best-effort, outside the DB transaction above.
-  await prisma.notificationLog
-    .create({
-      data: {
-        bookingId: booking.id,
-        customerId,
-        channel: "WHATSAPP",
-        templateKey: "BOOKING_CONFIRMED",
-        recipient: "", // populated once the templating module resolves the customer's phone in Polish (T177)
-        payloadSnapshot: { referenceNumber: booking.referenceNumber },
-        status: "PENDING",
-      },
-    })
-    .catch(() => undefined);
+  await notify({
+    bookingId: booking.id,
+    customerId,
+    channel: "WHATSAPP",
+    templateKey: "BOOKING_CONFIRMED",
+    recipient: await resolveCustomerWhatsAppRecipient(customerId),
+    payload: { referenceNumber: booking.referenceNumber },
+  });
 
   return booking;
 }
@@ -544,6 +549,9 @@ export async function cancelBooking(
         actorUserId: actor.actorUserId,
       },
     });
+    // spec Edge Cases: a pending reschedule request on a cancelled booking
+    // is auto-rejected in the same transaction, not left dangling.
+    await autoRejectPendingRequestsForBooking(tx, id);
     return result;
   });
 }
@@ -557,6 +565,8 @@ function combineDateAndTime(date: Date, time: string): Date {
 
 // T122 (US5): en-route/arrive are sub-state timestamps only — they do not
 // change `status`, which stays CONFIRMED until `/start` (research.md R5).
+// Still audit-logged (FR-004/FR-005) since each is a distinct actor-driven
+// operational event, even though no BookingStatusHistory row applies.
 export async function markEnRoute(id: string, actor: ActorContext) {
   const booking = await prisma.booking.findUnique({ where: { id } });
   if (!booking) {
@@ -565,7 +575,16 @@ export async function markEnRoute(id: string, actor: ActorContext) {
   if (booking.status !== "CONFIRMED") {
     throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Only confirmed bookings can be marked en route");
   }
-  return prisma.booking.update({ where: { id }, data: { enRouteAt: new Date() } });
+  const updated = await prisma.booking.update({ where: { id }, data: { enRouteAt: new Date() } });
+  await recordAuditEntry({
+    actorUserId: actor.actorUserId,
+    action: "BOOKING_EN_ROUTE",
+    entityType: "Booking",
+    entityId: id,
+    ipAddress: actor.ipAddress,
+    userAgent: actor.userAgent,
+  });
+  return updated;
 }
 
 export async function markArrived(id: string, actor: ActorContext) {
@@ -576,7 +595,16 @@ export async function markArrived(id: string, actor: ActorContext) {
   if (booking.status !== "CONFIRMED") {
     throw new ApiError(409, "BOOKING_TRANSITION_INVALID", "Only confirmed bookings can be marked arrived");
   }
-  return prisma.booking.update({ where: { id }, data: { arrivedAt: new Date() } });
+  const updated = await prisma.booking.update({ where: { id }, data: { arrivedAt: new Date() } });
+  await recordAuditEntry({
+    actorUserId: actor.actorUserId,
+    action: "BOOKING_ARRIVED",
+    entityType: "Booking",
+    entityId: id,
+    ipAddress: actor.ipAddress,
+    userAgent: actor.userAgent,
+  });
+  return updated;
 }
 
 // FR-036: `arrivedAt` must already be set before entering IN_PROGRESS.
@@ -639,19 +667,14 @@ export async function completeBooking(id: string, actor: ActorContext) {
 
   await markChecklistCompleted(id, actor.actorUserId);
 
-  await prisma.notificationLog
-    .create({
-      data: {
-        bookingId: id,
-        customerId: booking.customerId,
-        channel: "WHATSAPP",
-        templateKey: "FEEDBACK_REQUEST",
-        recipient: "",
-        payloadSnapshot: { referenceNumber: booking.referenceNumber },
-        status: "PENDING",
-      },
-    })
-    .catch(() => undefined);
+  await notify({
+    bookingId: id,
+    customerId: booking.customerId,
+    channel: "WHATSAPP",
+    templateKey: "FEEDBACK_REQUEST",
+    recipient: await resolveCustomerWhatsAppRecipient(booking.customerId),
+    payload: { referenceNumber: booking.referenceNumber },
+  });
 
   return updated;
 }

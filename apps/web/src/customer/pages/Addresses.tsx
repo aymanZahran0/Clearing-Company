@@ -9,7 +9,7 @@ export default function Addresses() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Addresses</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("customer:addresses.title")}</h1>
       {isLoading && <Skeleton active />}
       <List
         dataSource={addresses}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Checkbox, DatePicker, message } from "antd";
 import type { Dayjs } from "dayjs";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../app/store";
 
@@ -10,6 +11,7 @@ const { RangePicker } = DatePicker;
 // FR-074). Uses a direct `fetch` (not RTK Query) since the response is a
 // file download, not JSON.
 export default function Export() {
+  const { t } = useTranslation();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const [range, setRange] = useState<[Dayjs, Dayjs] | null>(null);
   const [includePii, setIncludePii] = useState(false);
@@ -39,7 +41,7 @@ export default function Export() {
       link.click();
       URL.revokeObjectURL(url);
     } catch {
-      message.error("Could not generate the export");
+      message.error(t("admin:reports.exportError"));
     } finally {
       setIsDownloading(false);
     }
@@ -47,7 +49,7 @@ export default function Export() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Export Bookings</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:reports.exportBookingsTitle")}</h1>
       <RangePicker
         size="large"
         className="mb-4"
@@ -55,11 +57,11 @@ export default function Export() {
       />
       <div className="mb-4">
         <Checkbox checked={includePii} onChange={(e) => setIncludePii(e.target.checked)}>
-          Include phone and address (audit-logged)
+          {t("admin:reports.includePii")}
         </Checkbox>
       </div>
       <Button type="primary" size="large" loading={isDownloading} onClick={onExport}>
-        Download CSV
+        {t("admin:reports.downloadCsv")}
       </Button>
     </div>
   );

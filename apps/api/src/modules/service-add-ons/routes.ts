@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
 import { requireRole } from "../../middleware/requireRole.js";
+import { tryAuthenticate } from "../../middleware/tryAuthenticate.js";
 import { validateRequest } from "../../middleware/validateRequest.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
 import { requireParam } from "../../lib/params.js";
@@ -11,10 +12,14 @@ export const serviceAddOnsRouter = Router();
 
 serviceAddOnsRouter.get(
   "/service-add-ons",
+  tryAuthenticate,
   validateRequest({ query: listAddOnsQuerySchema }),
   asyncHandler(async (req, res) => {
-    const { serviceId } = req.query as unknown as { serviceId?: string };
-    res.json(await service.listAddOns(serviceId));
+    const { serviceId, includeInactive } = req.query as unknown as {
+      serviceId?: string;
+      includeInactive?: boolean;
+    };
+    res.json(await service.listAddOns(serviceId, Boolean(includeInactive) && req.user?.role === "ADMIN"));
   })
 );
 

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
 import { requireRole } from "../../middleware/requireRole.js";
+import { tryAuthenticate } from "../../middleware/tryAuthenticate.js";
 import { validateRequest } from "../../middleware/validateRequest.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
 import { requireParam } from "../../lib/params.js";
@@ -11,10 +12,14 @@ export const servicesRouter = Router();
 
 servicesRouter.get(
   "/services",
+  tryAuthenticate,
   validateRequest({ query: listServicesQuerySchema }),
   asyncHandler(async (req, res) => {
-    const { categoryId } = req.query as unknown as { categoryId?: string };
-    res.json(await service.listServices(categoryId));
+    const { categoryId, includeInactive } = req.query as unknown as {
+      categoryId?: string;
+      includeInactive?: boolean;
+    };
+    res.json(await service.listServices(categoryId, Boolean(includeInactive) && req.user?.role === "ADMIN"));
   })
 );
 

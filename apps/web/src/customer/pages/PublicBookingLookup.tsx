@@ -21,12 +21,16 @@ export default function PublicBookingLookup() {
 
   return (
     <div className="mx-auto max-w-sm p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Track your booking</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("customer:bookingLookup.title")}</h1>
       <Form<LookupFormValues> layout="vertical" onFinish={setParams} requiredMark={false}>
-        <Form.Item name="referenceNumber" label="Booking Reference" rules={[{ required: true }]}>
+        <Form.Item
+          name="referenceNumber"
+          label={t("customer:bookingLookup.bookingReference")}
+          rules={[{ required: true }]}
+        >
           <Input size="large" />
         </Form.Item>
-        <Form.Item name="token" label="Verification Code" rules={[{ required: true }]}>
+        <Form.Item name="token" label={t("customer:bookingLookup.verificationCode")} rules={[{ required: true }]}>
           <Input size="large" />
         </Form.Item>
         <Button type="primary" htmlType="submit" size="large" block loading={isFetching}>

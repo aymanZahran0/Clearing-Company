@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Checkbox, Input, InputNumber, Radio, Skeleton, Tag, message } from "antd";
+import { useTranslation } from "react-i18next";
 import {
   useGetChecklistRunQuery,
   useReviewChecklistRunMutation,
@@ -11,6 +12,7 @@ import {
 // control. Answers are staged locally and submitted together so a partial
 // fill-in never triggers `completeBooking`'s FR-048 gate prematurely.
 export function ChecklistRunner({ bookingId }: { bookingId: string }) {
+  const { t, i18n } = useTranslation();
   const { data: run, isLoading, refetch } = useGetChecklistRunQuery(bookingId);
   const [updateResults, { isLoading: isSaving }] = useUpdateChecklistResultsMutation();
   const [reviewRun] = useReviewChecklistRunMutation();
@@ -41,9 +43,9 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
     try {
       await updateResults({ bookingId, results }).unwrap();
       setDraft({});
-      message.success("Checklist saved");
+      message.success(t("admin:checklist.saved"));
     } catch {
-      message.error("Could not save the checklist");
+      message.error(t("admin:checklist.saveError"));
     }
   }
 
@@ -51,9 +53,9 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
     try {
       await reviewRun(bookingId).unwrap();
       refetch();
-      message.success("Checklist marked as reviewed");
+      message.success(t("admin:checklist.reviewed"));
     } catch {
-      message.error("Could not mark the checklist reviewed");
+      message.error(t("admin:checklist.reviewError"));
     }
   }
 
@@ -64,8 +66,8 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
         return (
           <div key={item.id} className="mb-4 rounded border border-gray-200 p-3">
             <div className="mb-2 flex items-center gap-2">
-              <span className="font-medium">{item.labelEn}</span>
-              {item.required && <Tag color="red">Required</Tag>}
+              <span className="font-medium">{i18n.language === "ar" ? item.labelAr : item.labelEn}</span>
+              {item.required && <Tag color="red">{t("admin:checklist.required")}</Tag>}
             </div>
 
             {item.type === "YES_NO" && (
@@ -73,8 +75,8 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
                 value={draftValue.value}
                 onChange={(e) => update(item.id, { value: e.target.value })}
               >
-                <Radio.Button value={true}>Yes</Radio.Button>
-                <Radio.Button value={false}>No</Radio.Button>
+                <Radio.Button value={true}>{t("common.yes")}</Radio.Button>
+                <Radio.Button value={false}>{t("common.no")}</Radio.Button>
               </Radio.Group>
             )}
             {item.type === "TEXT" && (
@@ -94,7 +96,7 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
             {(item.type === "SIGNATURE" || item.type === "ISSUE_FLAG") && (
               <Input
                 size="large"
-                placeholder={item.type === "SIGNATURE" ? "Signed by" : "Notes"}
+                placeholder={item.type === "SIGNATURE" ? t("admin:checklist.signedBy") : t("admin:checklist.notes")}
                 value={(draftValue.value as string) ?? ""}
                 onChange={(e) => update(item.id, { value: e.target.value })}
               />
@@ -105,12 +107,12 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
                 checked={draftValue.isIssue ?? false}
                 onChange={(e) => update(item.id, { isIssue: e.target.checked })}
               >
-                Flag as issue
+                {t("admin:checklist.flagAsIssue")}
               </Checkbox>
               {draftValue.isIssue && (
                 <Input.TextArea
                   className="mt-2"
-                  placeholder="Issue note"
+                  placeholder={t("admin:checklist.issueNote")}
                   value={draftValue.issueNote ?? ""}
                   onChange={(e) => update(item.id, { issueNote: e.target.value })}
                 />
@@ -122,11 +124,11 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
 
       <div className="flex gap-3">
         <Button type="primary" size="large" onClick={onSave} loading={isSaving}>
-          Save Checklist
+          {t("admin:checklist.saveChecklist")}
         </Button>
         {!run.reviewedAt && (
           <Button size="large" onClick={onReview}>
-            Mark Reviewed
+            {t("admin:checklist.markReviewed")}
           </Button>
         )}
       </div>

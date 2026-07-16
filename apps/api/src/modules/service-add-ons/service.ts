@@ -2,9 +2,9 @@ import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "@nuqaa-asir/shared";
 import type { CreateServiceAddOnInput, UpdateServiceAddOnInput } from "./schema.js";
 
-export function listAddOns(serviceId?: string) {
+export function listAddOns(serviceId?: string, includeInactive = false) {
   return prisma.serviceAddOn.findMany({
-    where: { active: true, ...(serviceId ? { serviceId } : {}) },
+    where: { ...(includeInactive ? {} : { active: true }), ...(serviceId ? { serviceId } : {}) },
   });
 }
 

@@ -1,5 +1,6 @@
 import { Button, DatePicker, Form, Input, InputNumber, Switch, Table, message } from "antd";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 import {
   useCreateTimeSlotMutation,
   useListTimeSlotsQuery,
@@ -17,6 +18,7 @@ interface TimeSlotFormValues {
 // T113 (US4): time-slot capacity management, backing the schedule dialogs'
 // slot picker and the "needs scheduling" calendar views.
 export default function TimeSlots() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListTimeSlotsQuery();
   const [createTimeSlot, { isLoading: isCreating }] = useCreateTimeSlotMutation();
   const [updateTimeSlot] = useUpdateTimeSlotMutation();
@@ -31,18 +33,18 @@ export default function TimeSlots() {
         capacity: values.capacity,
       }).unwrap();
       form.resetFields();
-      message.success("Time slot created");
+      message.success(t("admin:schedule.timeSlotCreated"));
     } catch {
-      message.error("Could not create time slot");
+      message.error(t("admin:schedule.timeSlotCreateError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Time Slots</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:schedule.timeSlotsTitle")}</h1>
       <Form<TimeSlotFormValues> form={form} layout="inline" onFinish={onFinish} className="mb-6 flex-wrap gap-2">
         <Form.Item name="date" rules={[{ required: true }]}>
-          <DatePicker size="large" placeholder="Date" />
+          <DatePicker size="large" placeholder={t("admin:schedule.date")} />
         </Form.Item>
         <Form.Item name="startTime" rules={[{ required: true, pattern: /^\d{2}:\d{2}$/ }]}>
           <Input size="large" placeholder="09:00" />
@@ -51,11 +53,11 @@ export default function TimeSlots() {
           <Input size="large" placeholder="11:00" />
         </Form.Item>
         <Form.Item name="capacity" rules={[{ required: true }]}>
-          <InputNumber size="large" min={1} placeholder="Capacity" />
+          <InputNumber size="large" min={1} placeholder={t("admin:schedule.capacity")} />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" size="large" loading={isCreating}>
-            Add Slot
+            {t("admin:schedule.addSlot")}
           </Button>
         </Form.Item>
       </Form>
@@ -65,11 +67,15 @@ export default function TimeSlots() {
         dataSource={data}
         scroll={{ x: true }}
         columns={[
-          { title: "Date", dataIndex: "date", render: (v: string) => dayjs(v).format("YYYY-MM-DD") },
-          { title: "Start", dataIndex: "startTime" },
-          { title: "End", dataIndex: "endTime" },
           {
-            title: "Capacity",
+            title: t("admin:schedule.date"),
+            dataIndex: "date",
+            render: (v: string) => dayjs(v).format("YYYY-MM-DD"),
+          },
+          { title: t("admin:schedule.start"), dataIndex: "startTime" },
+          { title: t("admin:schedule.end"), dataIndex: "endTime" },
+          {
+            title: t("admin:schedule.capacity"),
             render: (_: unknown, row: AdminTimeSlot) => (
               <InputNumber
                 size="large"
@@ -84,9 +90,9 @@ export default function TimeSlots() {
               />
             ),
           },
-          { title: "Booked", dataIndex: "bookedCount" },
+          { title: t("admin:schedule.booked"), dataIndex: "bookedCount" },
           {
-            title: "Active",
+            title: t("admin:content.active"),
             render: (_: unknown, row: AdminTimeSlot) => (
               <Switch
                 checked={row.active}

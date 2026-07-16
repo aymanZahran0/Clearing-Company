@@ -1,22 +1,35 @@
+import express, { Router } from "express";
 import { describe, expect, it } from "vitest";
 import request from "supertest";
-import { Router } from "express";
 import { createApp } from "../../src/app.js";
 import { authenticate } from "../../src/middleware/authenticate.js";
 import { requireRole } from "../../src/middleware/requireRole.js";
+import { errorHandler } from "../../src/middleware/errorHandler.js";
 import { asyncHandler } from "../../src/lib/asyncHandler.js";
 
 // Exercises FR-003 (server-side role enforcement) against a throwaway
 // Admin-only test route, since no real Admin-only business route exists
 // yet in Foundational — Phase 3+ integration tests exercise the same
 // authenticate/requireRole pair against real routes (e.g. bookings.admin.test.ts).
+//
+// Uses a standalone app (not createApp()'s app) so the test router can be
+// mounted *before* the real errorHandler — createApp() already appends its
+// own errorHandler as the last middleware, so anything mounted on that app
+// afterward sits past it and falls through to Express's default HTML error
+// page instead of our JSON one, which would silently defeat these asserts.
 describe("authorization boundary", () => {
-  const app = createApp();
+  const app = express();
+  app.use(express.json());
   const testRouter = Router();
   testRouter.get("/admin-only", authenticate, requireRole("ADMIN"), asyncHandler(async (_req, res) => {
     res.json({ ok: true });
   }));
   app.use("/api/v1/_test", testRouter);
+  app.use(errorHandler);
+
+  // createApp() is still used for /auth/register, since a real accessToken
+  // is needed for the CUSTOMER-token assertion below.
+  const authApp = createApp();
 
   it("returns 401 for an unauthenticated request to an Admin-only route", async () => {
     const res = await request(app).get("/api/v1/_test/admin-only");
@@ -25,7 +38,7 @@ describe("authorization boundary", () => {
   });
 
   it("returns 403 for a CUSTOMER token on an Admin-only route", async () => {
-    const registerRes = await request(app).post("/api/v1/auth/register").send({
+    const registerRes = await request(authApp).post("/api/v1/auth/register").send({
       fullName: "Customer Boundary",
       phone: "0599999991",
       password: "correct-horse-battery",

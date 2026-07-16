@@ -18,7 +18,7 @@ const STATUSES: BookingStatus[] = [
 ];
 
 export default function BookingsList() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<BookingStatus | undefined>();
   const [needsScheduling, setNeedsScheduling] = useState(false);
@@ -26,18 +26,18 @@ export default function BookingsList() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Bookings</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:bookings.title")}</h1>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Select
           allowClear
-          placeholder="Filter by status"
+          placeholder={t("admin:bookings.filterByStatus")}
           size="large"
           className="w-full sm:w-64"
           options={STATUSES.map((s) => ({ value: s, label: s }))}
           onChange={setStatus}
         />
         <Checkbox checked={needsScheduling} onChange={(e) => setNeedsScheduling(e.target.checked)}>
-          Needs scheduling
+          {t("admin:bookings.needsScheduling")}
         </Checkbox>
       </div>
       <Table
@@ -47,20 +47,20 @@ export default function BookingsList() {
         onRow={(booking) => ({ onClick: () => navigate(`/admin/bookings/${booking.id}`) })}
         scroll={{ x: true }}
         columns={[
-          { title: "Reference", dataIndex: "referenceNumber" },
+          { title: t("admin:bookings.reference"), dataIndex: "referenceNumber" },
           {
-            title: "Status",
+            title: t("admin:bookings.status"),
             dataIndex: "status",
             render: (value: BookingStatus) => <Tag>{value}</Tag>,
           },
           {
-            title: "Total",
+            title: t("admin:bookings.total"),
             dataIndex: "totalSnapshot",
             render: (value: number | null) =>
               value != null ? formatCurrency(value, i18n.language) : "—",
           },
           {
-            title: "Created",
+            title: t("admin:bookings.created"),
             dataIndex: "createdAt",
             render: (value: string) => formatDateTime(value, i18n.language),
           },

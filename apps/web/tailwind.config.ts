@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssRtl from "tailwindcss-rtl";
 
 // tailwindcss-rtl adds `rtl:`/`ltr:` variants and logical-property utilities
 // so components mirror correctly per constitution Principle III (logical
@@ -12,5 +13,5 @@ export default {
     // Ant Design ships its own reset; avoid Tailwind's preflight fighting it.
     preflight: false,
   },
-  plugins: [require("tailwindcss-rtl")],
+  plugins: [tailwindcssRtl],
 } satisfies Config;

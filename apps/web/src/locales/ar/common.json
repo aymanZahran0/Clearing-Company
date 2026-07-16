@@ -5,12 +5,17 @@
   "nav": {
     "home": "الرئيسية",
     "services": "الخدمات",
+    "serviceAreas": "مناطق الخدمة",
+    "faq": "الأسئلة الشائعة",
     "bookings": "حجوزاتي",
     "profile": "الملف الشخصي",
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
     "logout": "تسجيل الخروج",
-    "adminDashboard": "لوحة التحكم"
+    "adminDashboard": "لوحة التحكم",
+    "mySubscriptions": "اشتراكاتي",
+    "notifications": "الإشعارات",
+    "invoices": "الفواتير"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -30,6 +35,8 @@
     "error": "حدث خطأ ما",
     "save": "حفظ",
     "cancel": "إلغاء",
-    "confirm": "تأكيد"
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا"
   }
 }

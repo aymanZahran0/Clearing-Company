@@ -1,0 +1,10 @@
+{
+  "faq": {
+    "title": "Frequently Asked Questions"
+  },
+  "serviceAreas": {
+    "noTravelFee": "No travel fee",
+    "title": "Service Areas",
+    "travelFee": "Travel fee: {{amount}}"
+  }
+}

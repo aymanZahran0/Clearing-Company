@@ -15,11 +15,23 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
 
   useEffect(() => {
     if (!wizard.serviceId || !wizard.propertyType || !wizard.requestedDate) return;
+    // apps/api/src/modules/quotes/service.ts's PROPERTY_SIZE calculation
+    // reads only `sizeMultiplier` (Service.basePrice is a per-unit-size
+    // rate) — `rooms`/`areaSqm` alone are not enough for the API to price
+    // the booking, so they're resolved into a multiplier here before the
+    // estimate request. Rooms is the primary unit; area is a fallback
+    // (one unit per ~50 sqm) when only area was entered.
+    const sizeMultiplier = wizard.rooms
+      ? wizard.rooms
+      : wizard.areaSqm
+        ? Math.max(1, Math.ceil(wizard.areaSqm / 50))
+        : undefined;
     estimateQuote({
       serviceId: wizard.serviceId,
       addOnIds: wizard.addOnIds,
       propertyType: wizard.propertyType,
       propertySizeInput: {
+        sizeMultiplier,
         rooms: wizard.rooms ?? undefined,
         areaSqm: wizard.areaSqm ?? undefined,
         conditionModifiers: wizard.conditionModifiers,
@@ -43,39 +55,39 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
         <Alert
           type="info"
           showIcon
-          message="This price requires manual review by our team before it's final."
+          message={t("customer:quoteReview.manualReviewRequired")}
           className="mb-4"
         />
       )}
       {breakdown && !breakdown.requiresManualReview && (
         <div className="space-y-2">
           <div className="flex justify-between">
-            <span>Subtotal</span>
+            <span>{t("customer:quoteReview.subtotal")}</span>
             <span>{formatCurrency(breakdown.subtotal + breakdown.addOnsTotal, i18n.language)}</span>
           </div>
           {breakdown.discount > 0 && (
             <div className="flex justify-between text-green-600">
-              <span>Discount</span>
+              <span>{t("customer:quoteReview.discount")}</span>
               <span>-{formatCurrency(breakdown.discount, i18n.language)}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span>Travel fee</span>
+            <span>{t("customer:quoteReview.travelFee")}</span>
             <span>{formatCurrency(breakdown.travelFee, i18n.language)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Tax</span>
+            <span>{t("customer:quoteReview.tax")}</span>
             <span>{formatCurrency(breakdown.tax, i18n.language)}</span>
           </div>
           <div className="flex justify-between text-lg font-semibold">
-            <span>Total</span>
+            <span>{t("customer:quoteReview.total")}</span>
             <span>{formatCurrency(breakdown.total, i18n.language)}</span>
           </div>
         </div>
       )}
       <Input.Search
         className="mt-4"
-        placeholder="Discount code"
+        placeholder={t("customer:quoteReview.discountCode")}
         size="large"
         onSearch={(value) => dispatch(setDiscountCode(value || null))}
       />

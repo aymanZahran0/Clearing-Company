@@ -37,39 +37,75 @@ export function AppShell({ children }: PropsWithChildren) {
 
   const navItems = (
     <>
-      <Link to="/services" className="block px-3 py-3 text-base sm:inline sm:py-0">
+      <Link
+        to="/services"
+        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+      >
         {t("nav.services")}
+      </Link>
+      <Link
+        to="/service-areas"
+        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+      >
+        {t("nav.serviceAreas")}
+      </Link>
+      <Link
+        to="/faq"
+        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+      >
+        {t("nav.faq")}
       </Link>
       {user ? (
         <>
-          <Link to="/bookings" className="block px-3 py-3 text-base sm:inline sm:py-0">
+          <Link
+            to="/bookings"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
             {t("nav.bookings")}
           </Link>
-          <Link to="/profile" className="block px-3 py-3 text-base sm:inline sm:py-0">
+          <Link
+            to="/profile"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
             {t("nav.profile")}
           </Link>
-          <Link to="/subscriptions" className="block px-3 py-3 text-base sm:inline sm:py-0">
-            My Subscriptions
+          <Link
+            to="/subscriptions"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
+            {t("nav.mySubscriptions")}
           </Link>
-          <Link to="/notifications" className="block px-3 py-3 text-base sm:inline sm:py-0">
-            Notifications
+          <Link
+            to="/notifications"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
+            {t("nav.notifications")}
           </Link>
-          <Link to="/invoices" className="block px-3 py-3 text-base sm:inline sm:py-0">
-            Invoices
+          <Link
+            to="/invoices"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
+            {t("nav.invoices")}
           </Link>
           <button
             onClick={handleLogout}
-            className="block w-full px-3 py-3 text-start text-base sm:inline sm:w-auto"
+            className="flex min-h-11 w-full items-center px-3 py-3 text-start text-base sm:inline-flex sm:w-auto"
           >
             {t("nav.logout")}
           </button>
         </>
       ) : (
         <>
-          <Link to="/login" className="block px-3 py-3 text-base sm:inline sm:py-0">
+          <Link
+            to="/login"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
             {t("nav.login")}
           </Link>
-          <Link to="/register" className="block px-3 py-3 text-base sm:inline sm:py-0">
+          <Link
+            to="/register"
+            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+          >
             {t("nav.register")}
           </Link>
         </>
@@ -80,7 +116,7 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <Layout className="min-h-screen">
       <Header className="flex items-center justify-between bg-white px-4 shadow-sm">
-        <Link to="/" className="text-lg font-bold">
+        <Link to="/" className="flex min-h-11 items-center text-lg font-bold">
           {t("app.name")}
         </Link>
         <div className="hidden items-center gap-4 sm:flex">
@@ -122,6 +158,10 @@ export function AppShell({ children }: PropsWithChildren) {
 // half-finished implementations").
 const ADMIN_NAV_ITEMS = [
   { key: "/admin", label: "Dashboard" },
+  { key: "/admin/catalog/categories", label: "Catalog: Categories" },
+  { key: "/admin/catalog/services", label: "Catalog: Services" },
+  { key: "/admin/catalog/add-ons", label: "Catalog: Add-Ons" },
+  { key: "/admin/catalog/checklist", label: "Catalog: Checklist" },
   { key: "/admin/bookings", label: "Bookings" },
   { key: "/admin/bookings/new", label: "New Phone Booking" },
   { key: "/admin/schedule/week", label: "Schedule (Week)" },
@@ -138,9 +178,12 @@ const ADMIN_NAV_ITEMS = [
   { key: "/admin/reports/quality", label: "Quality Report" },
   { key: "/admin/reports/export", label: "Export" },
   { key: "/admin/reports/audit-log", label: "Audit Log" },
+  { key: "/admin/reports/job-runs", label: "Job Runs" },
+  { key: "/admin/reschedule-requests", label: "Reschedule Requests" },
   { key: "/admin/content/website", label: "Website Content" },
   { key: "/admin/content/faqs", label: "FAQs" },
   { key: "/admin/settings", label: "System Settings" },
+  { key: "/admin/accounts", label: "Admin Accounts" },
   { key: "/admin/pricing/discount-codes", label: "Discount Codes" },
   { key: "/admin/pricing/rules", label: "Pricing Rules" },
   { key: "/admin/notifications/templates", label: "Notification Templates" },

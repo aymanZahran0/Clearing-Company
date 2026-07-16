@@ -34,10 +34,19 @@ test.describe("Access control boundaries (User Story 8/quickstart V9)", () => {
     await page.getByLabel(/رقم الجوال أو البريد|Mobile number or email/).fill("customer@example.com");
     await page.getByLabel(/كلمة المرور|Password/).fill("ChangeMe123!");
     await page.getByRole("button", { name: /إرسال|Submit/ }).click();
+    // Login dispatches credentials into in-memory Redux state asynchronously
+    // before navigating to /bookings — a `page.goto` fired before that
+    // completes performs a hard reload that loses the just-set credentials
+    // (RequireAuth then bounces back to /login). Wait for the post-login
+    // redirect to actually land before navigating away.
+    await page.waitForURL(/\/bookings$/);
 
     // A random UUID that does not belong to this customer.
     await page.goto("/bookings/00000000-0000-4000-8000-000000000000");
-    await expect(page.getByText(/something went wrong|not found/i)).toBeVisible();
+    // Arabic is the app's default locale (constitution Principle III), so
+    // the generic error boundary renders `common.error`'s Arabic text
+    // ("حدث خطأ ما") by default — this assertion must not assume English.
+    await expect(page.getByText(/something went wrong|not found|حدث خطأ ما|غير موجود/i)).toBeVisible();
   });
 
   test("public reference lookup without a token is rejected", async ({ request }) => {

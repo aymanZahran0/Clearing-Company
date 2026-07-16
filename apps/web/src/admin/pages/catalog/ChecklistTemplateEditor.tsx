@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Checkbox, Input, Select, Table, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import {
   useGetChecklistTemplateQuery,
@@ -18,6 +19,7 @@ type DraftItem = Omit<ChecklistTemplateItem, "id">;
 // one once that catalog UI ships, rather than blocking the checklist
 // feature on unrelated scope.
 export default function ChecklistTemplateEditor() {
+  const { t } = useTranslation();
   const { serviceId } = useParams<{ serviceId: string }>();
   const { data, isLoading } = useGetChecklistTemplateQuery(serviceId ?? "", { skip: !serviceId });
   const [upsertTemplate, { isLoading: isSaving }] = useUpsertChecklistTemplateMutation();
@@ -47,21 +49,23 @@ export default function ChecklistTemplateEditor() {
   async function onSave() {
     if (!serviceId) return;
     if (items.length === 0) {
-      message.error("Add at least one checklist item");
+      message.error(t("admin:checklistTemplate.minItemsError"));
       return;
     }
     try {
       await upsertTemplate({ serviceId, items }).unwrap();
-      message.success(`Published version ${(data?.version ?? 0) + 1}`);
+      message.success(t("admin:checklistTemplate.published", { version: (data?.version ?? 0) + 1 }));
     } catch {
-      message.error("Could not publish the checklist template");
+      message.error(t("admin:checklistTemplate.publishError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Checklist Template</h1>
-      {!isLoading && data && <p className="mb-4 text-sm text-gray-500">Current version: {data.version}</p>}
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:checklistTemplate.title")}</h1>
+      {!isLoading && data && (
+        <p className="mb-4 text-sm text-gray-500">{t("admin:checklistTemplate.currentVersion", { version: data.version })}</p>
+      )}
       <Table
         rowKey={(_, index) => String(index)}
         dataSource={items}
@@ -104,18 +108,18 @@ export default function ChecklistTemplateEditor() {
             title: "",
             render: (_: unknown, __: DraftItem, index: number) => (
               <Button danger onClick={() => removeItem(index)}>
-                Remove
+                {t("admin:checklistTemplate.remove")}
               </Button>
             ),
           },
         ]}
       />
       <Button className="mb-4 mt-3" onClick={addItem}>
-        Add Item
+        {t("admin:checklistTemplate.addItem")}
       </Button>
       <div>
         <Button type="primary" size="large" onClick={onSave} loading={isSaving}>
-          Publish New Version
+          {t("admin:checklistTemplate.publishNewVersion")}
         </Button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useListTimeSlotsQuery } from "../../../api/availabilityApi";
 import { useRescheduleBookingMutation } from "../../../api/bookingsApi";
 import { formatDateTime } from "../../../lib/formatters";
@@ -12,6 +13,7 @@ interface RescheduleFormValues {
 
 // T115 (US4): move an already-scheduled booking to a different time slot.
 export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onDone?: () => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { data: slots } = useListTimeSlotsQuery(undefined, { skip: !open });
   const [rescheduleBooking, { isLoading }] = useRescheduleBookingMutation();
@@ -26,9 +28,9 @@ export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onD
     } catch (err) {
       const status = (err as { status?: number })?.status;
       if (status === 409) {
-        message.error("This time slot is at full capacity — check the override box to proceed anyway");
+        message.error(t("admin:bookings.capacityConflict"));
       } else {
-        message.error("Could not reschedule this booking");
+        message.error(t("admin:bookings.rescheduleError"));
       }
     }
   }
@@ -36,11 +38,11 @@ export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onD
   return (
     <>
       <Button size="large" onClick={() => setOpen(true)}>
-        Reschedule
+        {t("admin:bookings.reschedule")}
       </Button>
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="Reschedule Booking">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:bookings.rescheduleBooking")}>
         <Form<RescheduleFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="timeSlotId" label="New Time Slot" rules={[{ required: true }]}>
+          <Form.Item name="timeSlotId" label={t("admin:bookings.newTimeSlot")} rules={[{ required: true }]}>
             <Select
               size="large"
               options={availableSlots.map((slot) => ({
@@ -50,20 +52,15 @@ export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onD
               }))}
             />
           </Form.Item>
-          <Alert
-            className="mb-4"
-            type="warning"
-            showIcon
-            message="If the selected slot is full, tick the override box below — it will be recorded in the audit log."
-          />
+          <Alert className="mb-4" type="warning" showIcon message={t("admin:bookings.overrideCapacityWarning")} />
           <Form.Item name="overrideCapacity" valuePropName="checked">
-            <Checkbox>Override capacity for a full slot</Checkbox>
+            <Checkbox>{t("admin:bookings.overrideCapacity")}</Checkbox>
           </Form.Item>
-          <Form.Item name="internalHandlingNote" label="Internal Handling Note (optional)">
+          <Form.Item name="internalHandlingNote" label={t("admin:bookings.internalHandlingNoteOptional")}>
             <Input.TextArea rows={3} />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block loading={isLoading}>
-            Reschedule
+            {t("admin:bookings.reschedule")}
           </Button>
         </Form>
       </Modal>

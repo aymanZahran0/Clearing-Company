@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Descriptions, Form, Input, List, Modal, Select, Skeleton, Tag, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import {
   useCreateContractMutation,
@@ -17,6 +18,7 @@ interface ContractFormValues {
 // T154 (US7): a commercial account's locations + contracts, with contract
 // creation and status updates.
 export default function Contracts() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: account, isLoading, refetch } = useGetCommercialAccountQuery(id ?? "", { skip: !id });
   const [createContract, { isLoading: isCreating }] = useCreateContractMutation();
@@ -42,9 +44,9 @@ export default function Contracts() {
         pricingTerms: {},
       }).unwrap();
       setOpen(false);
-      message.success("Contract created");
+      message.success(t("admin:commercial.contractCreated"));
     } catch {
-      message.error("Could not create the contract");
+      message.error(t("admin:commercial.contractCreateError"));
     }
   }
 
@@ -52,13 +54,15 @@ export default function Contracts() {
     <div className="p-4 sm:p-6">
       <h1 className="mb-4 text-xl font-semibold">{account.companyName}</h1>
       <Descriptions column={1} bordered size="middle" className="mb-6">
-        <Descriptions.Item label="Billing Contact">
+        <Descriptions.Item label={t("admin:commercial.billingContact")}>
           {account.billingContactName} — {account.billingContactPhone}
         </Descriptions.Item>
-        <Descriptions.Item label="Email">{account.billingContactEmail ?? "—"}</Descriptions.Item>
+        <Descriptions.Item label={t("admin:commercial.email")}>
+          {account.billingContactEmail ?? "—"}
+        </Descriptions.Item>
       </Descriptions>
 
-      <h2 className="mb-2 text-base font-medium">Locations</h2>
+      <h2 className="mb-2 text-base font-medium">{t("admin:commercial.locations")}</h2>
       <List
         dataSource={account.locations}
         renderItem={(location) => <List.Item>{location.label ?? location.addressId}</List.Item>}
@@ -66,9 +70,9 @@ export default function Contracts() {
       />
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-medium">Contracts</h2>
+        <h2 className="text-base font-medium">{t("admin:commercial.contracts")}</h2>
         <Button type="primary" onClick={() => setOpen(true)}>
-          New Contract
+          {t("admin:commercial.newContract")}
         </Button>
       </div>
       <List
@@ -94,19 +98,19 @@ export default function Contracts() {
         )}
       />
 
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="New Contract">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:commercial.newContract")}>
         <Form<ContractFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="startDate" label="Start Date" rules={[{ required: true }]}>
+          <Form.Item name="startDate" label={t("admin:commercial.startDate")} rules={[{ required: true }]}>
             <Input type="date" size="large" />
           </Form.Item>
-          <Form.Item name="endDate" label="End Date">
+          <Form.Item name="endDate" label={t("admin:commercial.endDate")}>
             <Input type="date" size="large" />
           </Form.Item>
-          <Form.Item name="documentReference" label="Document Reference">
+          <Form.Item name="documentReference" label={t("admin:commercial.documentReference")}>
             <Input size="large" />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block loading={isCreating}>
-            Create
+            {t("admin:common.create")}
           </Button>
         </Form>
       </Modal>

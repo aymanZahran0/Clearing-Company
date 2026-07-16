@@ -19,6 +19,14 @@ export default defineConfig({
       command: "npm run dev --workspace apps/api",
       url: "http://localhost:4000/api/v1/health",
       reuseExistingServer: !process.env.CI,
+      // The e2e suite performs many auth calls across ~10 spec files
+      // (each registering its own customer, some also logging in as
+      // Admin); apps/api/src/middleware/rateLimit.ts already skips rate
+      // limiting under NODE_ENV=test for the same reason the integration
+      // suite needs it (vitest.integration.config.ts runs everything in
+      // one shared process/store) — e2e needs the same bypass so a normal
+      // full run doesn't trip the 5-requests/60s auth limiter.
+      env: { NODE_ENV: "test" },
     },
     {
       command: "npm run dev --workspace apps/web",

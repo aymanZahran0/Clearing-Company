@@ -1,5 +1,6 @@
 import { Button, Checkbox, Form, Input, Select, Table, message } from "antd";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useListNotificationTemplatesQuery,
   useUpsertNotificationTemplateMutation,
@@ -9,6 +10,7 @@ import {
 
 // T177 (US-Polish)
 export default function Templates() {
+  const { t } = useTranslation();
   const { data, isLoading } = useListNotificationTemplatesQuery();
   const [upsertTemplate, { isLoading: isSaving }] = useUpsertNotificationTemplateMutation();
   const [editing, setEditing] = useState<NotificationTemplate | null>(null);
@@ -23,15 +25,15 @@ export default function Templates() {
     try {
       await upsertTemplate(values).unwrap();
       setEditing(null);
-      message.success("Template saved");
+      message.success(t("admin:notifications.templateSaved"));
     } catch {
-      message.error("Could not save the template");
+      message.error(t("admin:notifications.templateSaveError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Notification Templates</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:notifications.templatesTitle")}</h1>
       <Table
         loading={isLoading}
         rowKey="id"
@@ -39,32 +41,38 @@ export default function Templates() {
         onRow={(row) => ({ onClick: () => onEdit(row) })}
         scroll={{ x: true }}
         columns={[
-          { title: "Key", dataIndex: "key" },
-          { title: "Channel", dataIndex: "channel" },
-          { title: "Active", dataIndex: "active", render: (v: boolean) => (v ? "Yes" : "No") },
+          { title: t("admin:content.key"), dataIndex: "key" },
+          { title: t("admin:notifications.channel"), dataIndex: "channel" },
+          {
+            title: t("admin:content.active"),
+            dataIndex: "active",
+            render: (v: boolean) => (v ? t("common.yes") : t("common.no")),
+          },
         ]}
       />
       {editing && (
         <div className="mt-6 rounded border border-gray-200 p-4">
-          <h2 className="mb-3 text-base font-medium">Edit: {editing.key}</h2>
+          <h2 className="mb-3 text-base font-medium">
+            {t("admin:notifications.editTemplate", { key: editing.key })}
+          </h2>
           <Form<NotificationTemplateInput> form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
             <Form.Item name="key" hidden>
               <Input />
             </Form.Item>
-            <Form.Item name="channel" label="Channel" rules={[{ required: true }]}>
+            <Form.Item name="channel" label={t("admin:notifications.channel")} rules={[{ required: true }]}>
               <Select size="large" options={["WHATSAPP", "SMS", "EMAIL"].map((c) => ({ value: c, label: c }))} />
             </Form.Item>
-            <Form.Item name="bodyAr" label="Body (Arabic)" rules={[{ required: true }]}>
+            <Form.Item name="bodyAr" label={t("admin:content.bodyAr")} rules={[{ required: true }]}>
               <Input.TextArea rows={3} />
             </Form.Item>
-            <Form.Item name="bodyEn" label="Body (English)" rules={[{ required: true }]}>
+            <Form.Item name="bodyEn" label={t("admin:content.bodyEn")} rules={[{ required: true }]}>
               <Input.TextArea rows={3} />
             </Form.Item>
             <Form.Item name="active" valuePropName="checked">
-              <Checkbox>Active</Checkbox>
+              <Checkbox>{t("admin:content.active")}</Checkbox>
             </Form.Item>
             <Button type="primary" htmlType="submit" size="large" loading={isSaving}>
-              Save
+              {t("admin:common.save")}
             </Button>
           </Form>
         </div>

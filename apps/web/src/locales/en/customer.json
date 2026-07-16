@@ -1,0 +1,69 @@
+{
+  "addresses": {
+    "title": "Addresses"
+  },
+  "addressStep": {
+    "city": "City",
+    "neighborhood": "Neighborhood",
+    "newAddress": "+ New address",
+    "serviceArea": "Service Area",
+    "street": "Street"
+  },
+  "bookingDetail": {
+    "fileComplaint": "File a Complaint",
+    "rateThisService": "Rate This Service"
+  },
+  "bookingLookup": {
+    "bookingReference": "Booking Reference",
+    "title": "Track your booking",
+    "verificationCode": "Verification Code"
+  },
+  "complaintForm": {
+    "category": "Category",
+    "description": "Description",
+    "submitComplaint": "Submit Complaint",
+    "submitError": "Could not submit your complaint",
+    "submitted": "Your complaint has been submitted"
+  },
+  "confirmationStep": {
+    "acceptTerms": "I accept the terms and conditions",
+    "completePreviousSteps": "Please complete previous steps first.",
+    "submitted": "Your booking request has been submitted.",
+    "whatsapp": "WhatsApp"
+  },
+  "forgotPassword": {
+    "checkInstructions": "Check your phone/email for instructions."
+  },
+  "quoteReview": {
+    "discount": "Discount",
+    "discountCode": "Discount code",
+    "manualReviewRequired": "This price requires manual review by our team before it's final.",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "total": "Total",
+    "travelFee": "Travel fee"
+  },
+  "rescheduleDialog": {
+    "alreadyPending": "A reschedule request is already pending for this booking",
+    "newTimeSlot": "New Time Slot",
+    "reasonOptional": "Reason (optional)",
+    "requestReschedule": "Request Reschedule",
+    "submit": "Submit Request",
+    "submitError": "Could not submit the reschedule request",
+    "submitted": "Your reschedule request has been submitted"
+  },
+  "reviewForm": {
+    "commentOptional": "Comment (optional)",
+    "rating": "Rating",
+    "submitError": "Could not submit your review",
+    "submitReview": "Submit Review",
+    "thankYou": "Thank you for your feedback"
+  },
+  "scheduleStep": {
+    "slotOption": "{{dateTime}} ({{startTime}}–{{endTime}}) — {{count}} left",
+    "slotsLeft": "{{count}} left"
+  },
+  "subscriptions": {
+    "starts": "Starts {{date}}"
+  }
+}

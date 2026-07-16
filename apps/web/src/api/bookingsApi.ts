@@ -29,6 +29,7 @@ export interface Booking {
   totalSnapshot: number | null;
   currency: string;
   createdAt: string;
+  items?: Array<{ serviceId: string }>;
 }
 
 export interface BookingCreateRequest {

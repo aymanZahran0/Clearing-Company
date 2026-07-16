@@ -60,7 +60,7 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
       <Result
         status="success"
         title={reference}
-        subTitle="Your booking request has been submitted."
+        subTitle={t("customer:confirmationStep.submitted")}
         extra={[
           <a
             key="wa"
@@ -69,7 +69,7 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
             rel="noreferrer"
           >
             <Button type="primary" size="large">
-              WhatsApp
+              {t("customer:confirmationStep.whatsapp")}
             </Button>
           </a>,
           <Button key="bookings" size="large" onClick={() => navigate("/bookings")}>
@@ -93,9 +93,11 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
         valuePropName="checked"
         rules={[{ validator: (_, v) => (v ? Promise.resolve() : Promise.reject()) }]}
       >
-        <Checkbox>I accept the terms and conditions</Checkbox>
+        <Checkbox>{t("customer:confirmationStep.acceptTerms")}</Checkbox>
       </Form.Item>
-      {!wizard.quoteId && <Alert type="warning" message="Please complete previous steps first." />}
+      {!wizard.quoteId && (
+        <Alert type="warning" message={t("customer:confirmationStep.completePreviousSteps")} />
+      )}
       <Space className="mt-4 flex justify-between">
         <Button size="large" onClick={onBack}>
           {t("common.cancel")}

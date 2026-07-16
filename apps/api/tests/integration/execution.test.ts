@@ -116,6 +116,14 @@ describe("Execution + checklist completion gating (User Story 5, FR-036/FR-048)"
       .set("Authorization", `Bearer ${adminToken}`)
       .send({});
 
+    // The checklist run is created lazily the first time the checklist is
+    // opened (checklists/service.ts's getOrCreateChecklistRun) — mirror the
+    // real technician flow of opening the checklist screen before it can
+    // have outstanding items to gate on.
+    await request(app)
+      .get(`/api/v1/bookings/${booking.id}/checklist`)
+      .set("Authorization", `Bearer ${adminToken}`);
+
     const res = await request(app)
       .post(`/api/v1/bookings/${booking.id}/complete`)
       .set("Authorization", `Bearer ${adminToken}`)

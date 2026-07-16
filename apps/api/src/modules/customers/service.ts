@@ -3,6 +3,14 @@ import { ApiError } from "@nuqaa-asir/shared";
 import { normalizeSaudiPhone } from "../../lib/phoneNormalization.js";
 import type { UpdateOwnProfileInput } from "./schema.js";
 
+function tryNormalizePhone(value: string): string | null {
+  try {
+    return normalizeSaudiPhone(value);
+  } catch {
+    return null;
+  }
+}
+
 function toPublicCustomer(row: {
   userId: string;
   user: { fullName: string; phoneNormalized: string | null; email: string | null };
@@ -49,12 +57,17 @@ export async function updateOwnProfile(userId: string, input: UpdateOwnProfileIn
   return getOwnProfile(userId);
 }
 
-// FR-017: Admin searches by (normalized) phone number.
+// FR-017: Admin searches by (normalized) phone number. Customers are stored
+// in E.164 (phoneNormalized), but Admins naturally type the local format
+// (05XXXXXXXX) — a full valid number is normalized before matching so that
+// natural-format input actually finds the customer; a partial/non-phone
+// search term still falls through to a raw substring match.
 export async function searchCustomers(search: string | undefined, page: number, pageSize: number) {
+  const normalizedPhone = search ? tryNormalizePhone(search) : null;
   const where = search
     ? {
         OR: [
-          { user: { phoneNormalized: { contains: search } } },
+          { user: { phoneNormalized: { contains: normalizedPhone ?? search } } },
           { user: { fullName: { contains: search, mode: "insensitive" as const } } },
         ],
       }

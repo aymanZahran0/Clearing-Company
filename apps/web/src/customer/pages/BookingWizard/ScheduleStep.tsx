@@ -38,8 +38,12 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
               checked={wizard.requestedTimeSlotId === slot.id}
               onChange={() => handleSelect(slot.id, slot.date)}
             >
-              {formatDateTime(slot.date, i18n.language)} ({slot.startTime}–{slot.endTime}) —{" "}
-              {slot.remaining} left
+              {t("customer:scheduleStep.slotOption", {
+                dateTime: formatDateTime(slot.date, i18n.language),
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+                count: slot.remaining,
+              })}
             </Radio>
           </List.Item>
         )}

@@ -11,7 +11,6 @@ export function errorHandler(
   err: unknown,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ) {
   const requestId = (req as Request & { id?: string }).id ?? randomUUID();

@@ -3,15 +3,11 @@ import { ApiError } from "@nuqaa-asir/shared";
 import type { CreateServiceCategoryInput, UpdateServiceCategoryInput } from "./schema.js";
 
 // FR-009: soft-disable only, never deletes historical data.
-export function listActiveCategories() {
+export function listCategories(includeInactive: boolean) {
   return prisma.serviceCategory.findMany({
-    where: { active: true },
+    where: includeInactive ? undefined : { active: true },
     orderBy: { sortOrder: "asc" },
   });
-}
-
-export function listAllCategories() {
-  return prisma.serviceCategory.findMany({ orderBy: { sortOrder: "asc" } });
 }
 
 export async function createCategory(input: CreateServiceCategoryInput) {

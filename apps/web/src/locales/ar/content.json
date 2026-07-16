@@ -1,0 +1,10 @@
+{
+  "faq": {
+    "title": "الأسئلة الشائعة"
+  },
+  "serviceAreas": {
+    "noTravelFee": "بدون رسوم تنقل",
+    "title": "مناطق الخدمة",
+    "travelFee": "رسوم التنقل: {{amount}}"
+  }
+}

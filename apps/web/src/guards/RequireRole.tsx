@@ -17,7 +17,7 @@ export function RequireRole({ role, children }: RequireRoleProps) {
   const user = useSelector((state: RootState) => state.auth.user);
 
   return (
-    <RequireAuth>
+    <RequireAuth loginPath={role === "ADMIN" ? "/admin/login" : "/login"}>
       {user?.role === role ? <>{children}</> : <Navigate to="/" replace />}
     </RequireAuth>
   );

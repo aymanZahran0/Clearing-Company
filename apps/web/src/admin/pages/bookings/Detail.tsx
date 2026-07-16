@@ -51,20 +51,20 @@ export default function BookingDetail() {
       <h1 className="mb-4 text-xl font-semibold">{booking.referenceNumber}</h1>
 
       <Descriptions column={1} bordered size="middle" className="mb-6">
-        <Descriptions.Item label="Status">
+        <Descriptions.Item label={t("admin:bookings.status")}>
           <Tag>{booking.status}</Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Total">
+        <Descriptions.Item label={t("admin:bookings.total")}>
           {booking.totalSnapshot != null
             ? formatCurrency(booking.totalSnapshot, i18n.language)
             : "—"}
         </Descriptions.Item>
-        <Descriptions.Item label="Scheduled">
+        <Descriptions.Item label={t("admin:bookings.scheduled")}>
           {booking.scheduledStartAt
             ? `${formatDateTime(booking.scheduledStartAt, i18n.language)} – ${formatDateTime(booking.scheduledEndAt ?? booking.scheduledStartAt, i18n.language)}`
             : "—"}
         </Descriptions.Item>
-        <Descriptions.Item label="Internal Handling Note">
+        <Descriptions.Item label={t("admin:bookings.internalHandlingNote")}>
           {booking.internalHandlingNote ?? "—"}
         </Descriptions.Item>
       </Descriptions>
@@ -99,33 +99,33 @@ export default function BookingDetail() {
             size="large"
             disabled={!!booking.enRouteAt}
             loading={isMarkingEnRoute}
-            onClick={() => runAction(() => markEnRoute(booking.id).unwrap(), "Could not mark en route")}
+            onClick={() => runAction(() => markEnRoute(booking.id).unwrap(), t("admin:bookings.enRouteError"))}
           >
-            En Route
+            {t("admin:bookings.enRoute")}
           </Button>
           <Button
             size="large"
             disabled={!!booking.arrivedAt}
             loading={isMarkingArrived}
-            onClick={() => runAction(() => markArrived(booking.id).unwrap(), "Could not mark arrived")}
+            onClick={() => runAction(() => markArrived(booking.id).unwrap(), t("admin:bookings.arrivedError"))}
           >
-            Arrived
+            {t("admin:bookings.arrived")}
           </Button>
           <Button
             type="primary"
             size="large"
             disabled={!booking.arrivedAt}
             loading={isStarting}
-            onClick={() => runAction(() => startExecution(booking.id).unwrap(), "Could not start execution")}
+            onClick={() => runAction(() => startExecution(booking.id).unwrap(), t("admin:bookings.startError"))}
           >
-            Start
+            {t("admin:bookings.start")}
           </Button>
         </div>
       )}
 
       {booking.status === "IN_PROGRESS" && (
         <div className="mb-6">
-          <h2 className="mb-2 text-base font-medium">Quality Checklist</h2>
+          <h2 className="mb-2 text-base font-medium">{t("admin:bookings.qualityChecklist")}</h2>
           <ChecklistRunner bookingId={booking.id} />
           <Button
             type="primary"
@@ -133,19 +133,16 @@ export default function BookingDetail() {
             className="mt-4"
             loading={isCompleting}
             onClick={() =>
-              runAction(
-                () => completeBooking(booking.id).unwrap(),
-                "Could not complete — check that every required item is answered"
-              )
+              runAction(() => completeBooking(booking.id).unwrap(), t("admin:bookings.completeError"))
             }
           >
-            Complete Booking
+            {t("admin:bookings.completeBooking")}
           </Button>
         </div>
       )}
 
       <div className="mb-6">
-        <h2 className="mb-2 text-base font-medium">{t("nav.bookings")} — Payments</h2>
+        <h2 className="mb-2 text-base font-medium">{t("nav.bookings")} — {t("admin:bookings.payments")}</h2>
         <RecordPaymentDialog bookingId={booking.id} />
         <div className="mt-3">
           <PaymentsList bookingId={booking.id} />
@@ -153,7 +150,7 @@ export default function BookingDetail() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-base font-medium">History</h2>
+        <h2 className="mb-2 text-base font-medium">{t("admin:bookings.history")}</h2>
         <Timeline
           items={history?.map((entry) => ({
             children: `${entry.fromStatus ?? "—"} → ${entry.toStatus} (${formatDateTime(entry.createdAt, i18n.language)})${entry.reason ? `: ${entry.reason}` : ""}`,

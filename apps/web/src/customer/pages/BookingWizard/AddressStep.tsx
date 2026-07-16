@@ -54,13 +54,13 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
 
       {!showNewForm && (
         <Button className="mt-3" onClick={() => setShowNewForm(true)}>
-          + New address
+          {t("customer:addressStep.newAddress")}
         </Button>
       )}
 
       {showNewForm && (
         <Form<NewAddressValues> layout="vertical" onFinish={onCreate} requiredMark={false} className="mt-3">
-          <Form.Item name="serviceAreaId" label="Service Area" rules={[{ required: true }]}>
+          <Form.Item name="serviceAreaId" label={t("customer:addressStep.serviceArea")} rules={[{ required: true }]}>
             <Select
               size="large"
               options={areas?.map((a) => ({
@@ -69,13 +69,13 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
               }))}
             />
           </Form.Item>
-          <Form.Item name="city" label="City" rules={[{ required: true }]}>
+          <Form.Item name="city" label={t("customer:addressStep.city")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="neighborhood" label="Neighborhood" rules={[{ required: true }]}>
+          <Form.Item name="neighborhood" label={t("customer:addressStep.neighborhood")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="street" label="Street">
+          <Form.Item name="street" label={t("customer:addressStep.street")}>
             <Input size="large" />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" loading={isCreating} block>

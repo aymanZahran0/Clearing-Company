@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Image, Input, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import type { UploadFile } from "antd/es/upload/interface";
 import {
@@ -13,6 +14,7 @@ import {
 // /admin/catalog/services/:slug/images, ready to be linked from a catalog
 // list once one ships — same pattern as ChecklistTemplateEditor.tsx.
 export default function ServiceImages() {
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { data: serviceData, isLoading, refetch } = useGetServiceBySlugQuery(slug ?? "", { skip: !slug });
   const [uploadImage, { isLoading: isUploading }] = useUploadServiceImageMutation();
@@ -29,38 +31,40 @@ export default function ServiceImages() {
         altTextEn: altTextEn || undefined,
         altTextAr: altTextAr || undefined,
       }).unwrap();
-      message.success("Image uploaded");
+      message.success(t("admin:serviceImages.uploaded"));
       refetch();
     } catch {
-      message.error("Could not upload the image — check file type (JPEG/PNG/WebP) and size (max 5MB)");
+      message.error(t("admin:serviceImages.uploadError"));
     }
     return false; // prevent antd's default XHR upload; we drive it via RTK Query
   }
 
   if (isLoading || !serviceData) {
-    return <div className="p-4 sm:p-6">Loading…</div>;
+    return <div className="p-4 sm:p-6">{t("common.loading")}</div>;
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Images — {serviceData.nameEn}</h1>
+      <h1 className="mb-4 text-xl font-semibold">
+        {t("admin:serviceImages.title")} — {i18n.language === "ar" ? serviceData.nameAr : serviceData.nameEn}
+      </h1>
 
       <div className="mb-6 flex flex-wrap gap-3">
         <Input
-          placeholder="Alt text (English)"
+          placeholder={t("admin:serviceImages.altTextEn")}
           value={altTextEn}
           onChange={(e) => setAltTextEn(e.target.value)}
           className="w-full sm:w-64"
         />
         <Input
-          placeholder="Alt text (Arabic)"
+          placeholder={t("admin:serviceImages.altTextAr")}
           value={altTextAr}
           onChange={(e) => setAltTextAr(e.target.value)}
           className="w-full sm:w-64"
         />
         <Upload beforeUpload={handleUpload} showUploadList={false} accept="image/jpeg,image/png,image/webp">
           <Button icon={<UploadOutlined />} loading={isUploading} size="large">
-            Upload Image
+            {t("admin:serviceImages.uploadImage")}
           </Button>
         </Upload>
       </div>
@@ -71,7 +75,7 @@ export default function ServiceImages() {
             <div key={image.id} className="w-40">
               <Image src={image.url} alt={image.altTextEn ?? ""} className="rounded" />
               <Button danger size="small" block className="mt-2" onClick={() => deleteImage(image.id).then(() => refetch())}>
-                Delete
+                {t("admin:serviceImages.delete")}
               </Button>
             </div>
           ))}

@@ -15,6 +15,7 @@ export interface ServiceAddOn {
   pricingMode: "FIXED" | "PER_QUANTITY";
   unitPrice: number;
   durationImpactMinutes: number;
+  active: boolean;
 }
 
 export interface Service {
@@ -30,8 +31,23 @@ export interface Service {
   minimumPrice: number | null;
   defaultDurationMinutes: number;
   requiresManualQuote: boolean;
+  active: boolean;
   images: ServiceImage[];
   addOns: ServiceAddOn[];
+}
+
+export interface ServiceWritableFields {
+  categoryId: string;
+  slug: string;
+  nameAr: string;
+  nameEn: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  pricingType: Service["pricingType"];
+  basePrice?: number | null;
+  minimumPrice?: number | null;
+  defaultDurationMinutes?: number;
+  requiresManualQuote?: boolean;
 }
 
 export interface ServiceCategory {
@@ -40,6 +56,7 @@ export interface ServiceCategory {
   nameEn: string;
   slug: string;
   sortOrder: number;
+  active: boolean;
 }
 
 export interface ServiceArea {
@@ -55,13 +72,25 @@ export const servicesApi = baseApi.injectEndpoints({
     listCategories: builder.query<ServiceCategory[], void>({
       query: () => "/service-categories",
     }),
-    listServices: builder.query<Service[], { categoryId?: string } | void>({
+    listServices: builder.query<Service[], { categoryId?: string; includeInactive?: boolean } | void>({
       query: (args) => ({ url: "/services", params: args ?? undefined }),
       providesTags: ["Service"],
     }),
     getServiceBySlug: builder.query<Service, string>({
       query: (slug) => `/services/${slug}`,
       providesTags: ["Service"],
+    }),
+    createService: builder.mutation<Service, ServiceWritableFields>({
+      query: (body) => ({ url: "/services", method: "POST", body }),
+      invalidatesTags: ["Service"],
+    }),
+    updateService: builder.mutation<Service, { id: string; body: Partial<ServiceWritableFields> & { active?: boolean } }>({
+      query: ({ id, body }) => ({ url: `/services/${id}`, method: "PATCH", body }),
+      invalidatesTags: ["Service"],
+    }),
+    deleteService: builder.mutation<void, string>({
+      query: (id) => ({ url: `/services/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Service"],
     }),
     listServiceAreas: builder.query<ServiceArea[], void>({
       query: () => "/service-areas",
@@ -91,6 +120,9 @@ export const {
   useListServicesQuery,
   useGetServiceBySlugQuery,
   useListServiceAreasQuery,
+  useCreateServiceMutation,
+  useUpdateServiceMutation,
+  useDeleteServiceMutation,
   useUploadServiceImageMutation,
   useDeleteServiceImageMutation,
 } = servicesApi;

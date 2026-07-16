@@ -27,6 +27,12 @@ export const authApi = baseApi.injectEndpoints({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (body) => ({ url: "/auth/login", method: "POST", body }),
     }),
+    // Silent session bootstrap on app load — uses the httpOnly refresh
+    // cookie, not a stored access token. Expected to fail (401) for a
+    // genuinely logged-out visitor; callers must not surface that as an error.
+    refresh: builder.mutation<AuthResponse, void>({
+      query: () => ({ url: "/auth/refresh", method: "POST" }),
+    }),
     logout: builder.mutation<void, void>({
       query: () => ({ url: "/auth/logout", method: "POST" }),
     }),
@@ -49,6 +55,7 @@ export const authApi = baseApi.injectEndpoints({
 export const {
   useRegisterMutation,
   useLoginMutation,
+  useRefreshMutation,
   useLogoutMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,

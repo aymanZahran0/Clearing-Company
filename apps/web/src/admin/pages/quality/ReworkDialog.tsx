@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Button, Modal, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCreateReworkBookingMutation } from "../../../api/qualityIssuesApi";
 
 // T142 (US6): FR-053 — creates a linked rework booking with no re-entry of
 // customer/address/service details, then navigates straight to it.
 export function ReworkDialog({ qualityIssueId }: { qualityIssueId: string }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [createReworkBooking, { isLoading }] = useCreateReworkBookingMutation();
   const navigate = useNavigate();
@@ -16,27 +18,24 @@ export function ReworkDialog({ qualityIssueId }: { qualityIssueId: string }) {
       setOpen(false);
       navigate(`/admin/bookings/${booking.id}`);
     } catch {
-      message.error("Could not create a rework booking");
+      message.error(t("admin:quality.reworkError"));
     }
   }
 
   return (
     <>
       <Button size="large" onClick={() => setOpen(true)}>
-        Create Rework Booking
+        {t("admin:quality.createReworkBooking")}
       </Button>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}
         onOk={onConfirm}
         confirmLoading={isLoading}
-        title="Create Rework Booking"
-        okText="Create"
+        title={t("admin:quality.createReworkBooking")}
+        okText={t("admin:common.create")}
       >
-        <p>
-          This creates a new complimentary booking linked to the original, reusing the same customer,
-          address, and service — no re-entry required.
-        </p>
+        <p>{t("admin:quality.reworkExplanation")}</p>
       </Modal>
     </>
   );

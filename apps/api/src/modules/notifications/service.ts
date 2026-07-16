@@ -1,6 +1,38 @@
 import { prisma } from "../../lib/prisma.js";
 import type { UpsertTemplateInput } from "./schema.js";
 
+export interface NotifyInput {
+  channel: "EMAIL" | "SMS" | "WHATSAPP";
+  templateKey: string;
+  recipient: string;
+  payload: Record<string, unknown>;
+  bookingId?: string;
+  customerId?: string;
+}
+
+// FR-067/FR-070: always writes a NotificationLog row and never throws, so a
+// notification failure never blocks the caller's action. No real SMTP/SMS
+// provider is wired yet — every attempt is logged as PENDING until a
+// provider adapter is plugged into this function (mirrors the
+// lib/storage/factory.ts adapter-factory pattern for when that lands).
+export async function notify(input: NotifyInput): Promise<void> {
+  try {
+    await prisma.notificationLog.create({
+      data: {
+        bookingId: input.bookingId,
+        customerId: input.customerId,
+        channel: input.channel,
+        templateKey: input.templateKey,
+        recipient: input.recipient,
+        payloadSnapshot: input.payload as object,
+        status: "PENDING",
+      },
+    });
+  } catch {
+    // Best-effort: notification failures must never block the caller.
+  }
+}
+
 export function listTemplates() {
   return prisma.notificationTemplate.findMany({ orderBy: { key: "asc" } });
 }

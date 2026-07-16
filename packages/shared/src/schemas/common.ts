@@ -1,15 +1,16 @@
 import { z } from "zod";
 
 // Saudi mobile numbers: accepts 05XXXXXXXX or +9665XXXXXXXX / 9665XXXXXXXX,
-// normalizes to E.164 (+9665XXXXXXXX) via `normalizeSaudiPhone` in
-// apps/api/src/lib/phoneNormalization.ts. This schema only validates shape.
+// with optional spaces/dashes between digits (e.g. "05 3333 3333") — must
+// stay tolerant of the same formats `normalizeSaudiPhone` in
+// apps/api/src/lib/phoneNormalization.ts accepts, since that function is
+// what actually normalizes whatever passes this shape check.
 export const saudiPhoneSchema = z
   .string()
   .trim()
-  .regex(
-    /^(?:\+?966|0)?5\d{8}$/,
-    "Enter a valid Saudi mobile number (e.g. 05XXXXXXXX or +9665XXXXXXXX)"
-  );
+  .refine((value) => /^(?:\+?966|0)?5\d{8}$/.test(value.replace(/[\s-]/g, "")), {
+    message: "Enter a valid Saudi mobile number (e.g. 05XXXXXXXX or +9665XXXXXXXX)",
+  });
 
 export const uuidSchema = z.string().uuid();
 

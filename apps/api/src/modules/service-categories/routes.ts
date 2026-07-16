@@ -1,18 +1,22 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
 import { requireRole } from "../../middleware/requireRole.js";
+import { tryAuthenticate } from "../../middleware/tryAuthenticate.js";
 import { validateRequest } from "../../middleware/validateRequest.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
 import { requireParam } from "../../lib/params.js";
-import { createServiceCategorySchema, updateServiceCategorySchema } from "./schema.js";
+import { createServiceCategorySchema, listCategoriesQuerySchema, updateServiceCategorySchema } from "./schema.js";
 import * as service from "./service.js";
 
 export const serviceCategoriesRouter = Router();
 
 serviceCategoriesRouter.get(
   "/service-categories",
-  asyncHandler(async (_req, res) => {
-    res.json(await service.listActiveCategories());
+  tryAuthenticate,
+  validateRequest({ query: listCategoriesQuerySchema }),
+  asyncHandler(async (req, res) => {
+    const { includeInactive } = req.query as unknown as { includeInactive?: boolean };
+    res.json(await service.listCategories(Boolean(includeInactive) && req.user?.role === "ADMIN"));
   })
 );
 

@@ -182,23 +182,32 @@ async function main() {
   }
 
   // T180: both launch service areas (spec.md — "serving Abha and Khamis Mushait").
+  // IDs are left to Prisma's default UUID generator (not a fixed literal
+  // like "seed-area-abha") — the addresses/quotes API schemas validate
+  // serviceAreaId as a UUID (packages/shared's `uuidSchema`), so a
+  // non-UUID seeded id would 422 on every real customer request that
+  // references it. Upserted by `nameEn` instead of `id` to stay idempotent
+  // across repeated seed runs.
+  async function upsertServiceArea(data: {
+    nameAr: string;
+    nameEn: string;
+    city: string;
+    travelFee: number;
+    active: boolean;
+  }) {
+    const existing = await prisma.serviceArea.findFirst({ where: { nameEn: data.nameEn } });
+    if (existing) return existing;
+    return prisma.serviceArea.create({ data });
+  }
+
   const [abha, khamisMushait] = await Promise.all([
-    prisma.serviceArea.upsert({
-      where: { id: "seed-area-abha" },
-      update: {},
-      create: { id: "seed-area-abha", nameAr: "أبها", nameEn: "Abha", city: "Abha", travelFee: 0, active: true },
-    }),
-    prisma.serviceArea.upsert({
-      where: { id: "seed-area-khamis-mushait" },
-      update: {},
-      create: {
-        id: "seed-area-khamis-mushait",
-        nameAr: "خميس مشيط",
-        nameEn: "Khamis Mushait",
-        city: "Khamis Mushait",
-        travelFee: 1500,
-        active: true,
-      },
+    upsertServiceArea({ nameAr: "أبها", nameEn: "Abha", city: "Abha", travelFee: 0, active: true }),
+    upsertServiceArea({
+      nameAr: "خميس مشيط",
+      nameEn: "Khamis Mushait",
+      city: "Khamis Mushait",
+      travelFee: 1500,
+      active: true,
     }),
   ]);
 
@@ -424,6 +433,66 @@ async function main() {
           description: "Seeded sample complaint",
         },
       });
+    }
+  }
+
+  // US1/US5: sample public-site content so a fresh environment's Home page
+  // and /faq are browsable immediately, not empty stubs.
+  const CONTENT_BLOCKS = [
+    {
+      key: "home-hero",
+      type: "SECTION" as const,
+      titleAr: "خدمات تنظيف احترافية في عسير",
+      titleEn: "Professional Cleaning Services in Asir",
+      bodyAr: "نقدم خدمات تنظيف منزلية وتجارية موثوقة في أبها وخميس مشيط.",
+      bodyEn: "Reliable residential and commercial cleaning across Abha and Khamis Mushait.",
+      sortOrder: 1,
+    },
+    {
+      key: "home-why-us",
+      type: "SECTION" as const,
+      titleAr: "لماذا تختارنا",
+      titleEn: "Why Choose Us",
+      bodyAr: "فريق مدرب، ضمان الجودة، وحجز سهل عبر الإنترنت أو الهاتف.",
+      bodyEn: "Trained staff, quality guarantees, and easy booking online or by phone.",
+      sortOrder: 2,
+    },
+  ];
+  for (const block of CONTENT_BLOCKS) {
+    await prisma.websiteContentBlock.upsert({
+      where: { key: block.key },
+      update: {},
+      create: block,
+    });
+  }
+
+  const FAQ_ITEMS = [
+    {
+      questionAr: "ما هي مناطق تغطية الخدمة؟",
+      questionEn: "Which areas do you serve?",
+      answerAr: "نخدم حالياً مدينتي أبها وخميس مشيط.",
+      answerEn: "We currently serve Abha and Khamis Mushait.",
+      sortOrder: 1,
+    },
+    {
+      questionAr: "كيف يمكنني إلغاء أو إعادة جدولة حجزي؟",
+      questionEn: "How do I cancel or reschedule my booking?",
+      answerAr: "يمكنك ذلك من صفحة تفاصيل الحجز في حسابك، أو بالتواصل معنا عبر واتساب.",
+      answerEn: "You can do this from your booking detail page, or by contacting us on WhatsApp.",
+      sortOrder: 2,
+    },
+    {
+      questionAr: "ما هي طرق الدفع المتاحة؟",
+      questionEn: "What payment methods are available?",
+      answerAr: "نقبل الدفع النقدي والتحويل البنكي عند اكتمال الخدمة.",
+      answerEn: "We accept cash and bank transfer upon service completion.",
+      sortOrder: 3,
+    },
+  ];
+  for (const item of FAQ_ITEMS) {
+    const existing = await prisma.faqItem.findFirst({ where: { questionEn: item.questionEn } });
+    if (!existing) {
+      await prisma.faqItem.create({ data: item });
     }
   }
 }

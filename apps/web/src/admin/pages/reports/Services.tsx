@@ -5,12 +5,12 @@ import { formatCurrency } from "../../../lib/formatters";
 
 // T165 (US8)
 export default function Services() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useGetServicesReportQuery();
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Services Report</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:reports.servicesReportTitle")}</h1>
       <Table
         loading={isLoading}
         rowKey="nameEn"
@@ -18,13 +18,13 @@ export default function Services() {
         scroll={{ x: true }}
         columns={[
           {
-            title: "Service",
+            title: t("admin:reports.service"),
             render: (_: unknown, row: { nameAr: string; nameEn: string }) =>
               i18n.language === "ar" ? row.nameAr : row.nameEn,
           },
-          { title: "Completed Bookings", dataIndex: "count" },
+          { title: t("admin:reports.completedBookings"), dataIndex: "count" },
           {
-            title: "Revenue",
+            title: t("admin:reports.revenue"),
             dataIndex: "revenue",
             render: (value: number) => formatCurrency(value, i18n.language),
           },

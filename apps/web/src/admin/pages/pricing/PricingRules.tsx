@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Form, InputNumber, Modal, Select, Table, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useListServicesQuery } from "../../../api/servicesApi";
 import {
   useCreatePricingRuleMutation,
@@ -17,6 +18,7 @@ interface FormValues {
 // T176 (US-Polish): backend CRUD already existed from Phase 3 (T058) —
 // this adds the missing Admin UI.
 export default function PricingRules() {
+  const { t } = useTranslation();
   const { data: services } = useListServicesQuery();
   const [serviceId, setServiceId] = useState<string | null>(null);
   const { data: rules, isLoading } = useListPricingRulesQuery(serviceId ?? "", { skip: !serviceId });
@@ -29,17 +31,17 @@ export default function PricingRules() {
     try {
       await createRule({ serviceId, conditionsJson: {}, ...values }).unwrap();
       setOpen(false);
-      message.success("Pricing rule created");
+      message.success(t("admin:pricing.ruleCreated"));
     } catch {
-      message.error("Could not create the pricing rule");
+      message.error(t("admin:pricing.ruleCreateError"));
     }
   }
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Pricing Rules</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:pricing.rulesTitle")}</h1>
       <Select
-        placeholder="Select a service"
+        placeholder={t("admin:pricing.selectService")}
         size="large"
         className="mb-4 w-full sm:w-64"
         options={services?.map((s) => ({ value: s.id, label: s.nameEn }))}
@@ -48,7 +50,7 @@ export default function PricingRules() {
       {serviceId && (
         <>
           <Button type="primary" className="mb-4" onClick={() => setOpen(true)}>
-            New Rule
+            {t("admin:pricing.newRule")}
           </Button>
           <Table
             loading={isLoading}
@@ -56,15 +58,15 @@ export default function PricingRules() {
             dataSource={rules}
             scroll={{ x: true }}
             columns={[
-              { title: "Rule Type", dataIndex: "ruleType" },
-              { title: "Calculation", dataIndex: "calculationType" },
-              { title: "Amount", dataIndex: "amount" },
-              { title: "Priority", dataIndex: "priority" },
+              { title: t("admin:pricing.ruleType"), dataIndex: "ruleType" },
+              { title: t("admin:pricing.calculation"), dataIndex: "calculationType" },
+              { title: t("admin:pricing.amount"), dataIndex: "amount" },
+              { title: t("admin:pricing.priority"), dataIndex: "priority" },
               {
                 title: "",
                 render: (_: unknown, row: { id: string }) => (
                   <Button danger size="small" onClick={() => deleteRule(row.id)}>
-                    Delete
+                    {t("admin:common.delete")}
                   </Button>
                 ),
               },
@@ -72,28 +74,28 @@ export default function PricingRules() {
           />
         </>
       )}
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="New Pricing Rule">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:pricing.newRule")}>
         <Form<FormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="ruleType" label="Rule Type" rules={[{ required: true }]}>
+          <Form.Item name="ruleType" label={t("admin:pricing.ruleType")} rules={[{ required: true }]}>
             <Select
               size="large"
-              options={["PROPERTY_TYPE", "AREA_BAND", "DAY_TIME", "CONDITION_MODIFIER"].map((t) => ({
-                value: t,
-                label: t,
+              options={["PROPERTY_TYPE", "AREA_BAND", "DAY_TIME", "CONDITION_MODIFIER"].map((v) => ({
+                value: v,
+                label: v,
               }))}
             />
           </Form.Item>
-          <Form.Item name="calculationType" label="Calculation Type" rules={[{ required: true }]}>
-            <Select size="large" options={["PERCENTAGE", "FIXED_AMOUNT"].map((t) => ({ value: t, label: t }))} />
+          <Form.Item name="calculationType" label={t("admin:pricing.calculationType")} rules={[{ required: true }]}>
+            <Select size="large" options={["PERCENTAGE", "FIXED_AMOUNT"].map((v) => ({ value: v, label: v }))} />
           </Form.Item>
-          <Form.Item name="amount" label="Amount" rules={[{ required: true }]}>
+          <Form.Item name="amount" label={t("admin:pricing.amount")} rules={[{ required: true }]}>
             <InputNumber size="large" className="w-full" />
           </Form.Item>
-          <Form.Item name="priority" label="Priority">
+          <Form.Item name="priority" label={t("admin:pricing.priority")}>
             <InputNumber size="large" className="w-full" />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block loading={isCreating}>
-            Create
+            {t("admin:common.create")}
           </Button>
         </Form>
       </Modal>

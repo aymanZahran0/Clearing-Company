@@ -29,6 +29,10 @@ import { websiteContentRouter } from "./modules/website-content/routes.js";
 import { settingsRouter } from "./modules/settings/routes.js";
 import { notificationsRouter } from "./modules/notifications/routes.js";
 import { serviceImagesRouter } from "./modules/service-images/routes.js";
+import { jobRunsRouter } from "./modules/job-runs/routes.js";
+import { adminAccountsRouter } from "./modules/admin-accounts/routes.js";
+import { rescheduleRequestsRouter } from "./modules/reschedule-requests/routes.js";
+import { prisma } from "./lib/prisma.js";
 
 export function createApp() {
   const app = express();
@@ -47,8 +51,16 @@ export function createApp() {
   app.use(cookieParser());
   app.use(standardRateLimit);
 
-  app.get("/api/v1/health", (_req, res) => {
-    res.json({ status: "ok" });
+  // contracts/health-and-jobs.md: existing path/200-on-healthy contract
+  // preserved; body now reports DB reachability for monitoring/alerting.
+  app.get("/api/v1/health", async (_req, res) => {
+    let db = true;
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch {
+      db = false;
+    }
+    res.json({ status: db ? "ok" : "degraded", db, timestamp: new Date().toISOString() });
   });
 
   app.use("/api/v1", openapiRouter);
@@ -75,6 +87,9 @@ export function createApp() {
   app.use("/api/v1", settingsRouter);
   app.use("/api/v1", notificationsRouter);
   app.use("/api/v1", serviceImagesRouter);
+  app.use("/api/v1", jobRunsRouter);
+  app.use("/api/v1", adminAccountsRouter);
+  app.use("/api/v1", rescheduleRequestsRouter);
 
   app.use(errorHandler);
 

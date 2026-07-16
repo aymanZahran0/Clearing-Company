@@ -26,6 +26,9 @@ export const updateServiceSchema = createServiceSchema.partial().extend({
 });
 export type UpdateServiceInput = z.infer<typeof updateServiceSchema>;
 
+// includeInactive is only honored for an authenticated ADMIN caller (see
+// routes.ts) — a CUSTOMER or anonymous request always gets active-only.
 export const listServicesQuerySchema = z.object({
   categoryId: z.string().uuid().optional(),
+  includeInactive: z.coerce.boolean().optional(),
 });

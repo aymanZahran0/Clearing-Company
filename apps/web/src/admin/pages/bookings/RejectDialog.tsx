@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button, Form, Input, Modal, message } from "antd";
+import { useTranslation } from "react-i18next";
 import { useRejectBookingMutation } from "../../../api/bookingsApi";
 
 export function RejectDialog({ bookingId, onDone }: { bookingId: string; onDone?: () => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [rejectBooking, { isLoading }] = useRejectBookingMutation();
 
@@ -12,22 +14,22 @@ export function RejectDialog({ bookingId, onDone }: { bookingId: string; onDone?
       setOpen(false);
       onDone?.();
     } catch {
-      message.error("Could not reject this booking");
+      message.error(t("admin:bookings.rejectError"));
     }
   }
 
   return (
     <>
       <Button danger size="large" onClick={() => setOpen(true)}>
-        Reject Booking
+        {t("admin:bookings.rejectBooking")}
       </Button>
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title="Reject Booking">
+      <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:bookings.rejectBooking")}>
         <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
+          <Form.Item name="reason" label={t("admin:bookings.reason")} rules={[{ required: true }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
           <Button danger htmlType="submit" size="large" block loading={isLoading}>
-            Reject
+            {t("admin:bookings.reject")}
           </Button>
         </Form>
       </Modal>

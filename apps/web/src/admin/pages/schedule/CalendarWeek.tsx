@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Button, Card, Empty, Tag } from "antd";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListAllBookingsQuery } from "../../../api/bookingsApi";
 
 // T113 (US4): 7-day scheduling overview, grouping CONFIRMED bookings by
 // scheduled day so the Admin can spot gaps and overload at a glance.
 export default function CalendarWeek() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
   const scheduledFrom = weekStart.toISOString();
@@ -17,13 +19,13 @@ export default function CalendarWeek() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-semibold">Week View</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t("admin:schedule.weekView")}</h1>
       <div className="mb-4 flex gap-2">
         <Button size="large" onClick={() => setWeekStart((prev) => prev.subtract(7, "day"))}>
-          Previous
+          {t("admin:schedule.previous")}
         </Button>
         <Button size="large" onClick={() => setWeekStart((prev) => prev.add(7, "day"))}>
-          Next
+          {t("admin:schedule.next")}
         </Button>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">

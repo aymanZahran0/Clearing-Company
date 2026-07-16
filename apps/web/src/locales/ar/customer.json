@@ -1,0 +1,69 @@
+{
+  "addresses": {
+    "title": "العناوين"
+  },
+  "addressStep": {
+    "city": "المدينة",
+    "neighborhood": "الحي",
+    "newAddress": "+ عنوان جديد",
+    "serviceArea": "منطقة الخدمة",
+    "street": "الشارع"
+  },
+  "bookingDetail": {
+    "fileComplaint": "تقديم شكوى",
+    "rateThisService": "تقييم هذه الخدمة"
+  },
+  "bookingLookup": {
+    "bookingReference": "الرقم المرجعي للحجز",
+    "title": "تتبّع حجزك",
+    "verificationCode": "رمز التحقق"
+  },
+  "complaintForm": {
+    "category": "الفئة",
+    "description": "الوصف",
+    "submitComplaint": "إرسال الشكوى",
+    "submitError": "تعذر إرسال شكواك",
+    "submitted": "تم إرسال شكواك"
+  },
+  "confirmationStep": {
+    "acceptTerms": "أوافق على الشروط والأحكام",
+    "completePreviousSteps": "يرجى إكمال الخطوات السابقة أولاً.",
+    "submitted": "تم إرسال طلب حجزك.",
+    "whatsapp": "واتساب"
+  },
+  "forgotPassword": {
+    "checkInstructions": "تحقق من هاتفك أو بريدك الإلكتروني للحصول على التعليمات."
+  },
+  "quoteReview": {
+    "discount": "الخصم",
+    "discountCode": "رمز الخصم",
+    "manualReviewRequired": "يتطلب هذا السعر مراجعة يدوية من فريقنا قبل اعتماده النهائي.",
+    "subtotal": "المجموع الفرعي",
+    "tax": "الضريبة",
+    "total": "الإجمالي",
+    "travelFee": "رسوم التنقل"
+  },
+  "rescheduleDialog": {
+    "alreadyPending": "يوجد بالفعل طلب إعادة جدولة معلّق لهذا الحجز",
+    "newTimeSlot": "الموعد الجديد",
+    "reasonOptional": "السبب (اختياري)",
+    "requestReschedule": "طلب إعادة جدولة",
+    "submit": "إرسال الطلب",
+    "submitError": "تعذر إرسال طلب إعادة الجدولة",
+    "submitted": "تم إرسال طلب إعادة الجدولة"
+  },
+  "reviewForm": {
+    "commentOptional": "تعليق (اختياري)",
+    "rating": "التقييم",
+    "submitError": "تعذر إرسال تقييمك",
+    "submitReview": "إرسال التقييم",
+    "thankYou": "شكراً لملاحظاتك"
+  },
+  "scheduleStep": {
+    "slotOption": "{{dateTime}} ({{startTime}}–{{endTime}}) — متبقٍّ {{count}}",
+    "slotsLeft": "متبقٍّ {{count}}"
+  },
+  "subscriptions": {
+    "starts": "تبدأ في {{date}}"
+  }
+}

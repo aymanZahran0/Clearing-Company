@@ -17,7 +17,7 @@ export default function ForgotPassword() {
   if (isSuccess) {
     return (
       <div className="mx-auto max-w-sm p-4 sm:p-6">
-        <p>{t("auth.forgotPassword")} — check your phone/email for instructions.</p>
+        <p>{t("customer:forgotPassword.checkInstructions")}</p>
       </div>
     );
   }

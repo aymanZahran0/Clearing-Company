@@ -11,26 +11,26 @@ test.describe("Admin reviews operational and revenue reports (User Story 8)", ()
     await page.getByLabel(/كلمة المرور|Password/).fill("ChangeMe123!");
     await page.getByRole("button", { name: /إرسال|Submit/ }).click();
 
-    await expect(page.getByText("Today's Bookings")).toBeVisible();
-    await expect(page.getByText("Unscheduled (Confirmed)")).toBeVisible();
-    await expect(page.getByText("Overdue")).toBeVisible();
+    await expect(page.getByText(/Today's Bookings|حجوزات اليوم/)).toBeVisible();
+    await expect(page.getByText(/Unscheduled \(Confirmed\)|غير مجدولة \(مؤكدة\)/)).toBeVisible();
+    await expect(page.getByText(/^(Overdue|متأخر)$/)).toBeVisible();
 
     await page.goto("/admin/reports/revenue");
-    await expect(page.getByText("Completed Bookings")).toBeVisible();
+    await expect(page.getByText(/Completed Bookings|الحجوزات المكتملة/)).toBeVisible();
 
     await page.goto("/admin/reports/services");
-    await expect(page.getByRole("columnheader", { name: "Revenue" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: /Revenue|الإيرادات/ })).toBeVisible();
 
     await page.goto("/admin/reports/quality");
-    await expect(page.getByText("Average Rating")).toBeVisible();
+    await expect(page.getByText(/Average Rating|متوسط التقييم/)).toBeVisible();
 
     await page.goto("/admin/reports/audit-log");
-    await expect(page.getByRole("columnheader", { name: "Action" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: /Action|الإجراء/ })).toBeVisible();
 
     // Export: default (no PII) download.
     await page.goto("/admin/reports/export");
     const downloadPromise = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Download CSV" }).click();
+    await page.getByRole("button", { name: /Download CSV|تنزيل ملف CSV/ }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe("bookings-export.csv");
   });

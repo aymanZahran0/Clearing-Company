@@ -1,6 +1,6 @@
 import { Button, Form, Input, message } from "antd";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
@@ -44,6 +44,9 @@ export default function AdminLogin() {
           {t("auth.submit")}
         </Button>
       </Form>
+      <Link to="/forgot-password" className="mt-3 inline-block">
+        {t("auth.forgotPassword")}
+      </Link>
     </div>
   );
 }

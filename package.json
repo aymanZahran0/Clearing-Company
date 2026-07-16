@@ -14,6 +14,7 @@
     "test": "npm run test --workspace apps/web && npm run test --workspace apps/api",
     "test:web": "npm run test --workspace apps/web",
     "test:api": "npm run test --workspace apps/api",
+    "test:integration": "npm run test:integration --workspace apps/api",
     "test:e2e": "playwright test",
     "lighthouse:ci": "lhci autorun",
     "lint": "npm run lint --workspace apps/web && npm run lint --workspace apps/api",
@@ -25,6 +26,8 @@
     "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.48.0",
     "eslint": "^9.12.0",
+    "eslint-plugin-i18next": "^6.1.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.3.3",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.8.0"

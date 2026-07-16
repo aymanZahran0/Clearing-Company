@@ -5,6 +5,8 @@ import { RequireRole } from "../guards/RequireRole";
 import Home from "../customer/pages/Home";
 import ServiceCatalog from "../customer/pages/ServiceCatalog";
 import ServiceDetail from "../customer/pages/ServiceDetail";
+import Faq from "../customer/pages/Faq";
+import ServiceAreas from "../customer/pages/ServiceAreas";
 import Login from "../customer/pages/Login";
 import Register from "../customer/pages/Register";
 import ForgotPassword from "../customer/pages/ForgotPassword";
@@ -32,6 +34,10 @@ import OperatingHours from "../admin/pages/schedule/OperatingHours";
 import ClosedDates from "../admin/pages/schedule/ClosedDates";
 import ChecklistTemplateEditor from "../admin/pages/catalog/ChecklistTemplateEditor";
 import ServiceImages from "../admin/pages/catalog/ServiceImages";
+import Categories from "../admin/pages/catalog/Categories";
+import Services from "../admin/pages/catalog/Services";
+import AddOns from "../admin/pages/catalog/AddOns";
+import CatalogChecklist from "../admin/pages/catalog/CatalogChecklist";
 import AdminReviews from "../admin/pages/quality/Reviews";
 import AdminComplaints from "../admin/pages/quality/Complaints";
 import AdminComplaintDetail from "../admin/pages/quality/ComplaintDetail";
@@ -51,6 +57,9 @@ import DiscountCodes from "../admin/pages/pricing/DiscountCodes";
 import PricingRules from "../admin/pages/pricing/PricingRules";
 import NotificationTemplates from "../admin/pages/notifications/Templates";
 import NotificationLog from "../admin/pages/notifications/Log";
+import AdminAccountsList from "../admin/pages/accounts/List";
+import JobRuns from "../admin/pages/reports/JobRuns";
+import RescheduleRequestsList from "../admin/pages/reschedule-requests/List";
 
 // Public routes (Home, ServiceCatalog, ServiceDetail) are the ones
 // prerendered at build time per research.md R9 — see vite.config.ts (T079).
@@ -69,6 +78,22 @@ const router = createBrowserRouter([
     element: (
       <AppShell>
         <ServiceCatalog />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/faq",
+    element: (
+      <AppShell>
+        <Faq />
+      </AppShell>
+    ),
+  },
+  {
+    path: "/service-areas",
+    element: (
+      <AppShell>
+        <ServiceAreas />
       </AppShell>
     ),
   },
@@ -325,6 +350,46 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/catalog/categories",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <Categories />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/catalog/services",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <Services />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/catalog/add-ons",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AddOns />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/catalog/checklist",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <CatalogChecklist />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
     path: "/admin/catalog/services/:slug/images",
     element: (
       <RequireRole role="ADMIN">
@@ -465,6 +530,26 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/reports/job-runs",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <JobRuns />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/reschedule-requests",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <RescheduleRequestsList />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
     path: "/admin/content/website",
     element: (
       <RequireRole role="ADMIN">
@@ -490,6 +575,16 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <SystemSettings />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/accounts",
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AdminAccountsList />
         </AdminShell>
       </RequireRole>
     ),

@@ -2,17 +2,10 @@ import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "@nuqaa-asir/shared";
 import type { CreateServiceInput, UpdateServiceInput } from "./schema.js";
 
-export function listServices(categoryId?: string) {
+export function listServices(categoryId?: string, includeInactive = false) {
   return prisma.service.findMany({
-    where: { active: true, ...(categoryId ? { categoryId } : {}) },
-    include: { images: true, addOns: { where: { active: true } } },
-    orderBy: { createdAt: "asc" },
-  });
-}
-
-export function listAllServicesForAdmin() {
-  return prisma.service.findMany({
-    include: { images: true, addOns: true },
+    where: { ...(includeInactive ? {} : { active: true }), ...(categoryId ? { categoryId } : {}) },
+    include: { images: true, addOns: includeInactive ? true : { where: { active: true } } },
     orderBy: { createdAt: "asc" },
   });
 }
