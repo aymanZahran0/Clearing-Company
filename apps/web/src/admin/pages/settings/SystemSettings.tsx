@@ -24,7 +24,7 @@ export default function SystemSettings() {
       refetch();
       message.success(t("admin:settings.saved", { key }));
     } catch {
-      message.error(t("admin:settings.saveError", { key }));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

@@ -2,12 +2,13 @@ import { List, Skeleton, Tag } from "antd";
 import { useTranslation } from "react-i18next";
 import { useListOwnNotificationLogsQuery } from "../../api/notificationsApi";
 import { formatDateTime } from "../../lib/formatters";
+import { enumLabel } from "../../lib/enumLabels";
 
 // T178: customer-visible notification history (FR-069 read scope) — the
 // customer sees which events were sent to them, never other customers'
 // logs, and never the underlying recipient/PII payload.
 export default function Notifications() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useListOwnNotificationLogsQuery();
 
   if (isLoading) {
@@ -26,9 +27,9 @@ export default function Notifications() {
         renderItem={(log) => (
           <List.Item>
             <div>
-              <div className="font-medium">{log.templateKey}</div>
-              <div className="text-sm text-gray-500">{formatDateTime(log.createdAt, "en")}</div>
-              <Tag>{log.status}</Tag>
+              <div className="font-medium">{enumLabel("notificationTemplateKey", log.templateKey)}</div>
+              <div className="text-sm text-gray-500">{formatDateTime(log.createdAt, i18n.language)}</div>
+              <Tag>{enumLabel("notificationStatus", log.status)}</Tag>
             </div>
           </List.Item>
         )}

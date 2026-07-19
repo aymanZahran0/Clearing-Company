@@ -7,6 +7,7 @@ import {
   type AdminAccount,
 } from "../../../api/adminAccountsApi";
 import { formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
 import { InviteDialog } from "./InviteDialog";
 import { ResetDialog } from "./ResetDialog";
 
@@ -25,9 +26,8 @@ export default function AdminAccountsList() {
     try {
       await suspend(id).unwrap();
       message.success(t("admin:accounts.suspended"));
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      message.error(status === 409 ? t("admin:accounts.lastActiveAdminError") : t("admin:accounts.suspendError"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -36,7 +36,7 @@ export default function AdminAccountsList() {
       await reactivate(id).unwrap();
       message.success(t("admin:accounts.reactivated"));
     } catch {
-      message.error(t("admin:accounts.reactivateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -57,7 +57,7 @@ export default function AdminAccountsList() {
           {
             title: t("admin:bookings.status"),
             dataIndex: "status",
-            render: (v: AdminAccount["status"]) => <Tag>{v}</Tag>,
+            render: (v: AdminAccount["status"]) => <Tag>{enumLabel("userStatus", v)}</Tag>,
           },
           {
             title: t("admin:accounts.lastLogin"),

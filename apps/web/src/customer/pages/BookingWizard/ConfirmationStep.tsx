@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button, Checkbox, Form, Input, Result, Space, message } from "antd";
+import { Alert, Button, Checkbox, Form, Input, Result, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -50,12 +50,12 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
       setReference(booking.referenceNumber);
       dispatch(resetWizard());
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
   if (reference) {
-    const whatsappText = encodeURIComponent(`Booking reference: ${reference}`);
+    const whatsappText = encodeURIComponent(t("customer:confirmationStep.whatsappMessage", { reference }));
     return (
       <Result
         status="success"
@@ -91,7 +91,12 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
       <Form.Item
         name="consentAccepted"
         valuePropName="checked"
-        rules={[{ validator: (_, v) => (v ? Promise.resolve() : Promise.reject()) }]}
+        rules={[
+          {
+            validator: (_, v) =>
+              v ? Promise.resolve() : Promise.reject(new Error(t("customer:confirmationStep.acceptTermsRequired"))),
+          },
+        ]}
       >
         <Checkbox>{t("customer:confirmationStep.acceptTerms")}</Checkbox>
       </Form.Item>

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
+import { Alert, Button, Checkbox, Form, Input, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { useListTimeSlotsQuery } from "../../../api/availabilityApi";
 import { useRescheduleBookingMutation } from "../../../api/bookingsApi";
-import { formatDateTime } from "../../../lib/formatters";
+import { SlotPicker } from "../../../components/SlotPicker";
 
 interface RescheduleFormValues {
   timeSlotId: string;
@@ -25,13 +25,8 @@ export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onD
       await rescheduleBooking({ id: bookingId, ...values }).unwrap();
       setOpen(false);
       onDone?.();
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      if (status === 409) {
-        message.error(t("admin:bookings.capacityConflict"));
-      } else {
-        message.error(t("admin:bookings.rescheduleError"));
-      }
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -43,12 +38,14 @@ export function RescheduleDialog({ bookingId, onDone }: { bookingId: string; onD
       <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:bookings.rescheduleBooking")}>
         <Form<RescheduleFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="timeSlotId" label={t("admin:bookings.newTimeSlot")} rules={[{ required: true }]}>
-            <Select
-              size="large"
-              options={availableSlots.map((slot) => ({
-                value: slot.id,
-                label: `${formatDateTime(slot.date, "en")} ${slot.startTime}–${slot.endTime} (${slot.bookedCount}/${slot.capacity})`,
+            <SlotPicker
+              slots={availableSlots.map((slot) => ({
+                id: slot.id,
+                date: slot.date,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
                 disabled: slot.bookedCount >= slot.capacity,
+                spotsLabel: `(${slot.bookedCount}/${slot.capacity})`,
               }))}
             />
           </Form.Item>

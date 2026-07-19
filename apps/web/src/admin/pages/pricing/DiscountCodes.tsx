@@ -9,6 +9,8 @@ import {
   type DiscountCode,
   type DiscountCodeInput,
 } from "../../../api/discountCodesApi";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 interface FormValues {
   code: string;
@@ -43,7 +45,7 @@ export default function DiscountCodes() {
       setOpen(false);
       message.success(t("admin:pricing.discountCodeCreated"));
     } catch {
-      message.error(t("admin:pricing.discountCodeCreateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -62,7 +64,11 @@ export default function DiscountCodes() {
         scroll={{ x: true }}
         columns={[
           { title: t("admin:pricing.code"), dataIndex: "code" },
-          { title: t("admin:content.type"), dataIndex: "type" },
+          {
+            title: t("admin:content.type"),
+            dataIndex: "type",
+            render: (value: string) => enumLabel("discountType", value),
+          },
           { title: t("admin:pricing.amount"), dataIndex: "amount" },
           {
             title: t("admin:pricing.used"),
@@ -91,7 +97,7 @@ export default function DiscountCodes() {
             <Input size="large" />
           </Form.Item>
           <Form.Item name="type" label={t("admin:content.type")} rules={[{ required: true }]}>
-            <Select size="large" options={["PERCENTAGE", "FIXED"].map((v) => ({ value: v, label: v }))} />
+            <Select size="large" options={enumOptions("discountType", ["PERCENTAGE", "FIXED"])} />
           </Form.Item>
           <Form.Item name="amount" label={t("admin:pricing.amount")} rules={[{ required: true }]}>
             <InputNumber size="large" min={0} className="w-full" />

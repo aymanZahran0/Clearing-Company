@@ -18,7 +18,7 @@ export default function Profile() {
       await updateProfile(values).unwrap();
       message.success(t("common.save") as string);
     } catch {
-      message.error(t("common.error") as string);
+      // toast shown by the global RTK Query error middleware
     }
   }
 

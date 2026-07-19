@@ -39,9 +39,9 @@ test.describe("Admin manages a recurring subscription (User Story 7)", () => {
     await page.waitForURL(/\/admin$/);
 
     await page.goto("/admin/subscriptions/new");
-    await page.getByPlaceholder(/Search by phone|البحث برقم الجوال/).fill(CUSTOMER_PHONE);
-    await page.getByPlaceholder(/Search by phone|البحث برقم الجوال/).press("Enter");
-    await page.locator(".ant-list-item").first().click();
+
+    await page.getByLabel(/^(Customer|العميل)$/).click();
+    await page.getByText(CUSTOMER_PHONE).click();
 
     // Keyboard-driven selection sidesteps Ant Design's Select DOM quirks
     // (an ARIA-only zero-size listbox alongside the real visible options,
@@ -66,6 +66,7 @@ test.describe("Admin manages a recurring subscription (User Story 7)", () => {
     expect(response.status()).toBe(201);
 
     await page.getByRole("button", { name: /^(Pause|إيقاف مؤقت)$/ }).click();
-    await expect(page.getByText(/Status: PAUSED|الحالة: PAUSED/)).toBeVisible();
+    // Status value is now localized (enumLabel) — "متوقف مؤقتًا" is Arabic default.
+    await expect(page.getByText(/Status: PAUSED|الحالة: متوقف مؤقتًا/)).toBeVisible();
   });
 });

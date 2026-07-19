@@ -17,6 +17,13 @@ const STATUS_COLOR: Record<RescheduleRequestStatus, string> = {
   AUTO_REJECTED: "default",
 };
 
+const STATUS_LABEL_KEYS: Record<RescheduleRequestStatus, string> = {
+  PENDING: "admin:rescheduleRequests.pending",
+  APPROVED: "admin:rescheduleRequests.approvedStatus",
+  REJECTED: "admin:rescheduleRequests.rejectedStatus",
+  AUTO_REJECTED: "admin:rescheduleRequests.autoRejectedStatus",
+};
+
 // T105 (US10): approval queue for Customer-submitted reschedule requests.
 // Approval delegates the actual schedule/capacity mutation to the backend's
 // rescheduleBooking() (contracts/reschedule-requests.md) — this page only
@@ -31,11 +38,8 @@ export default function RescheduleRequestsList() {
     try {
       await approve({ id }).unwrap();
       message.success(t("admin:rescheduleRequests.approved"));
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      message.error(
-        status === 409 ? t("admin:rescheduleRequests.capacityConflict") : t("admin:rescheduleRequests.approveError")
-      );
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -85,7 +89,7 @@ export default function RescheduleRequestsList() {
           {
             title: t("admin:bookings.status"),
             dataIndex: "status",
-            render: (v: RescheduleRequestStatus) => <Tag color={STATUS_COLOR[v]}>{v}</Tag>,
+            render: (v: RescheduleRequestStatus) => <Tag color={STATUS_COLOR[v]}>{t(STATUS_LABEL_KEYS[v])}</Tag>,
           },
           {
             title: "",

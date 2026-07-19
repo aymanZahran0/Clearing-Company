@@ -20,9 +20,8 @@ export function InviteDialog() {
       await inviteAdmin(values).unwrap();
       setOpen(false);
       message.success(t("admin:accounts.invited"));
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      message.error(status === 409 ? t("admin:accounts.emailExists") : t("admin:accounts.inviteError"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 

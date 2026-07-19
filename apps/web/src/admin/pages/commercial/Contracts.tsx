@@ -8,6 +8,8 @@ import {
   useUpdateContractMutation,
 } from "../../../api/commercialApi";
 import { formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 interface ContractFormValues {
   startDate: string;
@@ -18,7 +20,7 @@ interface ContractFormValues {
 // T154 (US7): a commercial account's locations + contracts, with contract
 // creation and status updates.
 export default function Contracts() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: account, isLoading, refetch } = useGetCommercialAccountQuery(id ?? "", { skip: !id });
   const [createContract, { isLoading: isCreating }] = useCreateContractMutation();
@@ -46,7 +48,7 @@ export default function Contracts() {
       setOpen(false);
       message.success(t("admin:commercial.contractCreated"));
     } catch {
-      message.error(t("admin:commercial.contractCreateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -85,15 +87,16 @@ export default function Contracts() {
                 size="small"
                 value={contract.status}
                 style={{ width: 120 }}
-                options={["ACTIVE", "EXPIRED", "TERMINATED"].map((s) => ({ value: s, label: s }))}
+                options={enumOptions("contractStatus", ["ACTIVE", "EXPIRED", "TERMINATED"])}
                 onChange={(status) =>
                   updateContract({ id: contract.id, body: { status } }).then(() => refetch())
                 }
               />,
             ]}
           >
-            {formatDateTime(contract.startDate, "en")}
-            {contract.endDate ? ` – ${formatDateTime(contract.endDate, "en")}` : ""} <Tag>{contract.status}</Tag>
+            {formatDateTime(contract.startDate, i18n.language)}
+            {contract.endDate ? ` – ${formatDateTime(contract.endDate, i18n.language)}` : ""}{" "}
+            <Tag>{enumLabel("contractStatus", contract.status)}</Tag>
           </List.Item>
         )}
       />

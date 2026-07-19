@@ -11,6 +11,8 @@ import arCatalog from "../locales/ar/catalog.json";
 import enCatalog from "../locales/en/catalog.json";
 import arContent from "../locales/ar/content.json";
 import enContent from "../locales/en/content.json";
+import arEnums from "../locales/ar/enums.json";
+import enEnums from "../locales/en/enums.json";
 
 // Arabic is the primary locale (constitution Principle III); English is a
 // fully supported secondary locale, not a stub.
@@ -24,12 +26,11 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      ar: { common: arCommon, admin: arAdmin, customer: arCustomer, catalog: arCatalog, content: arContent },
-      en: { common: enCommon, admin: enAdmin, customer: enCustomer, catalog: enCatalog, content: enContent },
+      ar: { common: arCommon, admin: arAdmin, customer: arCustomer, catalog: arCatalog, content: arContent, enums: arEnums },
+      en: { common: enCommon, admin: enAdmin, customer: enCustomer, catalog: enCatalog, content: enContent, enums: enEnums },
     },
-    fallbackLng: "ar",
-    lng: import.meta.env.VITE_DEFAULT_LOCALE ?? "ar",
-    ns: ["common", "admin", "customer", "catalog", "content"],
+    fallbackLng: import.meta.env.VITE_DEFAULT_LOCALE ?? "ar",
+    ns: ["common", "admin", "customer", "catalog", "content", "enums"],
     defaultNS: "common",
     interpolation: { escapeValue: false },
     detection: {

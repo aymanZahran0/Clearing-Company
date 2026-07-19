@@ -1,0 +1,164 @@
+{
+  "role": {
+    "CUSTOMER": "Customer",
+    "ADMIN": "Admin"
+  },
+  "userStatus": {
+    "ACTIVE": "Active",
+    "INVITED": "Invited",
+    "SUSPENDED": "Suspended"
+  },
+  "notificationChannel": {
+    "WHATSAPP": "WhatsApp",
+    "SMS": "SMS",
+    "EMAIL": "Email"
+  },
+  "notificationStatus": {
+    "SENT": "Sent",
+    "FAILED": "Failed",
+    "PENDING": "Pending"
+  },
+  "notificationTemplateKey": {
+    "QUOTE_READY": "Quote Ready",
+    "BOOKING_CONFIRMED": "Booking Confirmed",
+    "REMINDER": "Reminder",
+    "EN_ROUTE": "Team En Route",
+    "COMPLETED": "Service Completed",
+    "FEEDBACK_REQUEST": "Feedback Request",
+    "RESCHEDULE": "Reschedule",
+    "CANCELLATION": "Cancellation",
+    "REWORK_SCHEDULED": "Rework Scheduled",
+    "RESCHEDULE_APPROVED": "Reschedule Approved",
+    "RESCHEDULE_REJECTED": "Reschedule Rejected",
+    "ADMIN_INVITE": "Admin Invite",
+    "ADMIN_CREDENTIAL_RESET": "Admin Credential Reset"
+  },
+  "propertyType": {
+    "APARTMENT": "Apartment",
+    "VILLA": "Villa",
+    "OFFICE": "Office",
+    "SHOP": "Shop",
+    "CLINIC": "Clinic",
+    "FURNISHED_UNIT": "Furnished Unit",
+    "OTHER": "Other"
+  },
+  "pricingType": {
+    "FIXED": "Fixed",
+    "PROPERTY_SIZE": "By Property Size",
+    "HOURLY": "Hourly",
+    "QUANTITY": "By Quantity",
+    "CUSTOM_QUOTE": "Custom Quote"
+  },
+  "pricingRuleType": {
+    "PROPERTY_TYPE": "Property Type",
+    "AREA_BAND": "Area Band",
+    "DAY_TIME": "Day/Time",
+    "CONDITION_MODIFIER": "Condition Modifier"
+  },
+  "calculationType": {
+    "PERCENTAGE": "Percentage",
+    "FIXED_AMOUNT": "Fixed Amount"
+  },
+  "discountType": {
+    "PERCENTAGE": "Percentage",
+    "FIXED": "Fixed"
+  },
+  "quoteStatus": {
+    "ACTIVE": "Active",
+    "EXPIRED": "Expired",
+    "CONVERTED": "Converted to Booking"
+  },
+  "bookingStatus": {
+    "DRAFT": "Draft",
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "RESCHEDULED": "Rescheduled",
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "REJECTED": "Rejected",
+    "COMPLAINT_OPENED": "Complaint Opened"
+  },
+  "bookingSource": {
+    "WEB": "Website",
+    "ADMIN_PHONE": "Admin Phone Booking"
+  },
+  "addOnPricingMode": {
+    "FIXED": "Fixed",
+    "PER_QUANTITY": "Per Quantity"
+  },
+  "paymentMethod": {
+    "CASH": "Cash",
+    "BANK_TRANSFER": "Bank Transfer",
+    "POS": "POS",
+    "COMPLIMENTARY": "Complimentary",
+    "OTHER": "Other"
+  },
+  "paymentStatus": {
+    "UNPAID": "Unpaid",
+    "PARTIALLY_PAID": "Partially Paid",
+    "PAID": "Paid",
+    "REFUNDED_RECORDED": "Refund Recorded",
+    "WAIVED": "Waived"
+  },
+  "checklistItemType": {
+    "YES_NO": "Yes/No",
+    "TEXT": "Text",
+    "NUMBER": "Number",
+    "SIGNATURE": "Signature",
+    "ISSUE_FLAG": "Issue Flag"
+  },
+  "qualityIssueSource": {
+    "REVIEW": "Review",
+    "COMPLAINT": "Complaint",
+    "CHECKLIST_FAILURE": "Checklist Failure"
+  },
+  "qualityIssueSeverity": {
+    "LOW": "Low",
+    "MEDIUM": "Medium",
+    "HIGH": "High"
+  },
+  "qualityIssueStatus": {
+    "OPEN": "Open",
+    "IN_REVIEW": "In Review",
+    "RESOLVED": "Resolved",
+    "CLOSED": "Closed"
+  },
+  "subscriptionFrequency": {
+    "WEEKLY": "Weekly",
+    "BIWEEKLY": "Biweekly",
+    "MONTHLY": "Monthly",
+    "CUSTOM": "Custom"
+  },
+  "subscriptionStatus": {
+    "ACTIVE": "Active",
+    "PAUSED": "Paused",
+    "CANCELLED": "Cancelled"
+  },
+  "contractStatus": {
+    "ACTIVE": "Active",
+    "EXPIRED": "Expired",
+    "TERMINATED": "Terminated"
+  },
+  "websiteContentBlockType": {
+    "PAGE": "Page",
+    "SECTION": "Section"
+  },
+  "rescheduleRequestStatus": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "AUTO_REJECTED": "Auto-Rejected"
+  },
+  "jobName": {
+    "EXPIRE_STALE_QUOTES": "Expire Stale Quotes",
+    "FLAG_OVERDUE_BOOKINGS": "Flag Overdue Bookings",
+    "GENERATE_SUBSCRIPTION_OCCURRENCES": "Generate Subscription Occurrences"
+  },
+  "jobRunStatus": {
+    "SUCCESS": "Success",
+    "FAILURE": "Failure",
+    "SKIPPED_LOCKED": "Skipped (Already Running)"
+  },
+  "unknown": "Unknown"
+}

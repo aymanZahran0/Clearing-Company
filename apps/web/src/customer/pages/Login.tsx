@@ -1,9 +1,10 @@
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
+import { baseApi } from "../../api/baseApi";
 
 interface LoginFormValues {
   identifier: string;
@@ -20,11 +21,12 @@ export default function Login() {
   async function onFinish(values: LoginFormValues) {
     try {
       const result = await login(values).unwrap();
+      dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
       const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/bookings";
       navigate(redirectTo);
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

@@ -18,7 +18,10 @@ export async function recordPayment(
   input: PaymentInput,
   actor: { actorUserId: string; ipAddress?: string; userAgent?: string }
 ) {
-  await assertBookingExists(bookingId);
+  const booking = await assertBookingExists(bookingId);
+  if (booking.status === "REJECTED" || booking.status === "CANCELLED") {
+    throw new ApiError(409, "CONFLICT", "Cannot record a payment for a rejected or cancelled booking");
+  }
 
   const payment = await prisma.payment.create({
     data: {

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import {
   useCreateCustomerMutation,
   useSearchCustomersQuery,
-  type Customer,
+  type CustomerSummary,
 } from "../../../api/customersApi";
 import { useCreateAddressForCustomerMutation } from "../../../api/addressesApi";
 import { useListServiceAreasQuery, useListServicesQuery } from "../../../api/servicesApi";
@@ -27,7 +27,7 @@ export default function NewPhoneBooking() {
   const [phoneSearch, setPhoneSearch] = useState("");
   const { data: searchResults } = useSearchCustomersQuery({ search: phoneSearch }, { skip: !phoneSearch });
   const [createCustomer] = useCreateCustomerMutation();
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<CustomerSummary | null>(null);
 
   // Step 2: service + address + schedule
   const { data: services } = useListServicesQuery();
@@ -54,7 +54,7 @@ export default function NewPhoneBooking() {
     serviceAreaId: string;
   }) {
     if (!customer) return;
-    const address = await createAddress({ customerId: customer.userId, body: values }).unwrap();
+    const address = await createAddress({ customerId: customer.id, body: values }).unwrap();
     setAddressId(address.id);
   }
 
@@ -78,7 +78,7 @@ export default function NewPhoneBooking() {
     try {
       const booking = await createBooking({
         body: {
-          customerId: customer.userId,
+          customerId: customer.id,
           quoteId: quote.id,
           addressId,
           propertyType,
@@ -91,7 +91,7 @@ export default function NewPhoneBooking() {
       message.success(booking.referenceNumber);
       navigate(`/admin/bookings/${booking.id}`);
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -100,14 +100,18 @@ export default function NewPhoneBooking() {
       <h1 className="mb-4 text-xl font-semibold">{t("admin:bookings.newPhoneBooking")}</h1>
       <Steps
         current={step}
-        items={[{ title: "Customer" }, { title: "Service & Address" }, { title: "Confirm" }]}
+        items={[
+          { title: t("admin:bookings.customerStepTitle") },
+          { title: t("admin:bookings.serviceAddressStepTitle") },
+          { title: t("admin:bookings.confirmStepTitle") },
+        ]}
         className="mb-6"
       />
 
       {step === 0 && (
         <Card>
           <Input.Search
-            placeholder="Search by phone number"
+            placeholder={t("admin:bookings.searchByPhonePlaceholder")}
             size="large"
             onSearch={setPhoneSearch}
             className="mb-4"
@@ -147,7 +151,11 @@ export default function NewPhoneBooking() {
         <Card title={`${customer.fullName} — ${customer.phone}`}>
           {!addressId ? (
             <Form layout="vertical" onFinish={handleCreateAddress} requiredMark={false}>
-              <Form.Item name="serviceAreaId" label="Service Area" rules={[{ required: true }]}>
+              <Form.Item
+                name="serviceAreaId"
+                label={t("customer:addressStep.serviceArea")}
+                rules={[{ required: true }]}
+              >
                 <Select
                   size="large"
                   options={areas?.map((a) => ({
@@ -156,10 +164,14 @@ export default function NewPhoneBooking() {
                   }))}
                 />
               </Form.Item>
-              <Form.Item name="city" label="City" rules={[{ required: true }]}>
+              <Form.Item name="city" label={t("customer:addressStep.city")} rules={[{ required: true }]}>
                 <Input size="large" />
               </Form.Item>
-              <Form.Item name="neighborhood" label="Neighborhood" rules={[{ required: true }]}>
+              <Form.Item
+                name="neighborhood"
+                label={t("customer:addressStep.neighborhood")}
+                rules={[{ required: true }]}
+              >
                 <Input size="large" />
               </Form.Item>
               <Button type="primary" htmlType="submit" size="large" block>
@@ -176,15 +188,15 @@ export default function NewPhoneBooking() {
               </Form.Item>
               <Form.Item
                 name="requestedDate"
-                label="Requested Date"
+                label={t("admin:bookings.requestedDate")}
                 rules={[{ required: true }]}
               >
                 <Input type="date" size="large" />
               </Form.Item>
               <Form.Item
                 name="serviceId"
-                label="Service"
-                rules={[{ required: true, message: "Service is required" }]}
+                label={t("admin:bookings.service")}
+                rules={[{ required: true }]}
               >
                 <Select
                   size="large"

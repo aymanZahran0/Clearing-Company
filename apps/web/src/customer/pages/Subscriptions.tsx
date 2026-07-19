@@ -2,12 +2,13 @@ import { List, Skeleton, Tag } from "antd";
 import { useTranslation } from "react-i18next";
 import { useListOwnSubscriptionsQuery } from "../../api/subscriptionsApi";
 import { formatCurrency, formatDateTime } from "../../lib/formatters";
+import { enumLabel } from "../../lib/enumLabels";
 
 // T155 (US7): read-only — subscriptions are Admin-managed (US7's title is
 // "Admin Manages Recurring Subscriptions"); the customer view has no
 // edit/pause/cancel controls.
 export default function Subscriptions() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useListOwnSubscriptionsQuery();
 
   if (isLoading) {
@@ -27,12 +28,15 @@ export default function Subscriptions() {
           <List.Item>
             <div>
               <div className="font-medium">
-                {subscription.frequency} — {formatCurrency(subscription.priceSnapshot, "en")}
+                {enumLabel("subscriptionFrequency", subscription.frequency)} —{" "}
+                {formatCurrency(subscription.priceSnapshot, i18n.language)}
               </div>
               <div className="text-sm text-gray-500">
-                {t("customer:subscriptions.starts", { date: formatDateTime(subscription.startsAt, "en") })}
+                {t("customer:subscriptions.starts", {
+                  date: formatDateTime(subscription.startsAt, i18n.language),
+                })}
               </div>
-              <Tag>{subscription.status}</Tag>
+              <Tag>{enumLabel("subscriptionStatus", subscription.status)}</Tag>
             </div>
           </List.Item>
         )}

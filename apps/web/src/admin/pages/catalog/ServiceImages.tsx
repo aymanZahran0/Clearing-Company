@@ -34,7 +34,7 @@ export default function ServiceImages() {
       message.success(t("admin:serviceImages.uploaded"));
       refetch();
     } catch {
-      message.error(t("admin:serviceImages.uploadError"));
+      // toast shown by the global RTK Query error middleware
     }
     return false; // prevent antd's default XHR upload; we drive it via RTK Query
   }

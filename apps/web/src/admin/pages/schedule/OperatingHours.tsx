@@ -41,7 +41,7 @@ export default function OperatingHours() {
       await replaceOperatingHours(rows).unwrap();
       message.success(t("admin:schedule.operatingHoursSaved"));
     } catch {
-      message.error(t("admin:schedule.operatingHoursSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

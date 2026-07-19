@@ -18,6 +18,9 @@ export interface Booking {
   customerId: string;
   addressId: string;
   propertyType: string;
+  customerNotes: string | null;
+  preferredDate: string;
+  preferredTimeSlotId: string | null;
   scheduledTimeSlotId: string | null;
   scheduledStartAt: string | null;
   scheduledEndAt: string | null;
@@ -30,6 +33,16 @@ export interface Booking {
   currency: string;
   createdAt: string;
   items?: Array<{ serviceId: string }>;
+  customer?: { user: { fullName: string; phoneNormalized: string | null; email: string | null } };
+  address?: {
+    city: string;
+    neighborhood: string;
+    street: string | null;
+    buildingNumber: string | null;
+    unitNumber: string | null;
+    landmark: string | null;
+  };
+  preferredTimeSlot?: { date: string; startTime: string; endTime: string } | null;
 }
 
 export interface BookingCreateRequest {
@@ -93,11 +106,13 @@ export const bookingsApi = baseApi.injectEndpoints({
       | {
           status?: BookingStatus;
           page?: number;
+          pageSize?: number;
           from?: string;
           to?: string;
           scheduledFrom?: string;
           scheduledTo?: string;
           needsScheduling?: boolean;
+          customerId?: string;
         }
       | void
     >({

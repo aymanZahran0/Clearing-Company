@@ -1,6 +1,7 @@
 import { Card, Col, Row, Statistic, Table } from "antd";
 import { useTranslation } from "react-i18next";
 import { useGetQualityReportQuery } from "../../../api/reportsApi";
+import { enumLabel } from "../../../lib/enumLabels";
 
 // T165 (US8)
 export default function Quality() {
@@ -31,7 +32,11 @@ export default function Quality() {
         dataSource={data?.issuesByStatus}
         pagination={false}
         columns={[
-          { title: t("admin:reports.qualityIssueStatus"), dataIndex: "status" },
+          {
+            title: t("admin:reports.qualityIssueStatus"),
+            dataIndex: "status",
+            render: (value: string) => enumLabel("qualityIssueStatus", value),
+          },
           { title: t("admin:reports.count"), dataIndex: "count" },
         ]}
       />

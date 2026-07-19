@@ -7,6 +7,8 @@ import {
   type NotificationTemplate,
   type NotificationTemplateInput,
 } from "../../../api/notificationsApi";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 // T177 (US-Polish)
 export default function Templates() {
@@ -27,7 +29,7 @@ export default function Templates() {
       setEditing(null);
       message.success(t("admin:notifications.templateSaved"));
     } catch {
-      message.error(t("admin:notifications.templateSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -41,8 +43,16 @@ export default function Templates() {
         onRow={(row) => ({ onClick: () => onEdit(row) })}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:content.key"), dataIndex: "key" },
-          { title: t("admin:notifications.channel"), dataIndex: "channel" },
+          {
+            title: t("admin:content.key"),
+            dataIndex: "key",
+            render: (value: string) => enumLabel("notificationTemplateKey", value),
+          },
+          {
+            title: t("admin:notifications.channel"),
+            dataIndex: "channel",
+            render: (value: string) => enumLabel("notificationChannel", value),
+          },
           {
             title: t("admin:content.active"),
             dataIndex: "active",
@@ -53,14 +63,14 @@ export default function Templates() {
       {editing && (
         <div className="mt-6 rounded border border-gray-200 p-4">
           <h2 className="mb-3 text-base font-medium">
-            {t("admin:notifications.editTemplate", { key: editing.key })}
+            {t("admin:notifications.editTemplate", { key: enumLabel("notificationTemplateKey", editing.key) })}
           </h2>
           <Form<NotificationTemplateInput> form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
             <Form.Item name="key" hidden>
               <Input />
             </Form.Item>
             <Form.Item name="channel" label={t("admin:notifications.channel")} rules={[{ required: true }]}>
-              <Select size="large" options={["WHATSAPP", "SMS", "EMAIL"].map((c) => ({ value: c, label: c }))} />
+              <Select size="large" options={enumOptions("notificationChannel", ["WHATSAPP", "SMS", "EMAIL"])} />
             </Form.Item>
             <Form.Item name="bodyAr" label={t("admin:content.bodyAr")} rules={[{ required: true }]}>
               <Input.TextArea rows={3} />

@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { baseApi } from "../api/baseApi";
+import { errorToastMiddleware } from "../api/errorToastMiddleware";
 import authReducer from "../features/auth/authSlice";
 import bookingWizardReducer from "../features/bookingWizard/wizardSlice";
 
@@ -9,7 +10,7 @@ export const store = configureStore({
     bookingWizard: bookingWizardReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(baseApi.middleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(baseApi.middleware, errorToastMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

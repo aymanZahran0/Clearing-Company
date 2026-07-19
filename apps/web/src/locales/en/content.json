@@ -6,5 +6,67 @@
     "noTravelFee": "No travel fee",
     "title": "Service Areas",
     "travelFee": "Travel fee: {{amount}}"
+  },
+  "home": {
+    "hero": {
+      "fallbackTitle": "Professional Cleaning Services in Asir",
+      "fallbackBody": "Reliable residential and commercial cleaning across Abha and Khamis Mushait, with a trained team and easy booking online or by phone.",
+      "primaryCta": "Book Now",
+      "secondaryCta": "Browse Services"
+    },
+    "services": {
+      "title": "Our Services",
+      "viewAll": "View All Services",
+      "empty": "No services available right now"
+    },
+    "howItWorks": {
+      "title": "How Booking Works",
+      "step1Title": "Choose a Service",
+      "step1Body": "Browse our services and pick what fits your needs.",
+      "step2Title": "Book Your Appointment",
+      "step2Body": "Enter your property details, address, and preferred time.",
+      "step3Title": "Get Your Price",
+      "step3Body": "Receive an instant price or a custom quote shortly after.",
+      "step4Title": "Enjoy the Service",
+      "step4Body": "Our trained team arrives on schedule to deliver a high-quality job."
+    },
+    "whyUs": {
+      "title": "Why Choose Us",
+      "fallbackFeature1Title": "Trained, Professional Staff",
+      "fallbackFeature1Body": "Our crews are trained to the highest quality and safety standards.",
+      "fallbackFeature2Title": "Quality Guaranteed",
+      "fallbackFeature2Body": "A quality checklist for every service, with follow-up on any issue.",
+      "fallbackFeature3Title": "Easy, Flexible Booking",
+      "fallbackFeature3Body": "Book online or call us directly, and reschedule easily when you need to."
+    },
+    "serviceAreas": {
+      "title": "Service Areas",
+      "viewAll": "View All Areas",
+      "empty": "No service areas available right now"
+    },
+    "trust": {
+      "title": "Trusted by Our Customers",
+      "completedBookings": "{{count}}+ completed bookings",
+      "averageRating": "{{rating}} / 5 average rating",
+      "fallbackBody": "We hold every service we deliver to the highest standard of quality and professionalism."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "viewAll": "View All FAQs",
+      "empty": "No FAQs available right now"
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "body": "Have a question? Our team is ready to help over WhatsApp or phone.",
+      "whatsappCta": "Chat on WhatsApp",
+      "trackBookingCta": "Track Your Booking"
+    },
+    "footer": {
+      "tagline": "Reliable residential and commercial cleaning across Abha and Khamis Mushait.",
+      "quickLinksTitle": "Quick Links",
+      "servicesTitle": "Services",
+      "contactTitle": "Contact",
+      "rightsReserved": "© {{year}} Nuqaa Asir. All rights reserved."
+    }
   }
 }

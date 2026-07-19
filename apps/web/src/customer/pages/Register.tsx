@@ -1,9 +1,10 @@
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { Button, Checkbox, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useRegisterMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
+import { baseApi } from "../../api/baseApi";
 
 interface RegisterFormValues {
   fullName: string;
@@ -22,10 +23,11 @@ export default function Register() {
   async function onFinish(values: RegisterFormValues) {
     try {
       const result = await register(values).unwrap();
+      dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
       navigate("/bookings");
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -43,7 +45,7 @@ export default function Register() {
         <Form.Item
           name="phone"
           label={t("auth.phone")}
-          rules={[{ required: true, message: t("auth.phone") as string }]}
+          rules={[{ required: true }]}
         >
           <Input size="large" inputMode="tel" autoComplete="tel" placeholder="05XXXXXXXX" />
         </Form.Item>

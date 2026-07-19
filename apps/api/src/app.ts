@@ -11,6 +11,7 @@ import { serviceCategoriesRouter } from "./modules/service-categories/routes.js"
 import { servicesRouter } from "./modules/services/routes.js";
 import { serviceAddOnsRouter } from "./modules/service-add-ons/routes.js";
 import { serviceAreasRouter } from "./modules/service-areas/routes.js";
+import { publicStatsRouter } from "./modules/public-stats/routes.js";
 import { pricingRulesRouter } from "./modules/pricing-rules/routes.js";
 import { discountCodesRouter } from "./modules/discount-codes/routes.js";
 import { availabilityRouter } from "./modules/availability/routes.js";
@@ -41,9 +42,12 @@ export function createApp() {
   // headers, CORS, body parsing, rate limiting, routes, error handler last.
   app.use(requestLogger);
   app.use(helmet());
+  const allowedOrigins = (process.env.CORS_ALLOWED_ORIGIN ?? "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim());
   app.use(
     cors({
-      origin: process.env.CORS_ALLOWED_ORIGIN ?? "http://localhost:5173",
+      origin: allowedOrigins,
       credentials: true,
     })
   );
@@ -69,6 +73,7 @@ export function createApp() {
   app.use("/api/v1", servicesRouter);
   app.use("/api/v1", serviceAddOnsRouter);
   app.use("/api/v1", serviceAreasRouter);
+  app.use("/api/v1", publicStatsRouter);
   app.use("/api/v1", pricingRulesRouter);
   app.use("/api/v1", discountCodesRouter);
   app.use("/api/v1", availabilityRouter);

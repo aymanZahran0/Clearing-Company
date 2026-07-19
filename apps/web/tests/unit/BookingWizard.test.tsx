@@ -6,6 +6,9 @@ import bookingWizardReducer from "../../src/features/bookingWizard/wizardSlice";
 import { baseApi } from "../../src/api/baseApi";
 import authReducer from "../../src/features/auth/authSlice";
 import { PropertyStep } from "../../src/customer/pages/BookingWizard/PropertyStep";
+// Side-effect import: initializes the real i18next instance (Arabic
+// default locale) so PropertyStep's t() calls resolve to actual text.
+import "../../src/lib/i18n";
 
 function renderWithStore(ui: React.ReactElement) {
   const store = configureStore({
@@ -24,7 +27,7 @@ describe("BookingWizard PropertyStep", () => {
     const onNext = vi.fn();
     renderWithStore(<PropertyStep onNext={onNext} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
+    fireEvent.click(screen.getByRole("button", { name: "تأكيد" }));
 
     // Ant Design validation is async; assert onNext was NOT called
     // synchronously for an incomplete form.

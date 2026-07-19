@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Modal, message } from "antd";
+import { Button, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCreateReworkBookingMutation } from "../../../api/qualityIssuesApi";
@@ -18,7 +18,7 @@ export function ReworkDialog({ qualityIssueId }: { qualityIssueId: string }) {
       setOpen(false);
       navigate(`/admin/bookings/${booking.id}`);
     } catch {
-      message.error(t("admin:quality.reworkError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

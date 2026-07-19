@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useListOwnBookingsQuery } from "../../api/bookingsApi";
 import { formatCurrency, formatDate } from "../../lib/formatters";
+import { enumLabel } from "../../lib/enumLabels";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "default",
@@ -39,7 +40,7 @@ export default function BookingsList() {
               </span>
               <span className="flex items-center gap-3">
                 {booking.totalSnapshot != null && formatCurrency(booking.totalSnapshot, i18n.language)}
-                <Tag color={STATUS_COLORS[booking.status]}>{booking.status}</Tag>
+                <Tag color={STATUS_COLORS[booking.status]}>{enumLabel("bookingStatus", booking.status)}</Tag>
               </span>
             </Link>
           </List.Item>

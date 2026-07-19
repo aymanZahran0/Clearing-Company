@@ -68,6 +68,7 @@ bookingsRouter.get(
       scheduledFrom?: Date;
       scheduledTo?: Date;
       needsScheduling?: boolean;
+      customerId?: string;
       page: number;
       pageSize: number;
     };

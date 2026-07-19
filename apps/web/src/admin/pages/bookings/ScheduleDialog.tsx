@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
+import { Alert, Button, Checkbox, Form, Input, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { useListTimeSlotsQuery } from "../../../api/availabilityApi";
 import { useScheduleBookingMutation } from "../../../api/bookingsApi";
-import { formatDateTime } from "../../../lib/formatters";
+import { SlotPicker } from "../../../components/SlotPicker";
 
 interface ScheduleFormValues {
   timeSlotId: string;
@@ -25,13 +25,8 @@ export function ScheduleDialog({ bookingId, onDone }: { bookingId: string; onDon
       await scheduleBooking({ id: bookingId, ...values }).unwrap();
       setOpen(false);
       onDone?.();
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      if (status === 409) {
-        message.error(t("admin:bookings.capacityConflict"));
-      } else {
-        message.error(t("admin:bookings.scheduleError"));
-      }
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -43,17 +38,14 @@ export function ScheduleDialog({ bookingId, onDone }: { bookingId: string; onDon
       <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:bookings.scheduleBooking")}>
         <Form<ScheduleFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="timeSlotId" label={t("admin:bookings.timeSlot")} rules={[{ required: true }]}>
-            <Select
-              size="large"
-              // The list is small (a few dozen slots at most) — disabling
-              // virtualization keeps every option in the DOM instead of
-              // only the ones scrolled into view, which is both simpler
-              // and avoids relying on scroll position for correctness.
-              virtual={false}
-              options={availableSlots.map((slot) => ({
-                value: slot.id,
-                label: `${formatDateTime(slot.date, "en")} ${slot.startTime}–${slot.endTime} (${slot.bookedCount}/${slot.capacity})`,
+            <SlotPicker
+              slots={availableSlots.map((slot) => ({
+                id: slot.id,
+                date: slot.date,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
                 disabled: slot.bookedCount >= slot.capacity,
+                spotsLabel: `(${slot.bookedCount}/${slot.capacity})`,
               }))}
             />
           </Form.Item>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
+import { baseApi } from "../../api/baseApi";
 
 interface LoginFormValues {
   identifier: string;
@@ -23,10 +24,11 @@ export default function AdminLogin() {
         message.error(t("common.error"));
         return;
       }
+      dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
       navigate("/admin");
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

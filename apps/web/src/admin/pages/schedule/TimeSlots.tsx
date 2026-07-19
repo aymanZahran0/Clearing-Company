@@ -35,7 +35,7 @@ export default function TimeSlots() {
       form.resetFields();
       message.success(t("admin:schedule.timeSlotCreated"));
     } catch {
-      message.error(t("admin:schedule.timeSlotCreateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListAllBookingsQuery } from "../../../api/bookingsApi";
+import { enumLabel } from "../../../lib/enumLabels";
 
 // T113 (US4): 7-day scheduling overview, grouping CONFIRMED bookings by
 // scheduled day so the Admin can spot gaps and overload at a glance.
@@ -47,7 +48,7 @@ export default function CalendarWeek() {
                   >
                     <div className="text-sm">{dayjs(booking.scheduledStartAt).format("HH:mm")}</div>
                     <div className="text-xs">{booking.referenceNumber}</div>
-                    <Tag>{booking.status}</Tag>
+                    <Tag>{enumLabel("bookingStatus", booking.status)}</Tag>
                   </div>
                 ))
               )}

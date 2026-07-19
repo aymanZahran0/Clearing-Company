@@ -6,7 +6,7 @@ import { formatDateTime } from "../../../lib/formatters";
 
 // T166 (US8)
 export default function AuditLogViewer() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [entityType, setEntityType] = useState<string | undefined>();
   const { data, isLoading } = useListAuditLogsQuery({ entityType });
 
@@ -31,7 +31,7 @@ export default function AuditLogViewer() {
           {
             title: t("admin:reports.timestamp"),
             dataIndex: "createdAt",
-            render: (value: string) => formatDateTime(value, "en"),
+            render: (value: string) => formatDateTime(value, i18n.language),
           },
         ]}
       />

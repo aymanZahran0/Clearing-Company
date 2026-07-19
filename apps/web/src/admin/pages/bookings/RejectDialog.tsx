@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Form, Input, Modal, message } from "antd";
+import { Button, Form, Input, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { useRejectBookingMutation } from "../../../api/bookingsApi";
 
@@ -14,7 +14,7 @@ export function RejectDialog({ bookingId, onDone }: { bookingId: string; onDone?
       setOpen(false);
       onDone?.();
     } catch {
-      message.error(t("admin:bookings.rejectError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

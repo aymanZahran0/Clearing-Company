@@ -8,6 +8,7 @@ import {
   useUpdateAddOnMutation,
 } from "../../../api/serviceAddOnsApi";
 import { useListServicesQuery, type ServiceAddOn } from "../../../api/servicesApi";
+import { enumOptions } from "../../../lib/enumOptions";
 
 interface FormValues {
   serviceId: string;
@@ -21,7 +22,7 @@ interface FormValues {
 // T047 (US4): create/edit/activate for ServiceAddOn, with per-service
 // assignment via the serviceId Select.
 export default function AddOns() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: services } = useListServicesQuery({ includeInactive: true });
   const { data, isLoading } = useListAllAddOnsQuery();
   const [createAddOn, { isLoading: isCreating }] = useCreateAddOnMutation();
@@ -30,7 +31,9 @@ export default function AddOns() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceAddOn | null>(null);
 
-  const serviceNameById = new Map((services ?? []).map((s) => [s.id, s.nameEn]));
+  const serviceNameById = new Map(
+    (services ?? []).map((s) => [s.id, i18n.language === "ar" ? s.nameAr : s.nameEn]),
+  );
 
   function openCreate() {
     setEditing(null);
@@ -53,7 +56,7 @@ export default function AddOns() {
       setOpen(false);
       message.success(t("catalog:addOnSaved"));
     } catch {
-      message.error(t("catalog:addOnSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -65,7 +68,7 @@ export default function AddOns() {
         await updateAddOn({ id: addOn.id, body: { active: true } }).unwrap();
       }
     } catch {
-      message.error(t("catalog:addOnSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -130,7 +133,10 @@ export default function AddOns() {
             <Select
               size="large"
               virtual={false}
-              options={(services ?? []).map((s) => ({ value: s.id, label: s.nameEn }))}
+              options={(services ?? []).map((s) => ({
+                value: s.id,
+                label: i18n.language === "ar" ? s.nameAr : s.nameEn,
+              }))}
             />
           </Form.Item>
           <Form.Item name="nameEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
@@ -143,7 +149,7 @@ export default function AddOns() {
             <Select
               size="large"
               virtual={false}
-              options={["FIXED", "PER_QUANTITY"].map((v) => ({ value: v, label: v }))}
+              options={enumOptions("addOnPricingMode", ["FIXED", "PER_QUANTITY"])}
             />
           </Form.Item>
           <Form.Item name="unitPrice" label={t("catalog:unitPriceSar")} rules={[{ required: true }]}>

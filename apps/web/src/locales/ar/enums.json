@@ -1,0 +1,164 @@
+{
+  "role": {
+    "CUSTOMER": "عميل",
+    "ADMIN": "مسؤول"
+  },
+  "userStatus": {
+    "ACTIVE": "نشط",
+    "INVITED": "مدعو",
+    "SUSPENDED": "موقوف"
+  },
+  "notificationChannel": {
+    "WHATSAPP": "واتساب",
+    "SMS": "رسالة نصية",
+    "EMAIL": "بريد إلكتروني"
+  },
+  "notificationStatus": {
+    "SENT": "تم الإرسال",
+    "FAILED": "فشل الإرسال",
+    "PENDING": "قيد الإرسال"
+  },
+  "notificationTemplateKey": {
+    "QUOTE_READY": "عرض السعر جاهز",
+    "BOOKING_CONFIRMED": "تأكيد الحجز",
+    "REMINDER": "تذكير",
+    "EN_ROUTE": "الفريق في الطريق",
+    "COMPLETED": "اكتمال الخدمة",
+    "FEEDBACK_REQUEST": "طلب تقييم",
+    "RESCHEDULE": "إعادة جدولة",
+    "CANCELLATION": "إلغاء",
+    "REWORK_SCHEDULED": "جدولة إعادة تنفيذ",
+    "RESCHEDULE_APPROVED": "الموافقة على إعادة الجدولة",
+    "RESCHEDULE_REJECTED": "رفض إعادة الجدولة",
+    "ADMIN_INVITE": "دعوة مسؤول",
+    "ADMIN_CREDENTIAL_RESET": "إعادة تعيين بيانات الدخول"
+  },
+  "propertyType": {
+    "APARTMENT": "شقة",
+    "VILLA": "فيلا",
+    "OFFICE": "مكتب",
+    "SHOP": "متجر",
+    "CLINIC": "عيادة",
+    "FURNISHED_UNIT": "وحدة مفروشة",
+    "OTHER": "أخرى"
+  },
+  "pricingType": {
+    "FIXED": "سعر ثابت",
+    "PROPERTY_SIZE": "حسب مساحة العقار",
+    "HOURLY": "بالساعة",
+    "QUANTITY": "حسب الكمية",
+    "CUSTOM_QUOTE": "عرض سعر مخصص"
+  },
+  "pricingRuleType": {
+    "PROPERTY_TYPE": "نوع العقار",
+    "AREA_BAND": "نطاق المساحة",
+    "DAY_TIME": "اليوم والوقت",
+    "CONDITION_MODIFIER": "معدّل حسب الحالة"
+  },
+  "calculationType": {
+    "PERCENTAGE": "نسبة مئوية",
+    "FIXED_AMOUNT": "مبلغ ثابت"
+  },
+  "discountType": {
+    "PERCENTAGE": "نسبة مئوية",
+    "FIXED": "مبلغ ثابت"
+  },
+  "quoteStatus": {
+    "ACTIVE": "سارٍ",
+    "EXPIRED": "منتهي",
+    "CONVERTED": "تم تحويله لحجز"
+  },
+  "bookingStatus": {
+    "DRAFT": "مسودة",
+    "PENDING": "قيد المراجعة",
+    "CONFIRMED": "مؤكد",
+    "RESCHEDULED": "تمت إعادة الجدولة",
+    "IN_PROGRESS": "قيد التنفيذ",
+    "COMPLETED": "مكتمل",
+    "CANCELLED": "ملغى",
+    "REJECTED": "مرفوض",
+    "COMPLAINT_OPENED": "توجد شكوى مفتوحة"
+  },
+  "bookingSource": {
+    "WEB": "الموقع الإلكتروني",
+    "ADMIN_PHONE": "اتصال هاتفي (إدارة)"
+  },
+  "addOnPricingMode": {
+    "FIXED": "سعر ثابت",
+    "PER_QUANTITY": "حسب الكمية"
+  },
+  "paymentMethod": {
+    "CASH": "نقدًا",
+    "BANK_TRANSFER": "تحويل بنكي",
+    "POS": "شبكة (نقاط بيع)",
+    "COMPLIMENTARY": "مجاني",
+    "OTHER": "أخرى"
+  },
+  "paymentStatus": {
+    "UNPAID": "غير مدفوع",
+    "PARTIALLY_PAID": "مدفوع جزئيًا",
+    "PAID": "مدفوع",
+    "REFUNDED_RECORDED": "تم تسجيل استرداد",
+    "WAIVED": "معفى"
+  },
+  "checklistItemType": {
+    "YES_NO": "نعم / لا",
+    "TEXT": "نص",
+    "NUMBER": "رقم",
+    "SIGNATURE": "توقيع",
+    "ISSUE_FLAG": "الإبلاغ عن مشكلة"
+  },
+  "qualityIssueSource": {
+    "REVIEW": "تقييم",
+    "COMPLAINT": "شكوى",
+    "CHECKLIST_FAILURE": "إخفاق في قائمة الجودة"
+  },
+  "qualityIssueSeverity": {
+    "LOW": "منخفضة",
+    "MEDIUM": "متوسطة",
+    "HIGH": "عالية"
+  },
+  "qualityIssueStatus": {
+    "OPEN": "مفتوحة",
+    "IN_REVIEW": "قيد المراجعة",
+    "RESOLVED": "تم الحل",
+    "CLOSED": "مغلقة"
+  },
+  "subscriptionFrequency": {
+    "WEEKLY": "أسبوعي",
+    "BIWEEKLY": "كل أسبوعين",
+    "MONTHLY": "شهري",
+    "CUSTOM": "مخصص"
+  },
+  "subscriptionStatus": {
+    "ACTIVE": "نشط",
+    "PAUSED": "متوقف مؤقتًا",
+    "CANCELLED": "ملغى"
+  },
+  "contractStatus": {
+    "ACTIVE": "ساري",
+    "EXPIRED": "منتهٍ",
+    "TERMINATED": "منهى"
+  },
+  "websiteContentBlockType": {
+    "PAGE": "صفحة",
+    "SECTION": "قسم"
+  },
+  "rescheduleRequestStatus": {
+    "PENDING": "قيد المراجعة",
+    "APPROVED": "تمت الموافقة",
+    "REJECTED": "مرفوض",
+    "AUTO_REJECTED": "رفض تلقائيًا"
+  },
+  "jobName": {
+    "EXPIRE_STALE_QUOTES": "إنهاء صلاحية عروض الأسعار القديمة",
+    "FLAG_OVERDUE_BOOKINGS": "رصد الحجوزات المتأخرة",
+    "GENERATE_SUBSCRIPTION_OCCURRENCES": "توليد مواعيد الاشتراكات"
+  },
+  "jobRunStatus": {
+    "SUCCESS": "نجاح",
+    "FAILURE": "فشل",
+    "SKIPPED_LOCKED": "تم التخطي (قيد التنفيذ مسبقًا)"
+  },
+  "unknown": "غير معروف"
+}

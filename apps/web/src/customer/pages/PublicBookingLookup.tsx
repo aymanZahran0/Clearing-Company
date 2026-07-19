@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useGetBookingByReferenceQuery } from "../../api/bookingsApi";
 import { formatDateTime } from "../../lib/formatters";
+import { enumLabel } from "../../lib/enumLabels";
 
 interface LookupFormValues {
   referenceNumber: string;
@@ -44,7 +45,7 @@ export default function PublicBookingLookup() {
         <Result
           status="success"
           title={data.referenceNumber}
-          subTitle={`${data.serviceName} — ${data.status}${
+          subTitle={`${data.serviceName} — ${enumLabel("bookingStatus", data.status)}${
             data.scheduledStartAt ? ` — ${formatDateTime(data.scheduledStartAt, i18n.language)}` : ""
           }`}
           className="mt-4"

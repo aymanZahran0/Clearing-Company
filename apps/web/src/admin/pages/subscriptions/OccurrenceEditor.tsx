@@ -3,12 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListOccurrencesQuery, useSkipOccurrenceMutation } from "../../../api/subscriptionsApi";
 import { formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
 
 // T153 (US7): lists generated occurrences for a subscription and lets the
 // Admin skip a single future one without altering the subscription's own
 // schedule (T158).
 export function OccurrenceEditor({ subscriptionId }: { subscriptionId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: occurrences, isLoading } = useListOccurrencesQuery(subscriptionId);
   const [skipOccurrence] = useSkipOccurrenceMutation();
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export function OccurrenceEditor({ subscriptionId }: { subscriptionId: string })
       await skipOccurrence({ subscriptionId, occurrenceDate }).unwrap();
       message.success(t("admin:subscriptions.occurrenceSkipped"));
     } catch {
-      message.error(t("admin:subscriptions.occurrenceSkipError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -41,8 +42,8 @@ export function OccurrenceEditor({ subscriptionId }: { subscriptionId: string })
               ) : null,
             ]}
           >
-            {occurrence.occurrenceDate ? formatDateTime(occurrence.occurrenceDate, "en") : "—"} —{" "}
-            {occurrence.referenceNumber} <Tag>{occurrence.status}</Tag>
+            {occurrence.occurrenceDate ? formatDateTime(occurrence.occurrenceDate, i18n.language) : "—"} —{" "}
+            {occurrence.referenceNumber} <Tag>{enumLabel("bookingStatus", occurrence.status)}</Tag>
           </List.Item>
         )}
       />

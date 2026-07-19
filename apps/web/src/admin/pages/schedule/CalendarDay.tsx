@@ -5,10 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListAllBookingsQuery } from "../../../api/bookingsApi";
 import { formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
 
 // T113 (US4): a single day's scheduled bookings, including internal notes.
 export default function CalendarDay() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [date, setDate] = useState(dayjs());
   const scheduledFrom = date.startOf("day").toISOString();
@@ -29,9 +30,9 @@ export default function CalendarDay() {
           <List.Item onClick={() => navigate(`/admin/bookings/${booking.id}`)} className="cursor-pointer">
             <div>
               <div className="font-medium">
-                {formatDateTime(booking.scheduledStartAt!, "en")} — {booking.referenceNumber}
+                {formatDateTime(booking.scheduledStartAt!, i18n.language)} — {booking.referenceNumber}
               </div>
-              <Tag>{booking.status}</Tag>
+              <Tag>{enumLabel("bookingStatus", booking.status)}</Tag>
             </div>
           </List.Item>
         )}

@@ -16,7 +16,7 @@ export function ResetDialog({ accountId, accountName }: { accountId: string; acc
       setOpen(false);
       message.success(t("admin:accounts.resetSent"));
     } catch {
-      message.error(t("admin:accounts.resetError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

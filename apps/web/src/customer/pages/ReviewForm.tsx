@@ -22,7 +22,7 @@ export default function ReviewForm() {
       message.success(t("customer:reviewForm.thankYou"));
       navigate(`/bookings/${id}`);
     } catch {
-      message.error(t("customer:reviewForm.submitError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

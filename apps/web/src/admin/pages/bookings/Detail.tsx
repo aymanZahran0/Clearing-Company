@@ -1,4 +1,4 @@
-import { Button, Descriptions, Skeleton, Tag, Timeline, message } from "antd";
+import { Button, Descriptions, Skeleton, Tag, Timeline, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import {
@@ -9,7 +9,8 @@ import {
   useMarkEnRouteMutation,
   useStartExecutionMutation,
 } from "../../../api/bookingsApi";
-import { formatCurrency, formatDateTime } from "../../../lib/formatters";
+import { useGetChecklistRunQuery } from "../../../api/checklistsApi";
+import { formatCurrency, formatDateTime, formatSaudiPhoneForDisplay } from "../../../lib/formatters";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { RejectDialog } from "./RejectDialog";
 import { ScheduleDialog } from "./ScheduleDialog";
@@ -18,23 +19,27 @@ import { CancelDialog } from "./CancelDialog";
 import { ChecklistRunner } from "./ChecklistRunner";
 import { RecordPaymentDialog } from "../payments/RecordPaymentDialog";
 import { PaymentsList } from "../payments/Invoices";
+import { enumLabel } from "../../../lib/enumLabels";
 
 export default function BookingDetail() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: booking, isLoading, refetch } = useGetBookingQuery(id ?? "", { skip: !id });
   const { data: history } = useGetBookingHistoryQuery(id ?? "", { skip: !id });
+  const { data: checklistRun } = useGetChecklistRunQuery(id ?? "", {
+    skip: !id || booking?.status !== "IN_PROGRESS",
+  });
   const [markEnRoute, { isLoading: isMarkingEnRoute }] = useMarkEnRouteMutation();
   const [markArrived, { isLoading: isMarkingArrived }] = useMarkArrivedMutation();
   const [startExecution, { isLoading: isStarting }] = useStartExecutionMutation();
   const [completeBooking, { isLoading: isCompleting }] = useCompleteBookingMutation();
 
-  async function runAction(action: () => Promise<unknown>, errorMessage: string) {
+  async function runAction(action: () => Promise<unknown>) {
     try {
       await action();
       refetch();
     } catch {
-      message.error(errorMessage);
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -46,23 +51,56 @@ export default function BookingDetail() {
     );
   }
 
+  // Mirrors the backend's assertChecklistComplete gate (FR-048): every
+  // required item needs an answered result before COMPLETED is allowed, so
+  // the button reflects that instead of letting the click round-trip fail.
+  const answeredIds = new Set(
+    (checklistRun?.results ?? [])
+      .filter((r) => r.value !== null && r.value !== undefined)
+      .map((r) => r.templateItemId),
+  );
+  const checklistComplete =
+    !!checklistRun && checklistRun.template.items.filter((item) => item.required).every((item) => answeredIds.has(item.id));
+
   return (
     <div className="p-4 sm:p-6">
       <h1 className="mb-4 text-xl font-semibold">{booking.referenceNumber}</h1>
 
       <Descriptions column={1} bordered size="middle" className="mb-6">
+        <Descriptions.Item label={t("admin:bookings.customer")}>
+          {booking.customer
+            ? `${booking.customer.user.fullName} — ${booking.customer.user.phoneNormalized ? formatSaudiPhoneForDisplay(booking.customer.user.phoneNormalized) : "—"}`
+            : "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("admin:bookings.address")}>
+          {booking.address
+            ? [booking.address.city, booking.address.neighborhood, booking.address.street, booking.address.buildingNumber]
+                .filter(Boolean)
+                .join(" — ")
+            : "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("admin:bookings.propertyType")}>
+          {enumLabel("propertyType", booking.propertyType)}
+        </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.status")}>
-          <Tag>{booking.status}</Tag>
+          <Tag>{enumLabel("bookingStatus", booking.status)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.total")}>
           {booking.totalSnapshot != null
             ? formatCurrency(booking.totalSnapshot, i18n.language)
             : "—"}
         </Descriptions.Item>
+        <Descriptions.Item label={t("admin:bookings.requestedDate")}>
+          {formatDateTime(booking.preferredDate, i18n.language)}
+          {booking.preferredTimeSlot ? ` (${booking.preferredTimeSlot.startTime}–${booking.preferredTimeSlot.endTime})` : ""}
+        </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.scheduled")}>
           {booking.scheduledStartAt
             ? `${formatDateTime(booking.scheduledStartAt, i18n.language)} – ${formatDateTime(booking.scheduledEndAt ?? booking.scheduledStartAt, i18n.language)}`
             : "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("admin:bookings.customerNotes")}>
+          {booking.customerNotes ?? "—"}
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.internalHandlingNote")}>
           {booking.internalHandlingNote ?? "—"}
@@ -99,7 +137,7 @@ export default function BookingDetail() {
             size="large"
             disabled={!!booking.enRouteAt}
             loading={isMarkingEnRoute}
-            onClick={() => runAction(() => markEnRoute(booking.id).unwrap(), t("admin:bookings.enRouteError"))}
+            onClick={() => runAction(() => markEnRoute(booking.id).unwrap())}
           >
             {t("admin:bookings.enRoute")}
           </Button>
@@ -107,7 +145,7 @@ export default function BookingDetail() {
             size="large"
             disabled={!!booking.arrivedAt}
             loading={isMarkingArrived}
-            onClick={() => runAction(() => markArrived(booking.id).unwrap(), t("admin:bookings.arrivedError"))}
+            onClick={() => runAction(() => markArrived(booking.id).unwrap())}
           >
             {t("admin:bookings.arrived")}
           </Button>
@@ -116,7 +154,7 @@ export default function BookingDetail() {
             size="large"
             disabled={!booking.arrivedAt}
             loading={isStarting}
-            onClick={() => runAction(() => startExecution(booking.id).unwrap(), t("admin:bookings.startError"))}
+            onClick={() => runAction(() => startExecution(booking.id).unwrap())}
           >
             {t("admin:bookings.start")}
           </Button>
@@ -127,23 +165,26 @@ export default function BookingDetail() {
         <div className="mb-6">
           <h2 className="mb-2 text-base font-medium">{t("admin:bookings.qualityChecklist")}</h2>
           <ChecklistRunner bookingId={booking.id} />
-          <Button
-            type="primary"
-            size="large"
-            className="mt-4"
-            loading={isCompleting}
-            onClick={() =>
-              runAction(() => completeBooking(booking.id).unwrap(), t("admin:bookings.completeError"))
-            }
-          >
-            {t("admin:bookings.completeBooking")}
-          </Button>
+          <Tooltip title={checklistComplete ? undefined : t("admin:checklist.completionRequired")}>
+            <Button
+              type="primary"
+              size="large"
+              className="mt-4"
+              disabled={!checklistComplete}
+              loading={isCompleting}
+              onClick={() => runAction(() => completeBooking(booking.id).unwrap())}
+            >
+              {t("admin:bookings.completeBooking")}
+            </Button>
+          </Tooltip>
         </div>
       )}
 
       <div className="mb-6">
         <h2 className="mb-2 text-base font-medium">{t("nav.bookings")} — {t("admin:bookings.payments")}</h2>
-        <RecordPaymentDialog bookingId={booking.id} />
+        {booking.status !== "REJECTED" && booking.status !== "CANCELLED" && (
+          <RecordPaymentDialog bookingId={booking.id} />
+        )}
         <div className="mt-3">
           <PaymentsList bookingId={booking.id} />
         </div>
@@ -153,7 +194,7 @@ export default function BookingDetail() {
         <h2 className="mb-2 text-base font-medium">{t("admin:bookings.history")}</h2>
         <Timeline
           items={history?.map((entry) => ({
-            children: `${entry.fromStatus ?? "—"} → ${entry.toStatus} (${formatDateTime(entry.createdAt, i18n.language)})${entry.reason ? `: ${entry.reason}` : ""}`,
+            children: `${entry.fromStatus ? enumLabel("bookingStatus", entry.fromStatus) : "—"} → ${enumLabel("bookingStatus", entry.toStatus)} (${formatDateTime(entry.createdAt, i18n.language)})${entry.reason ? `: ${entry.reason}` : ""}`,
           }))}
         />
       </div>

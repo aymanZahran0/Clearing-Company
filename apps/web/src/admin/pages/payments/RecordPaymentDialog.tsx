@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button, Form, InputNumber, Modal, Select, Input, message } from "antd";
+import { Button, Form, InputNumber, Modal, Select, Input } from "antd";
 import { useTranslation } from "react-i18next";
 import { useRecordPaymentMutation, type PaymentInput } from "../../../api/paymentsApi";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const METHODS: PaymentInput["method"][] = ["CASH", "BANK_TRANSFER", "POS", "COMPLIMENTARY", "OTHER"];
 
@@ -21,7 +22,7 @@ export function RecordPaymentDialog({ bookingId, onDone }: { bookingId: string; 
       setOpen(false);
       onDone?.();
     } catch {
-      message.error(t("admin:payments.recordError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -33,7 +34,7 @@ export function RecordPaymentDialog({ bookingId, onDone }: { bookingId: string; 
       <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:payments.recordPayment")}>
         <Form<PaymentInput> layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="method" label={t("admin:payments.method")} rules={[{ required: true }]}>
-            <Select size="large" options={METHODS.map((m) => ({ value: m, label: m }))} />
+            <Select size="large" options={enumOptions("paymentMethod", METHODS)} />
           </Form.Item>
           <Form.Item name="amount" label={t("admin:payments.amountSar")} rules={[{ required: true }]}>
             <InputNumber size="large" min={0} className="w-full" />

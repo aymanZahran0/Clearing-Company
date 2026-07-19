@@ -38,5 +38,20 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No"
+  },
+  "errors": {
+    "notFoundTitle": "Page Not Found",
+    "notFoundBody": "The page you're looking for doesn't exist or may have been moved.",
+    "routeErrorTitle": "Something Went Wrong",
+    "routeErrorBody": "An unexpected error occurred while loading this page. Please try again.",
+    "goHome": "Go Home",
+    "goBack": "Go Back",
+    "retry": "Try Again",
+    "accountSuspended": "This account has been suspended. Please contact Admin."
+  },
+  "slotPicker": {
+    "availableTimes": "Available times",
+    "noSlotsForDate": "No time slots for this day",
+    "noSlotsAvailable": "No time slots available"
   }
 }

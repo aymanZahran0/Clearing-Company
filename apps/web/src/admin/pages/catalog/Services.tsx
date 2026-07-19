@@ -9,6 +9,8 @@ import {
   useUpdateServiceMutation,
   type Service,
 } from "../../../api/servicesApi";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const PRICING_TYPES: Service["pricingType"][] = ["FIXED", "PROPERTY_SIZE", "HOURLY", "QUANTITY", "CUSTOM_QUOTE"];
 
@@ -29,7 +31,7 @@ interface FormValues {
 // T046 (US4): create/edit/activate for Service. No reorder here (Service
 // has no sortOrder column, unlike ServiceCategory — see Categories.tsx).
 export default function Services() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: categories } = useListAllCategoriesQuery();
   const { data, isLoading } = useListServicesQuery({ includeInactive: true });
   const [createService, { isLoading: isCreating }] = useCreateServiceMutation();
@@ -62,9 +64,8 @@ export default function Services() {
       }
       setOpen(false);
       message.success(t("catalog:serviceSaved"));
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      message.error(status === 409 ? t("catalog:slugExists") : t("catalog:serviceSaveError"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -76,7 +77,7 @@ export default function Services() {
         await updateService({ id: svc.id, body: { active: true } }).unwrap();
       }
     } catch {
-      message.error(t("catalog:serviceSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -97,7 +98,11 @@ export default function Services() {
           { title: t("admin:content.titleEn"), dataIndex: "nameEn" },
           { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
           { title: t("catalog:slug"), dataIndex: "slug" },
-          { title: t("catalog:pricingType"), dataIndex: "pricingType" },
+          {
+            title: t("catalog:pricingType"),
+            dataIndex: "pricingType",
+            render: (value: string) => enumLabel("pricingType", value),
+          },
           {
             title: t("admin:common.active"),
             dataIndex: "active",
@@ -143,7 +148,10 @@ export default function Services() {
             <Select
               size="large"
               virtual={false}
-              options={(categories ?? []).map((c) => ({ value: c.id, label: c.nameEn }))}
+              options={(categories ?? []).map((c) => ({
+                value: c.id,
+                label: i18n.language === "ar" ? c.nameAr : c.nameEn,
+              }))}
             />
           </Form.Item>
           <Form.Item name="nameEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
@@ -162,7 +170,7 @@ export default function Services() {
             <Input.TextArea rows={2} />
           </Form.Item>
           <Form.Item name="pricingType" label={t("catalog:pricingType")} rules={[{ required: true }]}>
-            <Select size="large" virtual={false} options={PRICING_TYPES.map((v) => ({ value: v, label: v }))} />
+            <Select size="large" virtual={false} options={enumOptions("pricingType", PRICING_TYPES)} />
           </Form.Item>
           <Form.Item name="basePrice" label={t("catalog:basePriceSar")}>
             <InputNumber size="large" min={0} className="w-full" />

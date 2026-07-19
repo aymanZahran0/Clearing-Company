@@ -27,9 +27,10 @@ test.describe("Public content and FAQ reflect Admin edits (User Story 5)", () =>
     await page.getByLabel(/^(Body \(Arabic\)|النص \(عربي\))$/).fill(newBodyAr);
     await page.getByLabel(/^(Body \(English\)|النص \(إنجليزي\))$/).fill(newBodyEn);
     // Type defaults to PAGE in the Select; home-hero is a SECTION, so it
-    // must be re-selected or the upsert would flip its type.
+    // must be re-selected or the upsert would flip its type. Options are
+    // now localized (enumOptions), so match on either locale's label.
     await page.getByLabel(/^(Type|النوع)$/).click();
-    await page.locator(".ant-select-item-option", { hasText: "SECTION" }).click();
+    await page.locator(".ant-select-item-option", { hasText: /^(Section|قسم)$/ }).click();
 
     const upsertResponse = page.waitForResponse(
       (res) => res.url().includes("/admin/content-blocks") && res.request().method() === "PUT"

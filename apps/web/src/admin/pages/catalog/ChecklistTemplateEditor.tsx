@@ -8,6 +8,7 @@ import {
   type ChecklistItemType,
   type ChecklistTemplateItem,
 } from "../../../api/checklistsApi";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const ITEM_TYPES: ChecklistItemType[] = ["YES_NO", "TEXT", "NUMBER", "SIGNATURE", "ISSUE_FLAG"];
 
@@ -56,7 +57,7 @@ export default function ChecklistTemplateEditor() {
       await upsertTemplate({ serviceId, items }).unwrap();
       message.success(t("admin:checklistTemplate.published", { version: (data?.version ?? 0) + 1 }));
     } catch {
-      message.error(t("admin:checklistTemplate.publishError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -73,30 +74,30 @@ export default function ChecklistTemplateEditor() {
         scroll={{ x: true }}
         columns={[
           {
-            title: "Label (Arabic)",
+            title: t("admin:checklistTemplate.labelAr"),
             render: (_: unknown, row: DraftItem, index: number) => (
               <Input value={row.labelAr} onChange={(e) => updateItem(index, { labelAr: e.target.value })} />
             ),
           },
           {
-            title: "Label (English)",
+            title: t("admin:checklistTemplate.labelEn"),
             render: (_: unknown, row: DraftItem, index: number) => (
               <Input value={row.labelEn} onChange={(e) => updateItem(index, { labelEn: e.target.value })} />
             ),
           },
           {
-            title: "Type",
+            title: t("admin:checklistTemplate.type"),
             render: (_: unknown, row: DraftItem, index: number) => (
               <Select
                 value={row.type}
-                options={ITEM_TYPES.map((t) => ({ value: t, label: t }))}
+                options={enumOptions("checklistItemType", ITEM_TYPES)}
                 onChange={(type) => updateItem(index, { type })}
                 className="w-36"
               />
             ),
           },
           {
-            title: "Required",
+            title: t("admin:checklistTemplate.required"),
             render: (_: unknown, row: DraftItem, index: number) => (
               <Checkbox
                 checked={row.required}

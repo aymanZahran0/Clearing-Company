@@ -182,8 +182,22 @@ export async function createBooking(
   return booking;
 }
 
+// Admin needs enough context to act on a request without opening five other
+// screens (FR-045 detail view): who the customer is, where the address is,
+// and what date/time they originally asked for — distinct from
+// scheduledStartAt, which is only set once Admin actually schedules it.
+// The `customer` relation is CustomerProfile, so its `user` sub-select is
+// scoped to display-safe fields only — never passwordHash/refreshTokenVersion.
 export async function getBookingById(id: string, requestingUser: { id: string; role: string }) {
-  const booking = await prisma.booking.findUnique({ where: { id }, include: { items: true } });
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: {
+      items: true,
+      address: true,
+      preferredTimeSlot: true,
+      customer: { select: { user: { select: { fullName: true, phoneNormalized: true, email: true } } } },
+    },
+  });
   if (!booking) {
     throw new ApiError(404, "NOT_FOUND", "Booking not found");
   }
@@ -217,6 +231,7 @@ export async function listAllBookings(filters: {
   scheduledFrom?: Date;
   scheduledTo?: Date;
   needsScheduling?: boolean;
+  customerId?: string;
   page: number;
   pageSize: number;
 }) {
@@ -231,6 +246,7 @@ export async function listAllBookings(filters: {
     ...(filters.needsScheduling
       ? { status: "CONFIRMED" as never, scheduledStartAt: null }
       : {}),
+    ...(filters.customerId ? { customerId: filters.customerId } : {}),
   };
   const [items, total] = await Promise.all([
     prisma.booking.findMany({

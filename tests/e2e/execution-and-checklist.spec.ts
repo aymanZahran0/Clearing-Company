@@ -129,6 +129,7 @@ test.describe("Admin executes a booking and completes the quality checklist (Use
     await page.getByRole("button", { name: /Complete Booking|إنهاء الحجز/ }).click();
     const response = await completeResponse;
     expect(response.status()).toBe(200);
-    await expect(page.getByText("COMPLETED")).toBeVisible();
+    // Status is now localized (enumLabel) — "مكتمل" is the Arabic default.
+    await expect(page.getByText(/^(COMPLETED|مكتمل)$/)).toBeVisible();
   });
 });

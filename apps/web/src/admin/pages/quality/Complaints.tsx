@@ -7,13 +7,15 @@ import {
   type QualityIssueStatus,
 } from "../../../api/qualityIssuesApi";
 import { formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const STATUSES: QualityIssueStatus[] = ["OPEN", "IN_REVIEW", "RESOLVED", "CLOSED"];
 
 // T142 (US6): the general quality-issue queue, defaulting to complaints
 // but filterable across every source/status.
 export default function Complaints() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<QualityIssueStatus | undefined>();
   const { data, isLoading } = useListQualityIssuesQuery({ source: "COMPLAINT", status });
@@ -26,7 +28,7 @@ export default function Complaints() {
         placeholder={t("admin:bookings.filterByStatus")}
         size="large"
         className="mb-4 w-full sm:w-64"
-        options={STATUSES.map((s) => ({ value: s, label: s }))}
+        options={enumOptions("qualityIssueStatus", STATUSES)}
         onChange={setStatus}
       />
       <Table
@@ -40,17 +42,17 @@ export default function Complaints() {
           {
             title: t("admin:quality.severity"),
             dataIndex: "severity",
-            render: (value: string) => <Tag>{value}</Tag>,
+            render: (value: string) => <Tag>{enumLabel("qualityIssueSeverity", value)}</Tag>,
           },
           {
             title: t("admin:bookings.status"),
             dataIndex: "status",
-            render: (value: string) => <Tag>{value}</Tag>,
+            render: (value: string) => <Tag>{enumLabel("qualityIssueStatus", value)}</Tag>,
           },
           {
             title: t("admin:bookings.created"),
             dataIndex: "createdAt",
-            render: (value: string) => formatDateTime(value, "en"),
+            render: (value: string) => formatDateTime(value, i18n.language),
           },
         ]}
       />

@@ -30,7 +30,7 @@ test.describe("Admin manages other Admin accounts safely (User Story 6)", () => 
     await page.getByRole("button", { name: /Send Invite|إرسال الدعوة/ }).click();
     const inviteRes = await inviteResponse;
     expect(inviteRes.status()).toBe(201);
-    await expect(page.locator("tr", { hasText: invitedEmail }).getByText("INVITED", { exact: true })).toBeVisible();
+    await expect(page.locator("tr", { hasText: invitedEmail }).getByText("مدعو", { exact: true })).toBeVisible();
 
     // Set up a second ACTIVE Admin via the direct-creation endpoint for the
     // suspend/reactivate/last-active-Admin-protection flow.
@@ -46,7 +46,7 @@ test.describe("Admin manages other Admin accounts safely (User Story 6)", () => 
 
     await page.reload();
     const row = page.locator("tr", { hasText: activeEmail });
-    await expect(row.getByText("ACTIVE", { exact: true })).toBeVisible();
+    await expect(row.getByText("نشط", { exact: true })).toBeVisible();
 
     // Ant Design's Popconfirm buttons carry no distinguishing accessible
     // name here, so target the (always-primary, rightmost) confirm button
@@ -62,7 +62,7 @@ test.describe("Admin manages other Admin accounts safely (User Story 6)", () => 
     await confirmPopconfirm();
     const suspendRes = await suspendResponse;
     expect(suspendRes.status()).toBe(200);
-    await expect(row.getByText("SUSPENDED", { exact: true })).toBeVisible();
+    await expect(row.getByText("موقوف", { exact: true })).toBeVisible();
 
     const reactivateResponse = page.waitForResponse(
       (res) => res.url().includes("/reactivate") && res.request().method() === "POST"
@@ -70,7 +70,7 @@ test.describe("Admin manages other Admin accounts safely (User Story 6)", () => 
     await row.getByRole("button", { name: /Reactivate|إعادة تفعيل/ }).click();
     const reactivateRes = await reactivateResponse;
     expect(reactivateRes.status()).toBe(200);
-    await expect(row.getByText("ACTIVE", { exact: true })).toBeVisible();
+    await expect(row.getByText("نشط", { exact: true })).toBeVisible();
 
     // Suspending the sole remaining active Admin must be blocked (409).
     // Suspend the second admin again so the seeded admin becomes the last
@@ -90,6 +90,6 @@ test.describe("Admin manages other Admin accounts safely (User Story 6)", () => 
     await confirmPopconfirm();
     const blockedRes = await blockedResponse;
     expect(blockedRes.status()).toBe(409);
-    await expect(seededRow.getByText("ACTIVE", { exact: true })).toBeVisible();
+    await expect(seededRow.getByText("نشط", { exact: true })).toBeVisible();
   });
 });

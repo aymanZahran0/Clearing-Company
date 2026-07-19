@@ -30,7 +30,7 @@ export function ConfirmDialog({ bookingId, onDone }: { bookingId: string; onDone
       setOpen(false);
       onDone?.();
     } catch {
-      message.error(t("admin:bookings.confirmError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

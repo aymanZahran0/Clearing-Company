@@ -44,9 +44,8 @@ export default function Categories() {
       }
       setOpen(false);
       message.success(t("catalog:categorySaved"));
-    } catch (err) {
-      const status = (err as { status?: number })?.status;
-      message.error(status === 409 ? t("catalog:slugExists") : t("catalog:categorySaveError"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -58,7 +57,7 @@ export default function Categories() {
         await updateCategory({ id: category.id, body: { active: true } }).unwrap();
       }
     } catch {
-      message.error(t("catalog:categorySaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -69,7 +68,9 @@ export default function Categories() {
     await Promise.all([
       updateCategory({ id: category.id, body: { sortOrder: neighbor.sortOrder } }).unwrap(),
       updateCategory({ id: neighbor.id, body: { sortOrder: category.sortOrder } }).unwrap(),
-    ]).catch(() => message.error(t("catalog:categorySaveError")));
+    ]).catch(() => {
+      // toast shown by the global RTK Query error middleware
+    });
   }
 
   return (

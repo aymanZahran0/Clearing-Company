@@ -7,6 +7,8 @@ import {
   useDeletePricingRuleMutation,
   useListPricingRulesQuery,
 } from "../../../api/pricingRulesApi";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 interface FormValues {
   ruleType: "PROPERTY_TYPE" | "AREA_BAND" | "DAY_TIME" | "CONDITION_MODIFIER";
@@ -18,7 +20,7 @@ interface FormValues {
 // T176 (US-Polish): backend CRUD already existed from Phase 3 (T058) —
 // this adds the missing Admin UI.
 export default function PricingRules() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: services } = useListServicesQuery();
   const [serviceId, setServiceId] = useState<string | null>(null);
   const { data: rules, isLoading } = useListPricingRulesQuery(serviceId ?? "", { skip: !serviceId });
@@ -33,7 +35,7 @@ export default function PricingRules() {
       setOpen(false);
       message.success(t("admin:pricing.ruleCreated"));
     } catch {
-      message.error(t("admin:pricing.ruleCreateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -44,7 +46,7 @@ export default function PricingRules() {
         placeholder={t("admin:pricing.selectService")}
         size="large"
         className="mb-4 w-full sm:w-64"
-        options={services?.map((s) => ({ value: s.id, label: s.nameEn }))}
+        options={services?.map((s) => ({ value: s.id, label: i18n.language === "ar" ? s.nameAr : s.nameEn }))}
         onChange={setServiceId}
       />
       {serviceId && (
@@ -58,8 +60,16 @@ export default function PricingRules() {
             dataSource={rules}
             scroll={{ x: true }}
             columns={[
-              { title: t("admin:pricing.ruleType"), dataIndex: "ruleType" },
-              { title: t("admin:pricing.calculation"), dataIndex: "calculationType" },
+              {
+                title: t("admin:pricing.ruleType"),
+                dataIndex: "ruleType",
+                render: (value: string) => enumLabel("pricingRuleType", value),
+              },
+              {
+                title: t("admin:pricing.calculation"),
+                dataIndex: "calculationType",
+                render: (value: string) => enumLabel("calculationType", value),
+              },
               { title: t("admin:pricing.amount"), dataIndex: "amount" },
               { title: t("admin:pricing.priority"), dataIndex: "priority" },
               {
@@ -79,14 +89,16 @@ export default function PricingRules() {
           <Form.Item name="ruleType" label={t("admin:pricing.ruleType")} rules={[{ required: true }]}>
             <Select
               size="large"
-              options={["PROPERTY_TYPE", "AREA_BAND", "DAY_TIME", "CONDITION_MODIFIER"].map((v) => ({
-                value: v,
-                label: v,
-              }))}
+              options={enumOptions("pricingRuleType", [
+                "PROPERTY_TYPE",
+                "AREA_BAND",
+                "DAY_TIME",
+                "CONDITION_MODIFIER",
+              ])}
             />
           </Form.Item>
           <Form.Item name="calculationType" label={t("admin:pricing.calculationType")} rules={[{ required: true }]}>
-            <Select size="large" options={["PERCENTAGE", "FIXED_AMOUNT"].map((v) => ({ value: v, label: v }))} />
+            <Select size="large" options={enumOptions("calculationType", ["PERCENTAGE", "FIXED_AMOUNT"])} />
           </Form.Item>
           <Form.Item name="amount" label={t("admin:pricing.amount")} rules={[{ required: true }]}>
             <InputNumber size="large" className="w-full" />

@@ -8,6 +8,8 @@ import {
   type QualityIssueStatus,
 } from "../../../api/qualityIssuesApi";
 import { ReworkDialog } from "./ReworkDialog";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const STATUSES: QualityIssueStatus[] = ["OPEN", "IN_REVIEW", "RESOLVED", "CLOSED"];
 
@@ -38,7 +40,7 @@ export default function ComplaintDetail() {
       refetch();
       message.success(t("admin:quality.updated"));
     } catch {
-      message.error(t("admin:quality.updateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -47,14 +49,14 @@ export default function ComplaintDetail() {
       <h1 className="mb-4 text-xl font-semibold">{t("admin:quality.qualityIssue")}</h1>
       <Descriptions column={1} bordered size="middle" className="mb-6">
         <Descriptions.Item label={t("admin:quality.source")}>
-          <Tag>{issue.source}</Tag>
+          <Tag>{enumLabel("qualityIssueSource", issue.source)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:quality.category")}>{issue.category}</Descriptions.Item>
         <Descriptions.Item label={t("admin:quality.severity")}>
-          <Tag>{issue.severity}</Tag>
+          <Tag>{enumLabel("qualityIssueSeverity", issue.severity)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.status")}>
-          <Tag>{issue.status}</Tag>
+          <Tag>{enumLabel("qualityIssueStatus", issue.status)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:quality.description")}>{issue.description}</Descriptions.Item>
         <Descriptions.Item label={t("admin:quality.resolution")}>{issue.resolution ?? "—"}</Descriptions.Item>
@@ -72,7 +74,7 @@ export default function ComplaintDetail() {
           size="large"
           className="w-full sm:w-64"
           placeholder={t("admin:quality.changeStatus")}
-          options={STATUSES.map((s) => ({ value: s, label: s }))}
+          options={enumOptions("qualityIssueStatus", STATUSES)}
           loading={isSaving}
           onChange={onStatusChange}
         />

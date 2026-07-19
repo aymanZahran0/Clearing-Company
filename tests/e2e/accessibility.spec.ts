@@ -48,4 +48,24 @@ test.describe("Accessibility (WCAG 2.1 AA)", () => {
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
   });
+
+  test("Admin Dashboard sidebar/content independent scroll (T042) has no WCAG 2.1 AA violations at 360px", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    const AxeBuilder = await loadAxeBuilder();
+    await page.goto("/admin/login");
+    await page.getByLabel(/رقم الجوال أو البريد|Mobile number or email/).fill("admin@nuqaa-asir.local");
+    await page.getByLabel(/كلمة المرور|Password/).fill("ChangeMe123!");
+    await page.getByRole("button", { name: /إرسال|Submit/ }).click();
+    await page.waitForURL("/admin");
+
+    const hasOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+    expect(hasOverflow).toBe(false);
+
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+  });
 });

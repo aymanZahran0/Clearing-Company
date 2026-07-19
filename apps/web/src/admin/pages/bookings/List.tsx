@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListAllBookingsQuery, type BookingStatus } from "../../../api/bookingsApi";
 import { formatCurrency, formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const STATUSES: BookingStatus[] = [
   "DRAFT",
@@ -33,7 +35,7 @@ export default function BookingsList() {
           placeholder={t("admin:bookings.filterByStatus")}
           size="large"
           className="w-full sm:w-64"
-          options={STATUSES.map((s) => ({ value: s, label: s }))}
+          options={enumOptions("bookingStatus", STATUSES)}
           onChange={setStatus}
         />
         <Checkbox checked={needsScheduling} onChange={(e) => setNeedsScheduling(e.target.checked)}>
@@ -51,7 +53,7 @@ export default function BookingsList() {
           {
             title: t("admin:bookings.status"),
             dataIndex: "status",
-            render: (value: BookingStatus) => <Tag>{value}</Tag>,
+            render: (value: BookingStatus) => <Tag>{enumLabel("bookingStatus", value)}</Tag>,
           },
           {
             title: t("admin:bookings.total"),

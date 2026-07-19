@@ -4,12 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { useListSubscriptionsQuery, type SubscriptionStatus } from "../../../api/subscriptionsApi";
 import { formatCurrency, formatDateTime } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const STATUSES: SubscriptionStatus[] = ["ACTIVE", "PAUSED", "CANCELLED"];
 
 // T153 (US7)
 export default function SubscriptionsList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<SubscriptionStatus | undefined>();
   const { data, isLoading } = useListSubscriptionsQuery({ status });
@@ -29,7 +31,7 @@ export default function SubscriptionsList() {
         placeholder={t("admin:bookings.filterByStatus")}
         size="large"
         className="mb-4 w-full sm:w-64"
-        options={STATUSES.map((s) => ({ value: s, label: s }))}
+        options={enumOptions("subscriptionStatus", STATUSES)}
         onChange={setStatus}
       />
       <Table
@@ -39,21 +41,25 @@ export default function SubscriptionsList() {
         onRow={(subscription) => ({ onClick: () => navigate(`/admin/subscriptions/${subscription.id}`) })}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:subscriptions.frequency"), dataIndex: "frequency" },
+          {
+            title: t("admin:subscriptions.frequency"),
+            dataIndex: "frequency",
+            render: (value: string) => enumLabel("subscriptionFrequency", value),
+          },
           {
             title: t("admin:pricing.amount"),
             dataIndex: "priceSnapshot",
-            render: (value: number) => formatCurrency(value, "en"),
+            render: (value: number) => formatCurrency(value, i18n.language),
           },
           {
             title: t("admin:bookings.status"),
             dataIndex: "status",
-            render: (value: string) => <Tag>{value}</Tag>,
+            render: (value: string) => <Tag>{enumLabel("subscriptionStatus", value)}</Tag>,
           },
           {
             title: t("admin:subscriptions.starts"),
             dataIndex: "startsAt",
-            render: (value: string) => formatDateTime(value, "en"),
+            render: (value: string) => formatDateTime(value, i18n.language),
           },
         ]}
       />

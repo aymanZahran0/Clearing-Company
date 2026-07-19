@@ -5,6 +5,7 @@ import { useGetBookingQuery } from "../../api/bookingsApi";
 import { formatCurrency, formatDateTime } from "../../lib/formatters";
 import { CancelDialog } from "../../admin/pages/bookings/CancelDialog";
 import { RescheduleDialog } from "./RescheduleDialog";
+import { enumLabel } from "../../lib/enumLabels";
 
 // Bookings that can still be cancelled without a fee (FR-040); once
 // execution has started or the booking has reached a terminal state, the
@@ -33,7 +34,7 @@ export default function BookingDetail() {
       <h1 className="mb-4 text-xl font-semibold">{booking.referenceNumber}</h1>
       <Descriptions column={1} bordered size="middle">
         <Descriptions.Item label={t("admin:bookings.status")}>
-          <Tag>{booking.status}</Tag>
+          <Tag>{enumLabel("bookingStatus", booking.status)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("admin:bookings.scheduled")}>
           {booking.scheduledStartAt

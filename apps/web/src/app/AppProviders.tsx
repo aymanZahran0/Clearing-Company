@@ -3,6 +3,8 @@ import type { PropsWithChildren } from "react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Provider } from "react-redux";
+import dayjs from "dayjs";
+import "dayjs/locale/ar-sa";
 import { store } from "./store";
 import { RTL_LOCALES } from "../lib/i18n";
 import { AuthBootstrap } from "../features/auth/AuthBootstrap";
@@ -17,10 +19,14 @@ import "../lib/i18n";
 function LocaleAwareConfigProvider({ children }: PropsWithChildren) {
   const { i18n } = useTranslation();
   const direction = RTL_LOCALES.has(i18n.language) ? "rtl" : "ltr";
+  const isArabic = RTL_LOCALES.has(i18n.language);
 
   useEffect(() => {
     document.documentElement.dir = direction;
     document.documentElement.lang = i18n.language;
+    // Locale-sensitive dayjs .format() calls (e.g. weekday/month names in
+    // the Admin schedule views) otherwise always render in English.
+    dayjs.locale(RTL_LOCALES.has(i18n.language) ? "ar-sa" : "en");
   }, [direction, i18n.language]);
 
   return (
@@ -39,6 +45,15 @@ function LocaleAwareConfigProvider({ children }: PropsWithChildren) {
           colorLink: "#0958d9",
           colorLinkHover: "#0958d9",
           colorTextDescription: "#595959",
+        },
+      }}
+      form={{
+        // Ant Design's built-in default ("Please enter ${label}") never
+        // localizes because no antd `locale` is wired to ConfigProvider;
+        // this keeps every Form's required-field message consistent with
+        // the app's own convention (e.g. "اسم الشركة مطلوب").
+        validateMessages: {
+          required: isArabic ? "${label} مطلوب" : "${label} is required",
         },
       }}
     >

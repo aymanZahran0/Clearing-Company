@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Form, Input, Modal, message } from "antd";
+import { Button, Form, Input, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { useCancelBookingMutation } from "../../../api/bookingsApi";
 
@@ -29,7 +29,7 @@ export function CancelDialog({
       setOpen(false);
       onDone?.();
     } catch {
-      message.error(t("admin:bookings.cancelError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

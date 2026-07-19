@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Form, Input, InputNumber, List, Select, message } from "antd";
+import { Button, Card, Form, Input, InputNumber, Select, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -14,6 +14,8 @@ import { useSearchCustomersQuery } from "../../../api/customersApi";
 import { useListAddressesForCustomerQuery } from "../../../api/addressesApi";
 import { useListServicesQuery } from "../../../api/servicesApi";
 import { formatCurrency } from "../../../lib/formatters";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 import { OccurrenceEditor } from "./OccurrenceEditor";
 
 const FREQUENCIES: SubscriptionFrequency[] = ["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"];
@@ -30,7 +32,8 @@ interface SubscriptionFormValues {
 // T153 (US7): create screen when no :id param, else the existing
 // subscription's detail/pause/resume/cancel + occurrence editor.
 export default function SubscriptionEditor() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNew = !id;
@@ -42,8 +45,7 @@ export default function SubscriptionEditor() {
   const [cancelSubscription] = useCancelSubscriptionMutation();
 
   const [form] = Form.useForm<SubscriptionFormValues>();
-  const [phoneSearch, setPhoneSearch] = useState("");
-  const { data: searchResults } = useSearchCustomersQuery({ search: phoneSearch }, { skip: !phoneSearch });
+  const { data: customersData, isFetching: isLoadingCustomers } = useSearchCustomersQuery({});
   const [customerId, setCustomerId] = useState<string | null>(null);
   const { data: addresses } = useListAddressesForCustomerQuery(customerId ?? "", { skip: !customerId });
   const { data: services } = useListServicesQuery();
@@ -61,7 +63,7 @@ export default function SubscriptionEditor() {
       message.success(t("admin:subscriptions.created"));
       navigate(`/admin/subscriptions/${created.id}`);
     } catch {
-      message.error(t("admin:subscriptions.createError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -70,9 +72,19 @@ export default function SubscriptionEditor() {
       <div className="p-4 sm:p-6">
         <h1 className="mb-4 text-xl font-semibold">{t("admin:subscriptions.subscriptionTitle")}</h1>
         <Card className="mb-6">
-          <p>{t("admin:subscriptions.frequencyLabel", { value: subscription.frequency })}</p>
-          <p>{t("admin:subscriptions.priceLabel", { value: formatCurrency(subscription.priceSnapshot, "en") })}</p>
-          <p>{t("admin:subscriptions.statusLabel", { value: subscription.status })}</p>
+          <p>
+            {t("admin:subscriptions.frequencyLabel", {
+              value: enumLabel("subscriptionFrequency", subscription.frequency),
+            })}
+          </p>
+          <p>
+            {t("admin:subscriptions.priceLabel", {
+              value: formatCurrency(subscription.priceSnapshot, i18n.language),
+            })}
+          </p>
+          <p>
+            {t("admin:subscriptions.statusLabel", { value: enumLabel("subscriptionStatus", subscription.status) })}
+          </p>
           <div className="mt-4 flex gap-3">
             {subscription.status === "ACTIVE" && (
               <Button size="large" onClick={() => pauseSubscription(subscription.id)}>
@@ -100,33 +112,18 @@ export default function SubscriptionEditor() {
     <div className="p-4 sm:p-6">
       <h1 className="mb-4 text-xl font-semibold">{t("admin:subscriptions.newSubscription")}</h1>
       <Form<SubscriptionFormValues> form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
-        <Form.Item label={t("admin:subscriptions.customer")} required>
-          <Input.Search
-            placeholder={t("admin:subscriptions.searchByPhone")}
-            size="large"
-            onSearch={setPhoneSearch}
-          />
-          <List
-            dataSource={searchResults?.items}
-            renderItem={(c) => (
-              <List.Item
-                onClick={() => {
-                  setCustomerId(c.userId);
-                  form.setFieldValue("customerId", c.userId);
-                }}
-                className="cursor-pointer"
-              >
-                {c.fullName} — {c.phone} {customerId === c.userId ? "✓" : ""}
-              </List.Item>
-            )}
-          />
-        </Form.Item>
         <Form.Item
           name="customerId"
+          label={t("admin:subscriptions.customer")}
           rules={[{ required: true, message: t("admin:subscriptions.selectCustomer") }]}
-          hidden
         >
-          <Input />
+          <Select
+            size="large"
+            loading={isLoadingCustomers}
+            placeholder={t("admin:subscriptions.selectCustomer")}
+            onChange={(value: string) => setCustomerId(value)}
+            options={customersData?.items.map((c) => ({ value: c.id, label: `${c.fullName} — ${c.phone}` }))}
+          />
         </Form.Item>
         <Form.Item name="addressId" label={t("admin:subscriptions.address")} rules={[{ required: true }]}>
           <Select
@@ -136,10 +133,13 @@ export default function SubscriptionEditor() {
           />
         </Form.Item>
         <Form.Item name="serviceId" label={t("admin:subscriptions.service")} rules={[{ required: true }]}>
-          <Select size="large" options={services?.map((s) => ({ value: s.id, label: s.nameEn }))} />
+          <Select
+            size="large"
+            options={services?.map((s) => ({ value: s.id, label: isAr ? s.nameAr : s.nameEn }))}
+          />
         </Form.Item>
         <Form.Item name="frequency" label={t("admin:subscriptions.frequency")} rules={[{ required: true }]}>
-          <Select size="large" options={FREQUENCIES.map((f) => ({ value: f, label: f }))} />
+          <Select size="large" options={enumOptions("subscriptionFrequency", FREQUENCIES)} />
         </Form.Item>
         <Form.Item name="priceSnapshot" label={t("admin:subscriptions.priceSar")} rules={[{ required: true }]}>
           <InputNumber size="large" min={0} className="w-full" />

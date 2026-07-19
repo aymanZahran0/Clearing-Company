@@ -1,4 +1,4 @@
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 import { useForgotPasswordMutation } from "../../api/authApi";
 
@@ -10,7 +10,7 @@ export default function ForgotPassword() {
     try {
       await forgotPassword(values).unwrap();
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

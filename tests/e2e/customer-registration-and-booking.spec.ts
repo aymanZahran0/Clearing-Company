@@ -9,6 +9,11 @@ test.describe("Customer registers and submits a booking (User Story 1)", () => {
   test("completes the full flow from catalog to booking reference on a mobile viewport", async ({
     page,
   }) => {
+    // US3 scenario 3 / T037: explicit 360px width (not just the chromium
+    // project's desktop default) so the booking wizard's Arabic/RTL layout
+    // is actually exercised at the constitution's minimum mobile width.
+    await page.setViewportSize({ width: 360, height: 800 });
+
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
@@ -32,18 +37,25 @@ test.describe("Customer registers and submits a booking (User Story 1)", () => {
 
     await expect(page).toHaveURL(/\/booking\/new/);
 
+    // US3 scenario 3: the six-step Steps bar (RTL, at 360px) must not
+    // clip/overflow.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth))
+      .toBe(false);
+
     // PropertyStep
-    await page.getByLabel(/الخدمات|services/i).click();
-    // Ant Design's Select renders two "VILLA" nodes: an ARIA-only
+    await page.getByLabel(/نوع العقار|Property Type/).click();
+    // Ant Design's Select renders two "فيلا" nodes: an ARIA-only
     // `role="option"` listbox (zero-size, accessibility tree only) and the
     // actual visible/clickable `.ant-select-item-option-content` — target
-    // the latter, not the former.
-    await page.locator(".ant-select-item-option-content", { hasText: "VILLA" }).click();
+    // the latter, not the former. Property type options are localized
+    // (enumOptions), so the visible label is Arabic in the default locale.
+    await page.locator(".ant-select-item-option-content", { hasText: "فيلا" }).click();
     // home-cleaning is priced PROPERTY_SIZE (base rate × room count) — the
     // pricing engine falls back to "manual review required" when no size
     // input is supplied, so this must be filled for the QuoteReviewStep to
     // show a computed Total.
-    await page.getByLabel("Rooms").fill("3");
+    await page.getByLabel(/عدد الغرف|Rooms/).fill("3");
     await page.getByRole("button", { name: /تأكيد|Confirm/ }).click();
 
     // AddressStep — create a new address inline

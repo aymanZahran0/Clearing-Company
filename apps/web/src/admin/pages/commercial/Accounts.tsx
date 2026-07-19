@@ -23,7 +23,7 @@ export default function Accounts() {
       setOpen(false);
       message.success(t("admin:commercial.accountCreated"));
     } catch {
-      message.error(t("admin:commercial.accountCreateError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

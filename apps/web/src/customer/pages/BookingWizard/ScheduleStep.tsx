@@ -1,14 +1,14 @@
-import { Button, List, Radio, Space, Skeleton } from "antd";
+import { Button, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../../app/store";
 import { setSchedule } from "../../../features/bookingWizard/wizardSlice";
 import { useListOwnAddressesQuery } from "../../../api/addressesApi";
 import { useGetAvailabilityQuery } from "../../../api/availabilityApi";
-import { formatDateTime } from "../../../lib/formatters";
+import { SlotPicker } from "../../../components/SlotPicker";
 
 export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const wizard = useSelector((state: RootState) => state.bookingWizard);
   const { data: addresses } = useListOwnAddressesQuery();
@@ -19,8 +19,10 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
     { skip: !wizard.serviceId || !address }
   );
 
-  function handleSelect(slotId: string, date: string) {
-    dispatch(setSchedule({ requestedDate: date, requestedTimeSlotId: slotId }));
+  function handleSelect(slotId: string) {
+    const slot = slots?.find((s) => s.id === slotId);
+    if (!slot) return;
+    dispatch(setSchedule({ requestedDate: slot.date, requestedTimeSlotId: slotId }));
   }
 
   function handleNext() {
@@ -29,24 +31,18 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
 
   return (
     <div>
-      {isLoading && <Skeleton active />}
-      <List
-        dataSource={slots ?? []}
-        renderItem={(slot) => (
-          <List.Item>
-            <Radio
-              checked={wizard.requestedTimeSlotId === slot.id}
-              onChange={() => handleSelect(slot.id, slot.date)}
-            >
-              {t("customer:scheduleStep.slotOption", {
-                dateTime: formatDateTime(slot.date, i18n.language),
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-                count: slot.remaining,
-              })}
-            </Radio>
-          </List.Item>
-        )}
+      <SlotPicker
+        loading={isLoading}
+        value={wizard.requestedTimeSlotId ?? undefined}
+        onChange={handleSelect}
+        slots={(slots ?? []).map((slot) => ({
+          id: slot.id,
+          date: slot.date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          disabled: slot.remaining <= 0,
+          spotsLabel: t("customer:scheduleStep.slotsLeft", { count: slot.remaining }),
+        }))}
       />
       <Space className="mt-6 flex justify-between">
         <Button size="large" onClick={onBack}>

@@ -20,6 +20,7 @@ const CATEGORIES = [
 // T141 (US6): FR-052 standalone complaint, independent of the star rating.
 export default function ComplaintForm() {
   const { t } = useTranslation();
+  const categoryOptions = CATEGORIES.map((c) => ({ value: c, label: t(`customer:complaintForm.categories.${c}`) }));
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [createComplaint, { isLoading }] = useCreateComplaintMutation();
@@ -31,7 +32,7 @@ export default function ComplaintForm() {
       message.success(t("customer:complaintForm.submitted"));
       navigate(`/bookings/${id}`);
     } catch {
-      message.error(t("customer:complaintForm.submitError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -40,7 +41,7 @@ export default function ComplaintForm() {
       <h1 className="mb-4 text-xl font-semibold">{t("customer:bookingDetail.fileComplaint")}</h1>
       <Form<ComplaintFormValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
         <Form.Item name="category" label={t("customer:complaintForm.category")} rules={[{ required: true }]}>
-          <Select size="large" options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
+          <Select size="large" options={categoryOptions} />
         </Form.Item>
         <Form.Item name="description" label={t("customer:complaintForm.description")} rules={[{ required: true }]}>
           <Input.TextArea rows={4} />

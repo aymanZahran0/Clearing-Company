@@ -25,6 +25,19 @@ export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 
 export const listCustomersQuerySchema = z.object({
   search: z.string().trim().optional(),
+  status: z.enum(["ACTIVE", "INVITED", "SUSPENDED"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
+
+// contracts/customer-account-status.md: reason is required to suspend
+// (US5 scenario 6), optional to reactivate.
+export const suspendCustomerSchema = z.object({
+  reason: z.string().trim().min(3).max(500),
+});
+export type SuspendCustomerInput = z.infer<typeof suspendCustomerSchema>;
+
+export const reactivateCustomerSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+});
+export type ReactivateCustomerInput = z.infer<typeof reactivateCustomerSchema>;

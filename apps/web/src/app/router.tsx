@@ -1,5 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppShell, AdminShell } from "../components/layout/AppShell";
+import NotFoundPage from "../pages/NotFoundPage";
+import RouteErrorPage from "../pages/RouteErrorPage";
 import { RequireAuth } from "../guards/RequireAuth";
 import { RequireRole } from "../guards/RequireRole";
 import Home from "../customer/pages/Home";
@@ -60,6 +62,8 @@ import NotificationLog from "../admin/pages/notifications/Log";
 import AdminAccountsList from "../admin/pages/accounts/List";
 import JobRuns from "../admin/pages/reports/JobRuns";
 import RescheduleRequestsList from "../admin/pages/reschedule-requests/List";
+import AdminCustomersList from "../admin/pages/customers/List";
+import AdminCustomerDetail from "../admin/pages/customers/Detail";
 
 // Public routes (Home, ServiceCatalog, ServiceDetail) are the ones
 // prerendered at build time per research.md R9 — see vite.config.ts (T079).
@@ -67,6 +71,7 @@ import RescheduleRequestsList from "../admin/pages/reschedule-requests/List";
 const router = createBrowserRouter([
   {
     path: "/",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <Home />
@@ -75,6 +80,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/services",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <ServiceCatalog />
@@ -83,6 +89,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/faq",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <Faq />
@@ -91,6 +98,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/service-areas",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <ServiceAreas />
@@ -99,6 +107,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/services/:slug",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <ServiceDetail />
@@ -107,6 +116,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/track",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <PublicBookingLookup />
@@ -115,6 +125,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <Login />
@@ -123,6 +134,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/register",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <Register />
@@ -131,6 +143,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/forgot-password",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <ForgotPassword />
@@ -139,6 +152,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/reset-password",
+    errorElement: <RouteErrorPage />,
     element: (
       <AppShell>
         <ResetPassword />
@@ -147,6 +161,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/booking/new",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -157,6 +172,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/bookings",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -167,6 +183,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/bookings/:id",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -177,6 +194,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/profile",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -187,6 +205,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/addresses",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -197,6 +216,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/invoices",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -207,6 +227,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/bookings/:id/review",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -217,6 +238,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/bookings/:id/complaint",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -227,6 +249,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/subscriptions",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -237,6 +260,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/notifications",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireAuth>
         <AppShell>
@@ -247,10 +271,12 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/login",
+    errorElement: <RouteErrorPage />,
     element: <AdminLogin />,
   },
   {
     path: "/admin",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -261,6 +287,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/bookings/new",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -271,6 +298,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/bookings",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -281,6 +309,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/bookings/:id",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -291,6 +320,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/schedule/day",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -301,6 +331,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/schedule/week",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -311,6 +342,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/schedule/time-slots",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -321,6 +353,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/schedule/operating-hours",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -331,6 +364,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/schedule/closed-dates",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -341,6 +375,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/services/:serviceId/checklist",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -351,6 +386,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/categories",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -361,6 +397,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/services",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -371,6 +408,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/add-ons",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -381,6 +419,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/checklist",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -391,6 +430,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/catalog/services/:slug/images",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -401,6 +441,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/quality/reviews",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -411,6 +452,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/quality/complaints",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -421,6 +463,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/quality/:id",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -431,6 +474,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/subscriptions",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -441,6 +485,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/subscriptions/new",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -451,6 +496,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/subscriptions/:id",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -461,6 +507,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/commercial",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -471,6 +518,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/commercial/:id",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -481,6 +529,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/revenue",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -491,6 +540,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/services",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -501,6 +551,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/quality",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -511,6 +562,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/export",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -521,6 +573,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/audit-log",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -531,6 +584,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reports/job-runs",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -541,6 +595,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/reschedule-requests",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -551,6 +606,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/content/website",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -561,6 +617,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/content/faqs",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -571,6 +628,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/settings",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -581,6 +639,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/accounts",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -590,7 +649,30 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/customers",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AdminCustomersList />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/customers/:id",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AdminCustomerDetail />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
     path: "/admin/pricing/discount-codes",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -601,6 +683,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/pricing/rules",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -611,6 +694,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/notifications/templates",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -621,6 +705,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/notifications/log",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
@@ -628,6 +713,12 @@ const router = createBrowserRouter([
         </AdminShell>
       </RequireRole>
     ),
+  },
+  {
+    // FR-003/US2: catch-all for any path that doesn't match a registered
+    // route above. Must stay last in the array.
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 

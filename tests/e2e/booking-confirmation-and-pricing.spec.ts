@@ -81,7 +81,8 @@ test.describe("Admin reviews, prices, and confirms a booking (User Story 3)", ()
     const response = await confirmResponse;
     expect(response.status()).toBe(200);
 
-    await expect(page.getByText("CONFIRMED")).toBeVisible();
+    // Status is now localized (enumLabel) — "مؤكد" is the Arabic default.
+    await expect(page.getByText(/^(CONFIRMED|مؤكد)$/)).toBeVisible();
   });
 
   test("blocks confirming a price override without a reason", async ({ page, request }) => {

@@ -61,6 +61,9 @@ export const listBookingsQuerySchema = z.object({
   // FR-029/T112: "needs scheduling" filter — CONFIRMED bookings with no
   // scheduledStartAt yet, used by the Admin calendar/queue views.
   needsScheduling: z.coerce.boolean().optional(),
+  // US5 scenario 5: Admin Customer Detail's "recent bookings" reuses this
+  // existing list endpoint rather than adding a new one.
+  customerId: z.string().uuid().optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });

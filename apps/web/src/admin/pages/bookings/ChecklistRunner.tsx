@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Checkbox, Input, InputNumber, Radio, Skeleton, Tag, message } from "antd";
+import { Alert, Button, Checkbox, Input, InputNumber, Radio, Skeleton, Tag, message } from "antd";
 import { useTranslation } from "react-i18next";
 import {
   useGetChecklistRunQuery,
@@ -13,13 +13,17 @@ import {
 // fill-in never triggers `completeBooking`'s FR-048 gate prematurely.
 export function ChecklistRunner({ bookingId }: { bookingId: string }) {
   const { t, i18n } = useTranslation();
-  const { data: run, isLoading, refetch } = useGetChecklistRunQuery(bookingId);
+  const { data: run, isLoading, isError, refetch } = useGetChecklistRunQuery(bookingId);
   const [updateResults, { isLoading: isSaving }] = useUpdateChecklistResultsMutation();
   const [reviewRun] = useReviewChecklistRunMutation();
   const [draft, setDraft] = useState<Record<string, ChecklistResultInput>>({});
 
-  if (isLoading || !run) {
+  if (isLoading) {
     return <Skeleton active />;
+  }
+
+  if (isError || !run) {
+    return <Alert type="error" showIcon message={t("admin:checklist.loadError")} />;
   }
 
   function valueFor(templateItemId: string) {
@@ -45,7 +49,7 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
       setDraft({});
       message.success(t("admin:checklist.saved"));
     } catch {
-      message.error(t("admin:checklist.saveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -55,7 +59,7 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
       refetch();
       message.success(t("admin:checklist.reviewed"));
     } catch {
-      message.error(t("admin:checklist.reviewError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

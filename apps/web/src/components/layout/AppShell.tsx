@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
 import { clearAuth } from "../../features/auth/authSlice";
 import { useLogoutMutation } from "../../api/authApi";
+import { baseApi } from "../../api/baseApi";
 
 const { Header, Content, Sider } = Layout;
 
@@ -28,6 +29,7 @@ export function AppShell({ children }: PropsWithChildren) {
   async function handleLogout() {
     await logout();
     dispatch(clearAuth());
+    dispatch(baseApi.util.resetApiState());
     navigate("/");
   }
 
@@ -155,39 +157,42 @@ export function AppShell({ children }: PropsWithChildren) {
 // tree — catalog/pricing/schedule/subscriptions/commercial/payments/
 // quality/notifications/content/settings/reports are added in their
 // respective phases, not stubbed ahead of time per constitution "no
-// half-finished implementations").
+// half-finished implementations"). Labels are translation keys (US4
+// scenario 1/FR-009) — the sidebar renders `t()` of each, not literal
+// English text.
 const ADMIN_NAV_ITEMS = [
-  { key: "/admin", label: "Dashboard" },
-  { key: "/admin/catalog/categories", label: "Catalog: Categories" },
-  { key: "/admin/catalog/services", label: "Catalog: Services" },
-  { key: "/admin/catalog/add-ons", label: "Catalog: Add-Ons" },
-  { key: "/admin/catalog/checklist", label: "Catalog: Checklist" },
-  { key: "/admin/bookings", label: "Bookings" },
-  { key: "/admin/bookings/new", label: "New Phone Booking" },
-  { key: "/admin/schedule/week", label: "Schedule (Week)" },
-  { key: "/admin/schedule/day", label: "Schedule (Day)" },
-  { key: "/admin/schedule/time-slots", label: "Time Slots" },
-  { key: "/admin/schedule/operating-hours", label: "Operating Hours" },
-  { key: "/admin/schedule/closed-dates", label: "Closed Dates" },
-  { key: "/admin/quality/reviews", label: "Reviews" },
-  { key: "/admin/quality/complaints", label: "Complaints" },
-  { key: "/admin/subscriptions", label: "Subscriptions" },
-  { key: "/admin/commercial", label: "Commercial Accounts" },
-  { key: "/admin/reports/revenue", label: "Revenue Report" },
-  { key: "/admin/reports/services", label: "Services Report" },
-  { key: "/admin/reports/quality", label: "Quality Report" },
-  { key: "/admin/reports/export", label: "Export" },
-  { key: "/admin/reports/audit-log", label: "Audit Log" },
-  { key: "/admin/reports/job-runs", label: "Job Runs" },
-  { key: "/admin/reschedule-requests", label: "Reschedule Requests" },
-  { key: "/admin/content/website", label: "Website Content" },
-  { key: "/admin/content/faqs", label: "FAQs" },
-  { key: "/admin/settings", label: "System Settings" },
-  { key: "/admin/accounts", label: "Admin Accounts" },
-  { key: "/admin/pricing/discount-codes", label: "Discount Codes" },
-  { key: "/admin/pricing/rules", label: "Pricing Rules" },
-  { key: "/admin/notifications/templates", label: "Notification Templates" },
-  { key: "/admin/notifications/log", label: "Notification Log" },
+  { key: "/admin", labelKey: "admin:nav.dashboard" },
+  { key: "/admin/catalog/categories", labelKey: "admin:nav.catalogCategories" },
+  { key: "/admin/catalog/services", labelKey: "admin:nav.catalogServices" },
+  { key: "/admin/catalog/add-ons", labelKey: "admin:nav.catalogAddOns" },
+  { key: "/admin/catalog/checklist", labelKey: "admin:nav.catalogChecklist" },
+  { key: "/admin/bookings", labelKey: "admin:nav.bookings" },
+  { key: "/admin/bookings/new", labelKey: "admin:nav.newPhoneBooking" },
+  { key: "/admin/schedule/week", labelKey: "admin:nav.scheduleWeek" },
+  { key: "/admin/schedule/day", labelKey: "admin:nav.scheduleDay" },
+  { key: "/admin/schedule/time-slots", labelKey: "admin:nav.timeSlots" },
+  { key: "/admin/schedule/operating-hours", labelKey: "admin:nav.operatingHours" },
+  { key: "/admin/schedule/closed-dates", labelKey: "admin:nav.closedDates" },
+  { key: "/admin/quality/reviews", labelKey: "admin:nav.reviews" },
+  { key: "/admin/quality/complaints", labelKey: "admin:nav.complaints" },
+  { key: "/admin/subscriptions", labelKey: "admin:nav.subscriptions" },
+  { key: "/admin/commercial", labelKey: "admin:nav.commercialAccounts" },
+  { key: "/admin/customers", labelKey: "admin:nav.customers" },
+  { key: "/admin/reports/revenue", labelKey: "admin:nav.revenueReport" },
+  { key: "/admin/reports/services", labelKey: "admin:nav.servicesReport" },
+  { key: "/admin/reports/quality", labelKey: "admin:nav.qualityReport" },
+  { key: "/admin/reports/export", labelKey: "admin:nav.export" },
+  { key: "/admin/reports/audit-log", labelKey: "admin:nav.auditLog" },
+  { key: "/admin/reports/job-runs", labelKey: "admin:nav.jobRuns" },
+  { key: "/admin/reschedule-requests", labelKey: "admin:nav.rescheduleRequests" },
+  { key: "/admin/content/website", labelKey: "admin:nav.websiteContent" },
+  { key: "/admin/content/faqs", labelKey: "admin:nav.faqs" },
+  { key: "/admin/settings", labelKey: "admin:nav.systemSettings" },
+  { key: "/admin/accounts", labelKey: "admin:nav.adminAccounts" },
+  { key: "/admin/pricing/discount-codes", labelKey: "admin:nav.discountCodes" },
+  { key: "/admin/pricing/rules", labelKey: "admin:nav.pricingRules" },
+  { key: "/admin/notifications/templates", labelKey: "admin:nav.notificationTemplates" },
+  { key: "/admin/notifications/log", labelKey: "admin:nav.notificationLog" },
 ];
 
 export function AdminShell({ children }: PropsWithChildren) {
@@ -201,7 +206,12 @@ export function AdminShell({ children }: PropsWithChildren) {
   async function handleLogout() {
     await logout();
     dispatch(clearAuth());
+    dispatch(baseApi.util.resetApiState());
     navigate("/admin/login");
+  }
+
+  function toggleLocale() {
+    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
   }
 
   const menu = (
@@ -211,7 +221,7 @@ export function AdminShell({ children }: PropsWithChildren) {
       items={[
         ...ADMIN_NAV_ITEMS.map((item) => ({
           key: item.key,
-          label: <Link to={item.key}>{item.label}</Link>,
+          label: <Link to={item.key}>{t(item.labelKey)}</Link>,
         })),
         { type: "divider" as const },
         { key: "logout", label: t("nav.logout"), onClick: handleLogout },
@@ -220,19 +230,27 @@ export function AdminShell({ children }: PropsWithChildren) {
   );
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between bg-white px-4 shadow-sm">
+    <Layout className="h-[100dvh] overflow-hidden">
+      <Header className="flex h-16 flex-none items-center justify-between bg-white px-4 shadow-sm">
         <span className="text-lg font-bold">{t("nav.adminDashboard")}</span>
-        <Button
-          className="lg:hidden"
-          size="large"
-          icon={<MenuOutlined />}
-          onClick={() => setDrawerOpen(true)}
-          aria-label={t("nav.adminDashboard") as string}
-        />
+        <div className="flex items-center gap-2">
+          <Button size="large" onClick={toggleLocale} aria-label="Toggle language">
+            {i18n.language === "ar" ? "EN" : "AR"}
+          </Button>
+          <Button
+            className="lg:hidden"
+            size="large"
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerOpen(true)}
+            aria-label={t("nav.adminDashboard") as string}
+          />
+        </div>
       </Header>
-      <Layout>
-        <Sider width={220} theme="light" className="hidden lg:block">
+      {/* T042: sidebar and main content scroll completely independently —
+          each is its own `h-full overflow-y-auto` container below the
+          fixed-height header, instead of one page-level scrollbar. */}
+      <Layout className="min-h-0 flex-1">
+        <Sider width={220} theme="light" className="hidden h-full overflow-y-auto lg:block">
           {menu}
         </Sider>
         <Drawer
@@ -243,7 +261,7 @@ export function AdminShell({ children }: PropsWithChildren) {
         >
           {menu}
         </Drawer>
-        <Content className="min-w-0 flex-1">{children}</Content>
+        <Content className="h-full min-w-0 flex-1 overflow-y-auto">{children}</Content>
       </Layout>
     </Layout>
   );

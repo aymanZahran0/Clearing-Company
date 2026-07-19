@@ -16,7 +16,7 @@ export default function ResetPassword() {
       message.success(t("common.confirm") as string);
       navigate("/login");
     } catch {
-      message.error(t("common.error"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

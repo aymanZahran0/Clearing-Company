@@ -9,7 +9,7 @@ const { RangePicker } = DatePicker;
 
 // T165 (US8)
 export default function Revenue() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [range, setRange] = useState<[Dayjs, Dayjs] | null>(null);
   const { data, isLoading } = useGetRevenueReportQuery(
     range ? { from: range[0].toISOString(), to: range[1].toISOString() } : undefined
@@ -33,7 +33,7 @@ export default function Revenue() {
           <Card loading={isLoading}>
             <Statistic
               title={t("admin:reports.totalRevenue")}
-              value={data ? formatCurrency(data.totalRevenue, "en") : "—"}
+              value={data ? formatCurrency(data.totalRevenue, i18n.language) : "—"}
             />
           </Card>
         </Col>
@@ -41,7 +41,7 @@ export default function Revenue() {
           <Card loading={isLoading}>
             <Statistic
               title={t("admin:reports.totalTax")}
-              value={data ? formatCurrency(data.totalTax, "en") : "—"}
+              value={data ? formatCurrency(data.totalTax, i18n.language) : "—"}
             />
           </Card>
         </Col>
@@ -49,7 +49,7 @@ export default function Revenue() {
           <Card loading={isLoading}>
             <Statistic
               title={t("admin:reports.totalCollected")}
-              value={data ? formatCurrency(data.totalCollected, "en") : "—"}
+              value={data ? formatCurrency(data.totalCollected, i18n.language) : "—"}
             />
           </Card>
         </Col>

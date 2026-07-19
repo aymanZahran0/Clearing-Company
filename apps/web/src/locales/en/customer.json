@@ -18,8 +18,39 @@
     "title": "Track your booking",
     "verificationCode": "Verification Code"
   },
+  "bookingWizard": {
+    "steps": {
+      "property": "Property",
+      "address": "Address",
+      "addOns": "Add-ons",
+      "schedule": "Schedule",
+      "quote": "Quote",
+      "confirm": "Confirm"
+    }
+  },
+  "propertyStep": {
+    "propertyType": "Property Type",
+    "rooms": "Rooms",
+    "areaSqm": "Area (sqm)",
+    "conditionModifiers": "Additional Conditions",
+    "conditions": {
+      "post_construction": "Post-construction",
+      "move_in_out": "Move-in/Move-out",
+      "heavy_soil": "Heavy soiling",
+      "pets": "Pets present",
+      "stairs": "Stairs present"
+    }
+  },
   "complaintForm": {
     "category": "Category",
+    "categories": {
+      "quality": "Quality",
+      "punctuality": "Punctuality",
+      "damage": "Damage",
+      "staff_conduct": "Staff Conduct",
+      "billing": "Billing",
+      "other": "Other"
+    },
     "description": "Description",
     "submitComplaint": "Submit Complaint",
     "submitError": "Could not submit your complaint",
@@ -27,9 +58,11 @@
   },
   "confirmationStep": {
     "acceptTerms": "I accept the terms and conditions",
+    "acceptTermsRequired": "You must accept the terms and conditions to continue",
     "completePreviousSteps": "Please complete previous steps first.",
     "submitted": "Your booking request has been submitted.",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "whatsappMessage": "Booking reference: {{reference}}"
   },
   "forgotPassword": {
     "checkInstructions": "Check your phone/email for instructions."

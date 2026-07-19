@@ -90,7 +90,9 @@ export async function login(input: LoginInput) {
   }
 
   if (user.status === "SUSPENDED") {
-    throw new ApiError(401, "UNAUTHORIZED", "This account has been suspended");
+    // FR-015: stable, non-sensitive code — never reveals the suspension
+    // reason (that lives only in the AuditLog entry Admin can see).
+    throw new ApiError(401, "ACCOUNT_SUSPENDED", "This account has been suspended");
   }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
@@ -124,6 +126,12 @@ export async function refresh(rawRefreshToken: string) {
   }
 
   const user = await prisma.user.findUniqueOrThrow({ where: { id: stored.userId } });
+
+  // FR-015: a Customer suspended after this refresh token was issued must
+  // be rejected here too, not just at login.
+  if (user.status === "SUSPENDED") {
+    throw new ApiError(401, "ACCOUNT_SUSPENDED", "This account has been suspended");
+  }
 
   // Rotation-on-use: revoke the old refresh token, issue a new pair.
   const tokens = await issueTokenPair(user);

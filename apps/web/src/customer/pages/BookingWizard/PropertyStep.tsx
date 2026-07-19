@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../../app/store";
 import { setPropertyDetails } from "../../../features/bookingWizard/wizardSlice";
+import { enumOptions } from "../../../lib/enumOptions";
 
 const PROPERTY_TYPES = ["APARTMENT", "VILLA", "OFFICE", "SHOP", "CLINIC", "FURNISHED_UNIT", "OTHER"];
-const CONDITION_MODIFIERS = ["post_construction", "move_in_out", "heavy_soil", "pets", "stairs"];
+const CONDITION_MODIFIERS = ["post_construction", "move_in_out", "heavy_soil", "pets", "stairs"] as const;
 
 interface PropertyStepValues {
   propertyType: string;
@@ -43,17 +44,19 @@ export function PropertyStep({ onNext }: { onNext: () => void }) {
         conditionModifiers: wizard.conditionModifiers,
       }}
     >
-      <Form.Item name="propertyType" label={t("nav.services")} rules={[{ required: true }]}>
-        <Select size="large" options={PROPERTY_TYPES.map((v) => ({ value: v, label: v }))} />
+      <Form.Item name="propertyType" label={t("customer:propertyStep.propertyType")} rules={[{ required: true }]}>
+        <Select size="large" options={enumOptions("propertyType", PROPERTY_TYPES)} />
       </Form.Item>
-      <Form.Item name="rooms" label="Rooms">
+      <Form.Item name="rooms" label={t("customer:propertyStep.rooms")}>
         <InputNumber size="large" min={0} className="w-full" />
       </Form.Item>
-      <Form.Item name="areaSqm" label="Area (sqm)">
+      <Form.Item name="areaSqm" label={t("customer:propertyStep.areaSqm")}>
         <InputNumber size="large" min={0} className="w-full" />
       </Form.Item>
-      <Form.Item name="conditionModifiers">
-        <Checkbox.Group options={CONDITION_MODIFIERS.map((v) => ({ value: v, label: v }))} />
+      <Form.Item name="conditionModifiers" label={t("customer:propertyStep.conditionModifiers")}>
+        <Checkbox.Group
+          options={CONDITION_MODIFIERS.map((v) => ({ value: v, label: t(`customer:propertyStep.conditions.${v}`) }))}
+        />
       </Form.Item>
       <Button type="primary" htmlType="submit" size="large" block>
         {t("common.confirm")}

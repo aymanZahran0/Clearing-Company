@@ -18,8 +18,39 @@
     "title": "تتبّع حجزك",
     "verificationCode": "رمز التحقق"
   },
+  "bookingWizard": {
+    "steps": {
+      "property": "العقار",
+      "address": "العنوان",
+      "addOns": "الإضافات",
+      "schedule": "الموعد",
+      "quote": "عرض السعر",
+      "confirm": "التأكيد"
+    }
+  },
+  "propertyStep": {
+    "propertyType": "نوع العقار",
+    "rooms": "عدد الغرف",
+    "areaSqm": "المساحة (م²)",
+    "conditionModifiers": "ظروف إضافية",
+    "conditions": {
+      "post_construction": "بعد أعمال البناء",
+      "move_in_out": "انتقال (دخول/خروج)",
+      "heavy_soil": "اتساخ شديد",
+      "pets": "يوجد حيوانات أليفة",
+      "stairs": "يوجد سلالم"
+    }
+  },
   "complaintForm": {
     "category": "الفئة",
+    "categories": {
+      "quality": "الجودة",
+      "punctuality": "الالتزام بالموعد",
+      "damage": "ضرر",
+      "staff_conduct": "سلوك الفريق",
+      "billing": "الفوترة",
+      "other": "أخرى"
+    },
     "description": "الوصف",
     "submitComplaint": "إرسال الشكوى",
     "submitError": "تعذر إرسال شكواك",
@@ -27,9 +58,11 @@
   },
   "confirmationStep": {
     "acceptTerms": "أوافق على الشروط والأحكام",
+    "acceptTermsRequired": "يجب الموافقة على الشروط والأحكام للمتابعة",
     "completePreviousSteps": "يرجى إكمال الخطوات السابقة أولاً.",
     "submitted": "تم إرسال طلب حجزك.",
-    "whatsapp": "واتساب"
+    "whatsapp": "واتساب",
+    "whatsappMessage": "الرقم المرجعي للحجز: {{reference}}"
   },
   "forgotPassword": {
     "checkInstructions": "تحقق من هاتفك أو بريدك الإلكتروني للحصول على التعليمات."

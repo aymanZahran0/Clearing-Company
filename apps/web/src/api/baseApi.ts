@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { message } from "antd";
 import { setAccessToken, clearAuth } from "../features/auth/authSlice";
 import type { RootState } from "../app/store";
+import i18n from "../lib/i18n";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api/v1",
@@ -40,7 +42,18 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       api.dispatch(setAccessToken(accessToken));
       result = await rawBaseQuery(args, api, extraOptions);
     } else {
+      // US5 scenario 7/T061: a session ended by Admin suspension (not just
+      // ordinary token expiry) gets an explicit Arabic message here, since
+      // this silent-refresh path is otherwise invisible to the user.
+      const code = (refreshResult.error?.data as { error?: { code?: string } } | undefined)?.error?.code;
+      if (code === "ACCOUNT_SUSPENDED") {
+        message.error(i18n.t("common:errors.accountSuspended"));
+      }
       api.dispatch(clearAuth());
+      // A new identity (or none at all) may follow this session — clear all
+      // cached query data so a subsequent login never renders the previous
+      // user's cached bookings/etc. before its own data has loaded.
+      api.dispatch(baseApi.util.resetApiState());
     }
   }
 

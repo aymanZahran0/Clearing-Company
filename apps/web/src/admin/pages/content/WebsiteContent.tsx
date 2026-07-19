@@ -7,6 +7,8 @@ import {
   useUpsertContentBlockMutation,
   type ContentBlockInput,
 } from "../../../api/contentApi";
+import { enumLabel } from "../../../lib/enumLabels";
+import { enumOptions } from "../../../lib/enumOptions";
 
 // T173 (US-Polish)
 export default function WebsiteContent() {
@@ -24,7 +26,7 @@ export default function WebsiteContent() {
       form.resetFields();
       message.success(t("admin:content.blockSaved"));
     } catch {
-      message.error(t("admin:content.blockSaveError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 
@@ -43,7 +45,11 @@ export default function WebsiteContent() {
         scroll={{ x: true }}
         columns={[
           { title: t("admin:content.key"), dataIndex: "key" },
-          { title: t("admin:content.type"), dataIndex: "type" },
+          {
+            title: t("admin:content.type"),
+            dataIndex: "type",
+            render: (value: string) => enumLabel("websiteContentBlockType", value),
+          },
           { title: t("admin:content.titleEn"), dataIndex: "titleEn" },
           {
             title: t("admin:content.active"),
@@ -66,7 +72,7 @@ export default function WebsiteContent() {
             <Input size="large" placeholder="e.g. home_hero" />
           </Form.Item>
           <Form.Item name="type" label={t("admin:content.type")} rules={[{ required: true }]}>
-            <Select size="large" options={["PAGE", "SECTION"].map((v) => ({ value: v, label: v }))} />
+            <Select size="large" options={enumOptions("websiteContentBlockType", ["PAGE", "SECTION"])} />
           </Form.Item>
           <Form.Item name="titleAr" label={t("admin:content.titleAr")} rules={[{ required: true }]}>
             <Input size="large" />

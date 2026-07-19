@@ -22,7 +22,7 @@ export default function FAQs() {
       setOpen(false);
       message.success(t("admin:content.faqAdded"));
     } catch {
-      message.error(t("admin:content.faqAddError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

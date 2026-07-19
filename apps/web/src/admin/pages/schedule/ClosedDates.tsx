@@ -21,7 +21,7 @@ export default function ClosedDates() {
       form.resetFields();
       message.success(t("admin:schedule.closedDateAdded"));
     } catch {
-      message.error(t("admin:schedule.closedDateAddError"));
+      // toast shown by the global RTK Query error middleware
     }
   }
 

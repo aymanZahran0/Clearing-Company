@@ -10,8 +10,20 @@ const STATUS_COLOR: Record<JobRunStatus, string> = {
   SKIPPED_LOCKED: "orange",
 };
 
+const JOB_NAME_LABEL_KEYS: Record<JobName, string> = {
+  EXPIRE_STALE_QUOTES: "admin:jobRuns.expireStaleQuotes",
+  FLAG_OVERDUE_BOOKINGS: "admin:jobRuns.flagOverdueBookings",
+  GENERATE_SUBSCRIPTION_OCCURRENCES: "admin:jobRuns.generateSubscriptionOccurrences",
+};
+
+const JOB_STATUS_LABEL_KEYS: Record<JobRunStatus, string> = {
+  SUCCESS: "admin:jobRuns.success",
+  FAILURE: "admin:jobRuns.failure",
+  SKIPPED_LOCKED: "admin:jobRuns.skippedLocked",
+};
+
 export default function JobRuns() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [jobName, setJobName] = useState<JobName | undefined>();
   const [status, setStatus] = useState<JobRunStatus | undefined>();
   const { data, isLoading } = useListJobRunsQuery({ jobName, status });
@@ -54,21 +66,27 @@ export default function JobRuns() {
         scroll={{ x: true }}
         pagination={{ total: data?.total, pageSize: data?.pageSize }}
         columns={[
-          { title: t("admin:jobRuns.job"), dataIndex: "jobName" },
+          {
+            title: t("admin:jobRuns.job"),
+            dataIndex: "jobName",
+            render: (value: JobName) => t(JOB_NAME_LABEL_KEYS[value]),
+          },
           {
             title: t("admin:jobRuns.status"),
             dataIndex: "status",
-            render: (value: JobRunStatus) => <Tag color={STATUS_COLOR[value]}>{value}</Tag>,
+            render: (value: JobRunStatus) => (
+              <Tag color={STATUS_COLOR[value]}>{t(JOB_STATUS_LABEL_KEYS[value])}</Tag>
+            ),
           },
           {
             title: t("admin:jobRuns.startedAt"),
             dataIndex: "startedAt",
-            render: (value: string) => formatDateTime(value, "en"),
+            render: (value: string) => formatDateTime(value, i18n.language),
           },
           {
             title: t("admin:jobRuns.finishedAt"),
             dataIndex: "finishedAt",
-            render: (value: string | null) => (value ? formatDateTime(value, "en") : "—"),
+            render: (value: string | null) => (value ? formatDateTime(value, i18n.language) : "—"),
           },
           { title: t("admin:jobRuns.failureReason"), dataIndex: "failureReason", render: (value: string | null) => value ?? "—" },
         ]}
