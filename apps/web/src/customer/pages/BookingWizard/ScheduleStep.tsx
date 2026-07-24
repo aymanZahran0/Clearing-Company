@@ -6,6 +6,8 @@ import { setSchedule } from "../../../features/bookingWizard/wizardSlice";
 import { useListOwnAddressesQuery } from "../../../api/addressesApi";
 import { useGetAvailabilityQuery } from "../../../api/availabilityApi";
 import { SlotPicker } from "../../../components/SlotPicker";
+import { WizardStepCard } from "./WizardStepCard";
+import { WizardConfirmButton } from "./WizardConfirmButton";
 
 export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { t } = useTranslation();
@@ -30,7 +32,7 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
   }
 
   return (
-    <div>
+    <WizardStepCard title={t("customer:bookingWizard.steps.schedule")}>
       <SlotPicker
         loading={isLoading}
         value={wizard.requestedTimeSlotId ?? undefined}
@@ -48,10 +50,10 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
         <Button size="large" onClick={onBack}>
           {t("common.cancel")}
         </Button>
-        <Button type="primary" size="large" disabled={!wizard.requestedDate} onClick={handleNext}>
+        <WizardConfirmButton disabled={!wizard.requestedDate} onClick={handleNext}>
           {t("common.confirm")}
-        </Button>
+        </WizardConfirmButton>
       </Space>
-    </div>
+    </WizardStepCard>
   );
 }

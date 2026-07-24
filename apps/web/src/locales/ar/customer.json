@@ -15,10 +15,20 @@
   },
   "bookingLookup": {
     "bookingReference": "الرقم المرجعي للحجز",
-    "title": "تتبّع حجزك",
-    "verificationCode": "رمز التحقق"
+    "title": "تتبّع حجزك"
+  },
+  "bookingsList": {
+    "count_zero": "لا توجد حجوزات",
+    "count_one": "حجز واحد",
+    "count_two": "حجزان",
+    "count_few": "{{count}} حجوزات",
+    "count_many": "{{count}} حجزًا",
+    "count_other": "{{count}} حجز",
+    "emptyTitle": "لا توجد حجوزات بعد",
+    "emptyCta": "احجز أول خدمة"
   },
   "bookingWizard": {
+    "title": "احجز خدمة",
     "steps": {
       "property": "العقار",
       "address": "العنوان",
@@ -29,9 +39,12 @@
     }
   },
   "propertyStep": {
+    "title": "تفاصيل العقار",
     "propertyType": "نوع العقار",
     "rooms": "عدد الغرف",
+    "roomsPlaceholder": "أدخل عدد الغرف",
     "areaSqm": "المساحة (م²)",
+    "areaSqmPlaceholder": "المساحة (م²)",
     "conditionModifiers": "ظروف إضافية",
     "conditions": {
       "post_construction": "بعد أعمال البناء",
@@ -56,13 +69,34 @@
     "submitError": "تعذر إرسال شكواك",
     "submitted": "تم إرسال شكواك"
   },
+  "complaintStatus": {
+    "OPEN": "تم استلام شكواك",
+    "IN_REVIEW": "الشكوى تحت المراجعة",
+    "RESOLVED": "تم حل الشكوى",
+    "CLOSED": "تم إغلاق الشكوى",
+    "resolution": "الرد: {{resolution}}"
+  },
   "confirmationStep": {
+    "phoneRequired": "رقم الجوال مطلوب",
+    "phoneInvalid": "أدخل رقم جوال من 10 أرقام يبدأ بـ 05",
     "acceptTerms": "أوافق على الشروط والأحكام",
     "acceptTermsRequired": "يجب الموافقة على الشروط والأحكام للمتابعة",
     "completePreviousSteps": "يرجى إكمال الخطوات السابقة أولاً.",
     "submitted": "تم إرسال طلب حجزك.",
     "whatsapp": "واتساب",
     "whatsappMessage": "الرقم المرجعي للحجز: {{reference}}"
+  },
+  "serviceDetail": {
+    "breadcrumbLabel": "مسار التنقل",
+    "mockImageAlt": "فريق تنظيف محترف ينظف غرفة معيشة عائلية مشرقة",
+    "duration": "حوالي {{minutes}} دقيقة",
+    "startingFrom": "يبدأ من",
+    "price": "السعر",
+    "customQuote": "عرض سعر مخصص",
+    "about": "عن الخدمة",
+    "descriptionFallback": "خدمة تنظيف احترافية تُنفّذ بعناية واهتمام بأدق التفاصيل.",
+    "availableAddOns": "الإضافات المتاحة",
+    "bookNow": "احجز الآن"
   },
   "forgotPassword": {
     "checkInstructions": "تحقق من هاتفك أو بريدك الإلكتروني للحصول على التعليمات."
@@ -86,7 +120,9 @@
     "submitted": "تم إرسال طلب إعادة الجدولة"
   },
   "reviewForm": {
+    "alreadyReviewed": "لقد قيّمت هذه الخدمة بالفعل",
     "commentOptional": "تعليق (اختياري)",
+    "onlyCompleted": "يمكن تقييم الحجوزات المكتملة فقط",
     "rating": "التقييم",
     "submitError": "تعذر إرسال تقييمك",
     "submitReview": "إرسال التقييم",
@@ -97,6 +133,25 @@
     "slotsLeft": "متبقٍّ {{count}}"
   },
   "subscriptions": {
-    "starts": "تبدأ في {{date}}"
+    "starts": "تبدأ في {{date}}",
+    "count_zero": "لا توجد اشتراكات",
+    "count_one": "اشتراك واحد",
+    "count_two": "اشتراكان",
+    "count_few": "{{count}} اشتراكات",
+    "count_many": "{{count}} اشتراكًا",
+    "count_other": "{{count}} اشتراك",
+    "emptyTitle": "لا توجد اشتراكات بعد"
+  },
+  "notifications": {
+    "count_zero": "لا توجد إشعارات",
+    "count_one": "إشعار واحد",
+    "count_two": "إشعاران",
+    "count_few": "{{count}} إشعارات",
+    "count_many": "{{count}} إشعارًا",
+    "count_other": "{{count}} إشعار",
+    "emptyTitle": "لا توجد إشعارات بعد"
+  },
+  "invoices": {
+    "emptyTitle": "لا يوجد بيانات"
   }
 }

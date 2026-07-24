@@ -1,7 +1,8 @@
-import { Button, Form, Input, Select, message } from "antd";
+import { Alert, Button, Form, Input, Select, Skeleton, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCreateComplaintMutation } from "../../api/qualityIssuesApi";
+import { useGetBookingQuery } from "../../api/bookingsApi";
 
 interface ComplaintFormValues {
   category: string;
@@ -24,6 +25,27 @@ export default function ComplaintForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [createComplaint, { isLoading }] = useCreateComplaintMutation();
+  const { data: booking, isLoading: isBookingLoading } = useGetBookingQuery(id ?? "", { skip: !id });
+  const complaint = booking?.qualityIssues?.[0];
+
+  if (isBookingLoading) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Skeleton active />
+      </div>
+    );
+  }
+  if (complaint) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Alert
+          type="info"
+          showIcon
+          message={t(`customer:complaintStatus.${complaint.status}`)}
+        />
+      </div>
+    );
+  }
 
   async function onFinish(values: ComplaintFormValues) {
     if (!id) return;

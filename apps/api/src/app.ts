@@ -34,6 +34,7 @@ import { jobRunsRouter } from "./modules/job-runs/routes.js";
 import { adminAccountsRouter } from "./modules/admin-accounts/routes.js";
 import { rescheduleRequestsRouter } from "./modules/reschedule-requests/routes.js";
 import { prisma } from "./lib/prisma.js";
+import { getLocalUploadRoot } from "./lib/storage/factory.js";
 
 export function createApp() {
   const app = express();
@@ -54,6 +55,12 @@ export function createApp() {
   app.use(express.json());
   app.use(cookieParser());
   app.use(standardRateLimit);
+  app.use(
+    "/uploads",
+    express.static(getLocalUploadRoot(), {
+      setHeaders: (res) => res.setHeader("Cross-Origin-Resource-Policy", "cross-origin"),
+    })
+  );
 
   // contracts/health-and-jobs.md: existing path/200-on-healthy contract
   // preserved; body now reports DB reachability for monitoring/alerting.

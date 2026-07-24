@@ -20,7 +20,7 @@ interface FormValues {
 // T176 (US-Polish): backend CRUD already existed from Phase 3 (T058) —
 // this adds the missing Admin UI.
 export default function PricingRules() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: services } = useListServicesQuery();
   const [serviceId, setServiceId] = useState<string | null>(null);
   const { data: rules, isLoading } = useListPricingRulesQuery(serviceId ?? "", { skip: !serviceId });
@@ -46,7 +46,7 @@ export default function PricingRules() {
         placeholder={t("admin:pricing.selectService")}
         size="large"
         className="mb-4 w-full sm:w-64"
-        options={services?.map((s) => ({ value: s.id, label: i18n.language === "ar" ? s.nameAr : s.nameEn }))}
+        options={services?.map((s) => ({ value: s.id, label: s.nameAr }))}
         onChange={setServiceId}
       />
       {serviceId && (
@@ -73,7 +73,7 @@ export default function PricingRules() {
               { title: t("admin:pricing.amount"), dataIndex: "amount" },
               { title: t("admin:pricing.priority"), dataIndex: "priority" },
               {
-                title: "",
+                title: t("admin:common.actions"),
                 render: (_: unknown, row: { id: string }) => (
                   <Button danger size="small" onClick={() => deleteRule(row.id)}>
                     {t("admin:common.delete")}

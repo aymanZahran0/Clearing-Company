@@ -46,6 +46,15 @@ paymentsRouter.post(
 );
 
 paymentsRouter.get(
+  "/invoices/mine",
+  authenticate,
+  requireRole("CUSTOMER"),
+  asyncHandler(async (req, res) => {
+    res.json(await service.listOwnInvoices(req.user!.id));
+  })
+);
+
+paymentsRouter.get(
   "/bookings/:id/invoice",
   authenticate,
   asyncHandler(async (req, res) => {

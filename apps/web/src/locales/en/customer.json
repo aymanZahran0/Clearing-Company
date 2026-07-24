@@ -15,10 +15,16 @@
   },
   "bookingLookup": {
     "bookingReference": "Booking Reference",
-    "title": "Track your booking",
-    "verificationCode": "Verification Code"
+    "title": "Track your booking"
+  },
+  "bookingsList": {
+    "count_one": "{{count}} booking",
+    "count_other": "{{count}} bookings",
+    "emptyTitle": "No bookings yet",
+    "emptyCta": "Book your first service"
   },
   "bookingWizard": {
+    "title": "Book a Service",
     "steps": {
       "property": "Property",
       "address": "Address",
@@ -29,9 +35,12 @@
     }
   },
   "propertyStep": {
+    "title": "Property Details",
     "propertyType": "Property Type",
     "rooms": "Rooms",
+    "roomsPlaceholder": "Enter number of rooms",
     "areaSqm": "Area (sqm)",
+    "areaSqmPlaceholder": "Area (sqm)",
     "conditionModifiers": "Additional Conditions",
     "conditions": {
       "post_construction": "Post-construction",
@@ -56,13 +65,34 @@
     "submitError": "Could not submit your complaint",
     "submitted": "Your complaint has been submitted"
   },
+  "complaintStatus": {
+    "OPEN": "Your complaint has been received",
+    "IN_REVIEW": "Your complaint is under review",
+    "RESOLVED": "Your complaint has been resolved",
+    "CLOSED": "Your complaint has been closed",
+    "resolution": "Response: {{resolution}}"
+  },
   "confirmationStep": {
+    "phoneRequired": "Mobile number is required",
+    "phoneInvalid": "Enter a 10-digit mobile number starting with 05",
     "acceptTerms": "I accept the terms and conditions",
     "acceptTermsRequired": "You must accept the terms and conditions to continue",
     "completePreviousSteps": "Please complete previous steps first.",
     "submitted": "Your booking request has been submitted.",
     "whatsapp": "WhatsApp",
     "whatsappMessage": "Booking reference: {{reference}}"
+  },
+  "serviceDetail": {
+    "breadcrumbLabel": "Breadcrumb",
+    "mockImageAlt": "Professional cleaners refreshing a bright family living room",
+    "duration": "About {{minutes}} minutes",
+    "startingFrom": "Starting from",
+    "price": "Price",
+    "customQuote": "Custom quote",
+    "about": "About this service",
+    "descriptionFallback": "A professional cleaning service delivered with care and attention to detail.",
+    "availableAddOns": "Available add-ons",
+    "bookNow": "Book now"
   },
   "forgotPassword": {
     "checkInstructions": "Check your phone/email for instructions."
@@ -86,7 +116,9 @@
     "submitted": "Your reschedule request has been submitted"
   },
   "reviewForm": {
+    "alreadyReviewed": "You have already reviewed this service",
     "commentOptional": "Comment (optional)",
+    "onlyCompleted": "Only completed bookings can be reviewed",
     "rating": "Rating",
     "submitError": "Could not submit your review",
     "submitReview": "Submit Review",
@@ -97,6 +129,17 @@
     "slotsLeft": "{{count}} left"
   },
   "subscriptions": {
-    "starts": "Starts {{date}}"
+    "starts": "Starts {{date}}",
+    "count_one": "{{count}} subscription",
+    "count_other": "{{count}} subscriptions",
+    "emptyTitle": "No subscriptions yet"
+  },
+  "notifications": {
+    "count_one": "{{count}} notification",
+    "count_other": "{{count}} notifications",
+    "emptyTitle": "No notifications yet"
+  },
+  "invoices": {
+    "emptyTitle": "No data"
   }
 }

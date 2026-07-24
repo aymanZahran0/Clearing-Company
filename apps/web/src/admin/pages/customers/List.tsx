@@ -97,7 +97,7 @@ export default function CustomersList() {
           },
           { title: t("admin:customers.bookingsCount"), dataIndex: "bookingsCount" },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: CustomerSummary) => (
               <div className="flex flex-wrap gap-2">
                 <Link to={`/admin/customers/${row.id}`}>{t("admin:customers.viewDetails")}</Link>

@@ -7,6 +7,7 @@ import authReducer from "../../src/features/auth/authSlice";
 import { baseApi } from "../../src/api/baseApi";
 import { RequireAuth } from "../../src/guards/RequireAuth";
 import { RequireRole } from "../../src/guards/RequireRole";
+import { RequireGuest } from "../../src/guards/RequireGuest";
 import type { PublicUser } from "../../src/features/auth/authSlice";
 
 function renderWithStore(
@@ -25,6 +26,7 @@ function renderWithStore(
         <Routes>
           <Route path="/login" element={<div>Login Page</div>} />
           <Route path="/admin/login" element={<div>Admin Login Page</div>} />
+          <Route path="/admin" element={<div>Admin Dashboard</div>} />
           <Route path="/" element={<div>Home Page</div>} />
           <Route path="/protected" element={ui} />
         </Routes>
@@ -52,6 +54,39 @@ describe("RequireAuth", () => {
       { accessToken: "token", user: null }
     );
     expect(screen.getByText("Secret")).toBeInTheDocument();
+  });
+});
+
+describe("RequireGuest", () => {
+  it("renders the login page when unauthenticated", () => {
+    renderWithStore(
+      <RequireGuest>
+        <div>Guest Login Form</div>
+      </RequireGuest>,
+      { accessToken: null, user: null }
+    );
+    expect(screen.getByText("Guest Login Form")).toBeInTheDocument();
+  });
+
+  it("redirects an authenticated user away from login to the home page", () => {
+    renderWithStore(
+      <RequireGuest>
+        <div>Guest Login Form</div>
+      </RequireGuest>,
+      { accessToken: "token", user: null }
+    );
+    expect(screen.getByText("Home Page")).toBeInTheDocument();
+    expect(screen.queryByText("Guest Login Form")).not.toBeInTheDocument();
+  });
+
+  it("supports the admin dashboard as the authenticated destination", () => {
+    renderWithStore(
+      <RequireGuest authenticatedPath="/admin">
+        <div>Admin Login Form</div>
+      </RequireGuest>,
+      { accessToken: "token", user: null }
+    );
+    expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
   });
 });
 
@@ -91,6 +126,16 @@ describe("RequireRole", () => {
       { accessToken: "token", user: adminUser }
     );
     expect(screen.getByText("Admin Area")).toBeInTheDocument();
+  });
+
+  it("redirects an ADMIN away from a CUSTOMER-only route to the admin dashboard", () => {
+    renderWithStore(
+      <RequireRole role="CUSTOMER">
+        <div>Customer Area</div>
+      </RequireRole>,
+      { accessToken: "token", user: adminUser }
+    );
+    expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
   });
 
   it("redirects to /admin/login when unauthenticated, even for the correct role check", () => {

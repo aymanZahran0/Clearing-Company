@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "@nuqaa-asir/shared";
+import { v4 as uuidv4 } from "uuid";
 import type { CreateServiceCategoryInput, UpdateServiceCategoryInput } from "./schema.js";
 
 // FR-009: soft-disable only, never deletes historical data.
@@ -11,11 +12,9 @@ export function listCategories(includeInactive: boolean) {
 }
 
 export async function createCategory(input: CreateServiceCategoryInput) {
-  const existing = await prisma.serviceCategory.findUnique({ where: { slug: input.slug } });
-  if (existing) {
-    throw new ApiError(409, "CONFLICT", "A category with this slug already exists");
-  }
-  return prisma.serviceCategory.create({ data: input });
+  return prisma.serviceCategory.create({
+    data: { ...input, nameEn: input.nameAr, slug: uuidv4() },
+  });
 }
 
 export async function updateCategory(id: string, input: UpdateServiceCategoryInput) {
@@ -23,7 +22,10 @@ export async function updateCategory(id: string, input: UpdateServiceCategoryInp
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Service category not found");
   }
-  return prisma.serviceCategory.update({ where: { id }, data: input });
+  return prisma.serviceCategory.update({
+    where: { id },
+    data: { ...input, ...(input.nameAr ? { nameEn: input.nameAr } : {}) },
+  });
 }
 
 export async function disableCategory(id: string) {
@@ -32,4 +34,18 @@ export async function disableCategory(id: string) {
     throw new ApiError(404, "NOT_FOUND", "Service category not found");
   }
   await prisma.serviceCategory.update({ where: { id }, data: { active: false } });
+}
+
+export async function deleteCategory(id: string) {
+  const existing = await prisma.serviceCategory.findUnique({
+    where: { id },
+    include: { _count: { select: { services: true } } },
+  });
+  if (!existing) {
+    throw new ApiError(404, "NOT_FOUND", "Service category not found");
+  }
+  if (existing._count.services > 0) {
+    throw new ApiError(409, "CONFLICT", "Cannot delete a category that contains services");
+  }
+  await prisma.serviceCategory.delete({ where: { id } });
 }

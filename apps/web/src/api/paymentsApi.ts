@@ -32,6 +32,7 @@ export const paymentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listPayments: builder.query<Payment[], string>({
       query: (bookingId) => `/bookings/${bookingId}/payments`,
+      providesTags: (_result, _error, bookingId) => [{ type: "Payment", id: bookingId }],
     }),
     recordPayment: builder.mutation<Payment, { bookingId: string; body: PaymentInput }>({
       query: ({ bookingId, body }) => ({
@@ -39,11 +40,16 @@ export const paymentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: (_result, _error, { bookingId }) => [{ type: "Payment", id: bookingId }],
     }),
     getInvoice: builder.query<Invoice, string>({
       query: (bookingId) => `/bookings/${bookingId}/invoice`,
     }),
+    listOwnInvoices: builder.query<Invoice[], void>({
+      query: () => "/invoices/mine",
+    }),
   }),
 });
 
-export const { useListPaymentsQuery, useRecordPaymentMutation, useGetInvoiceQuery } = paymentsApi;
+export const { useListPaymentsQuery, useRecordPaymentMutation, useGetInvoiceQuery, useListOwnInvoicesQuery } =
+  paymentsApi;

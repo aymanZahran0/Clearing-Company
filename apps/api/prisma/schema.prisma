@@ -301,9 +301,7 @@ model Service {
   category               ServiceCategory @relation(fields: [categoryId], references: [id])
   slug                   String          @unique
   nameAr                 String
-  nameEn                 String
   descriptionAr          String?
-  descriptionEn          String?
   pricingType            PricingType
   basePrice              Int?
   minimumPrice           Int?

@@ -31,8 +31,17 @@ export const serviceAddOnsApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/service-add-ons/${id}`, method: "DELETE" }),
       invalidatesTags: ["Service"],
     }),
+    permanentlyDeleteAddOn: builder.mutation<void, string>({
+      query: (id) => ({ url: `/service-add-ons/${id}/permanent`, method: "DELETE" }),
+      invalidatesTags: ["Service"],
+    }),
   }),
 });
 
-export const { useListAllAddOnsQuery, useCreateAddOnMutation, useUpdateAddOnMutation, useDeleteAddOnMutation } =
-  serviceAddOnsApi;
+export const {
+  useListAllAddOnsQuery,
+  useCreateAddOnMutation,
+  useUpdateAddOnMutation,
+  useDeleteAddOnMutation,
+  usePermanentlyDeleteAddOnMutation,
+} = serviceAddOnsApi;

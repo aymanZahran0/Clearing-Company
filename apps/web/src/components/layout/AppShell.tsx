@@ -1,14 +1,21 @@
 import type { PropsWithChildren } from "react";
-import { Layout, Menu, Drawer, Button } from "antd";
-import { MenuOutlined } from "@ant-design/icons";
+import { Layout, Menu, Drawer, Button, Dropdown } from "antd";
+import {
+  DownOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
 import { clearAuth } from "../../features/auth/authSlice";
 import { useLogoutMutation } from "../../api/authApi";
 import { baseApi } from "../../api/baseApi";
+import logo from "../../assets/logo/logo.png";
+import { AppBreadcrumb } from "./AppBreadcrumb";
 
 const { Header, Content, Sider } = Layout;
 
@@ -21,10 +28,15 @@ const { Header, Content, Sider } = Layout;
 export function AppShell({ children }: PropsWithChildren) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   const [logout] = useLogoutMutation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  if (user?.role === "ADMIN") {
+    return <Navigate to="/admin" replace />;
+  }
 
   async function handleLogout() {
     await logout();
@@ -37,103 +49,196 @@ export function AppShell({ children }: PropsWithChildren) {
     i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
   }
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    [
+      "flex min-h-11 items-center rounded-md px-3 py-3 text-base transition-colors duration-200 sm:inline-flex",
+      isActive
+        ? "bg-[#E7F4F9] font-bold text-[#00375B]"
+        : "text-[#006477] hover:bg-gray-50 hover:text-[#00375B]",
+    ].join(" ");
+
+  const accountMenu = user
+    ? {
+        items: [
+          {
+            key: "profile",
+            icon: <UserOutlined />,
+            label: t("nav.profile"),
+            onClick: () => {
+              setDrawerOpen(false);
+              navigate("/profile");
+            },
+          },
+          {
+            key: "logout",
+            danger: true,
+            icon: <LogoutOutlined />,
+            label: t("nav.logout"),
+            onClick: handleLogout,
+          },
+        ],
+      }
+    : undefined;
+
+  const accountDropdown = user && accountMenu ? (
+    <Dropdown menu={accountMenu} trigger={["click"]} placement="bottom">
+      <Button
+        type="text"
+        size="large"
+        className={`flex max-w-56 items-center gap-2 px-3 font-semibold ${
+          location.pathname.startsWith("/profile")
+            ? "bg-[#E7F4F9] text-[#00375B] hover:!bg-[#E7F4F9]"
+            : "bg-gray-50 hover:!bg-gray-100"
+        }`}
+        aria-label={user.fullName}
+      >
+        <UserOutlined className="text-xl" />
+        <span className="truncate">{user.fullName}</span>
+        <DownOutlined className="text-xs" />
+      </Button>
+    </Dropdown>
+  ) : null;
+
+  // Shared page links, rendered in both the desktop header row and the
+  // mobile Drawer. Auth actions (login/profile) are handled separately per
+  // context: the desktop row appends them inline, while mobile surfaces
+  // them as a compact button in the header itself (not buried in the
+  // Drawer) — see `mobileAccountButton` below.
   const navItems = (
     <>
-      <Link
+      <NavLink
+        to="/"
+        end
+        className={navLinkClass}
+        onClick={() => setDrawerOpen(false)}
+      >
+        {t("nav.home")}
+      </NavLink>
+      <NavLink
         to="/services"
-        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+        className={navLinkClass}
+        onClick={() => setDrawerOpen(false)}
       >
         {t("nav.services")}
-      </Link>
-      <Link
+      </NavLink>
+      <NavLink
         to="/service-areas"
-        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+        className={navLinkClass}
+        onClick={() => setDrawerOpen(false)}
       >
         {t("nav.serviceAreas")}
-      </Link>
-      <Link
+      </NavLink>
+      <NavLink
         to="/faq"
-        className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+        className={navLinkClass}
+        onClick={() => setDrawerOpen(false)}
       >
         {t("nav.faq")}
-      </Link>
-      {user ? (
+      </NavLink>
+      {user?.role === "CUSTOMER" && (
         <>
-          <Link
+          <NavLink
             to="/bookings"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+            className={navLinkClass}
+            onClick={() => setDrawerOpen(false)}
           >
             {t("nav.bookings")}
-          </Link>
-          <Link
-            to="/profile"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
-          >
-            {t("nav.profile")}
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/subscriptions"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+            className={navLinkClass}
+            onClick={() => setDrawerOpen(false)}
           >
             {t("nav.mySubscriptions")}
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/notifications"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+            className={navLinkClass}
+            onClick={() => setDrawerOpen(false)}
           >
             {t("nav.notifications")}
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/invoices"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
+            className={navLinkClass}
+            onClick={() => setDrawerOpen(false)}
           >
             {t("nav.invoices")}
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="flex min-h-11 w-full items-center px-3 py-3 text-start text-base sm:inline-flex sm:w-auto"
-          >
-            {t("nav.logout")}
-          </button>
-        </>
-      ) : (
-        <>
-          <Link
-            to="/login"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
-          >
-            {t("nav.login")}
-          </Link>
-          <Link
-            to="/register"
-            className="flex min-h-11 items-center px-3 py-3 text-base sm:inline-flex"
-          >
-            {t("nav.register")}
-          </Link>
+          </NavLink>
         </>
       )}
     </>
   );
 
+  // Desktop-only: login/register render inline in the nav row since there's
+  // room; on mobile, login is a header button instead (see
+  // `mobileAccountButton`), and register-only is kept in the Drawer so
+  // sign-up is still reachable there.
+  const desktopAuthLinks = !user ? (
+    <>
+      <NavLink to="/login" className={navLinkClass}>
+        {t("nav.login")}
+      </NavLink>
+      <NavLink to="/register" className={navLinkClass}>
+        {t("nav.register")}
+      </NavLink>
+    </>
+  ) : null;
+
+  const drawerAuthLinks = !user ? (
+    <NavLink to="/register" className={navLinkClass} onClick={() => setDrawerOpen(false)}>
+      {t("nav.register")}
+    </NavLink>
+  ) : null;
+
+  const mobileAccountButton = user && accountMenu ? (
+    <Dropdown menu={accountMenu} trigger={["click"]} placement="bottom">
+      <Button
+        type="text"
+        size="large"
+        className={`flex max-w-32 items-center gap-2 px-3 font-semibold sm:hidden ${
+          location.pathname.startsWith("/profile")
+            ? "bg-[#E7F4F9] text-[#00375B] hover:!bg-[#E7F4F9]"
+            : "bg-gray-50 hover:!bg-gray-100"
+        }`}
+        aria-label={user.fullName}
+      >
+        <UserOutlined className="text-xl" />
+        <span className="truncate">{user.fullName}</span>
+        <DownOutlined className="text-xs" />
+      </Button>
+    </Dropdown>
+  ) : (
+    <Link to="/login" className="sm:hidden" aria-label={t("nav.login") as string}>
+      <Button type="text" size="large" icon={<UserOutlined className="text-xl" />} />
+    </Link>
+  );
+
   return (
     <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between bg-white px-4 shadow-sm">
-        <Link to="/" className="flex min-h-11 items-center text-lg font-bold">
-          {t("app.name")}
+      <Header className="fixed inset-x-0 top-0 z-50 flex h-20 items-center justify-between border-b border-hairline bg-white px-4 shadow-sm">
+        <Link to="/" className="flex min-h-11 items-center" aria-label={t("app.name") as string}>
+          <span className="relative block h-16 w-32 overflow-hidden">
+            <img src={logo} alt={t("app.name") as string} className="absolute start-1/2 top-[calc(50%+6px)] h-32 w-auto max-w-none -translate-x-1/2 -translate-y-1/2 rtl:translate-x-1/2" />
+          </span>
         </Link>
         <div className="hidden items-center gap-4 sm:flex">
           {navItems}
+          {desktopAuthLinks}
+          {accountDropdown}
           <Button size="large" onClick={toggleLocale} aria-label="Toggle language">
             {i18n.language === "ar" ? "EN" : "AR"}
           </Button>
         </div>
-        <Button
-          className="sm:hidden"
-          size="large"
-          icon={<MenuOutlined />}
-          onClick={() => setDrawerOpen(true)}
-          aria-label={t("nav.home") as string}
-        />
+        <div className="flex items-center gap-1 sm:hidden">
+          {mobileAccountButton}
+          <Button
+            size="large"
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerOpen(true)}
+            aria-label={t("nav.home") as string}
+          />
+        </div>
       </Header>
       <Drawer
         placement={i18n.language === "ar" ? "right" : "left"}
@@ -143,12 +248,18 @@ export function AppShell({ children }: PropsWithChildren) {
       >
         <div className="flex flex-col">
           {navItems}
+          {drawerAuthLinks}
           <Button size="large" className="mx-3 mt-3" onClick={toggleLocale}>
             {i18n.language === "ar" ? "English" : "العربية"}
           </Button>
         </div>
       </Drawer>
-      <Content>{children}</Content>
+      <Content className="pt-20">
+        <div className="app-breadcrumb-wrap app-breadcrumb-wrap--customer">
+          <AppBreadcrumb />
+        </div>
+        {children}
+      </Content>
     </Layout>
   );
 }
@@ -164,6 +275,7 @@ const ADMIN_NAV_ITEMS = [
   { key: "/admin", labelKey: "admin:nav.dashboard" },
   { key: "/admin/catalog/categories", labelKey: "admin:nav.catalogCategories" },
   { key: "/admin/catalog/services", labelKey: "admin:nav.catalogServices" },
+  { key: "/admin/catalog/service-areas", labelKey: "admin:nav.catalogServiceAreas" },
   { key: "/admin/catalog/add-ons", labelKey: "admin:nav.catalogAddOns" },
   { key: "/admin/catalog/checklist", labelKey: "admin:nav.catalogChecklist" },
   { key: "/admin/bookings", labelKey: "admin:nav.bookings" },
@@ -200,6 +312,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
   const [logout] = useLogoutMutation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -218,22 +331,44 @@ export function AdminShell({ children }: PropsWithChildren) {
     <Menu
       mode="inline"
       selectedKeys={[location.pathname]}
-      items={[
-        ...ADMIN_NAV_ITEMS.map((item) => ({
-          key: item.key,
-          label: <Link to={item.key}>{t(item.labelKey)}</Link>,
-        })),
-        { type: "divider" as const },
-        { key: "logout", label: t("nav.logout"), onClick: handleLogout },
-      ]}
+      items={ADMIN_NAV_ITEMS.map((item) => ({
+        key: item.key,
+        label: <Link to={item.key}>{t(item.labelKey)}</Link>,
+      }))}
     />
   );
+
+  const accountMenu = {
+    items: [
+      {
+        key: "logout",
+        danger: true,
+        icon: <LogoutOutlined />,
+        label: t("nav.logout"),
+        onClick: handleLogout,
+      },
+    ],
+  };
+
+  const accountButtonClass =
+    "flex max-w-32 items-center gap-2 px-3 font-semibold sm:max-w-56 bg-gray-50 hover:!bg-gray-100";
+
+  const accountDropdown = user ? (
+    <Dropdown menu={accountMenu} trigger={["click"]} placement="bottom">
+      <Button type="text" size="large" className={accountButtonClass} aria-label={user.fullName}>
+        <UserOutlined className="text-xl" />
+        <span className="truncate">{user.fullName}</span>
+        <DownOutlined className="text-xs" />
+      </Button>
+    </Dropdown>
+  ) : null;
 
   return (
     <Layout className="h-[100dvh] overflow-hidden">
       <Header className="flex h-16 flex-none items-center justify-between bg-white px-4 shadow-sm">
         <span className="text-lg font-bold">{t("nav.adminDashboard")}</span>
         <div className="flex items-center gap-2">
+          {accountDropdown}
           <Button size="large" onClick={toggleLocale} aria-label="Toggle language">
             {i18n.language === "ar" ? "EN" : "AR"}
           </Button>
@@ -261,7 +396,12 @@ export function AdminShell({ children }: PropsWithChildren) {
         >
           {menu}
         </Drawer>
-        <Content className="h-full min-w-0 flex-1 overflow-y-auto">{children}</Content>
+        <Content className="h-full min-w-0 flex-1 overflow-y-auto">
+          <div className="app-breadcrumb-wrap app-breadcrumb-wrap--admin">
+            <AppBreadcrumb />
+          </div>
+          {children}
+        </Content>
       </Layout>
     </Layout>
   );

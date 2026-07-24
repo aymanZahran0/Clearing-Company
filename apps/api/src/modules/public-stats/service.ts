@@ -10,11 +10,15 @@ export async function getPublicStats() {
     prisma.review.aggregate({ _avg: { rating: true } }),
   ]);
 
-  const stats: { completedBookingsCount?: number; averageRating?: number } = {};
+  const stats: {
+    completedBookingsCount?: number;
+    averageRating?: number;
+  } = {};
 
   if (completedBookingsCount > 0) {
     stats.completedBookingsCount = completedBookingsCount;
   }
+
   if (ratingAggregate._avg.rating !== null) {
     stats.averageRating = Math.round(ratingAggregate._avg.rating * 10) / 10;
   }

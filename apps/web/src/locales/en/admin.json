@@ -22,6 +22,7 @@
     "title": "Admin Accounts"
   },
   "bookings": {
+    "addBooking": "Add Booking",
     "address": "Address",
     "apartment": "Apartment",
     "arrived": "Arrived",
@@ -39,10 +40,23 @@
     "customer": "Customer",
     "customerNotes": "Customer Notes",
     "customerStepTitle": "Customer",
+    "locationStepTitle": "Location",
     "enRoute": "En Route",
     "enRouteError": "Could not mark en route",
     "filterByStatus": "Filter by status",
     "history": "History",
+    "historyReasons": {
+      "bookingCreated": "Booking created",
+      "bookingSubmitted": "Booking submitted",
+      "confirmedByAdmin": "Confirmed by Admin",
+      "executionCompleted": "Execution completed",
+      "executionStarted": "Execution started",
+      "rescheduled": "Rescheduled",
+      "rescheduledWithCapacityOverride": "Rescheduled with capacity override",
+      "scheduled": "Scheduled",
+      "scheduledWithCapacityOverride": "Scheduled with capacity override",
+      "seededSampleBooking": "Seeded sample booking"
+    },
     "internalHandlingNote": "Internal Handling Note",
     "internalHandlingNoteOptional": "Internal Handling Note (optional)",
     "needsScheduling": "Needs scheduling",
@@ -133,6 +147,7 @@
     "startDate": "Start Date"
   },
   "common": {
+    "actions": "Actions",
     "active": "Active",
     "add": "Add",
     "create": "Create",
@@ -227,6 +242,7 @@
     "dashboard": "Dashboard",
     "catalogCategories": "Catalog: Categories",
     "catalogServices": "Catalog: Services",
+    "catalogServiceAreas": "Catalog: Service Areas",
     "catalogAddOns": "Catalog: Add-Ons",
     "catalogChecklist": "Catalog: Checklist",
     "bookings": "Bookings",
@@ -391,6 +407,8 @@
     "uploadImage": "Upload Image"
   },
   "settings": {
+    "deleteConfirm": "Delete this setting permanently? This action cannot be undone.",
+    "deleted": "{{key}} deleted",
     "saved": "{{key}} saved",
     "saveError": "Could not save {{key}}",
     "title": "System Settings"

@@ -25,7 +25,7 @@ export default function CatalogChecklist() {
         dataSource={data}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:content.titleEn"), dataIndex: "nameEn" },
+          { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
           {
             title: t("catalog:pricingConfigured"),
             render: (_: unknown, row: Service) =>

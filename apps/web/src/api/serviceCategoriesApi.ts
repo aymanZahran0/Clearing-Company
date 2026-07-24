@@ -3,8 +3,6 @@ import type { ServiceCategory } from "./servicesApi";
 
 export interface ServiceCategoryWritableFields {
   nameAr: string;
-  nameEn: string;
-  slug: string;
   sortOrder?: number;
 }
 
@@ -29,6 +27,10 @@ export const serviceCategoriesApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/service-categories/${id}`, method: "DELETE" }),
       invalidatesTags: ["Service"],
     }),
+    permanentlyDeleteCategory: builder.mutation<void, string>({
+      query: (id) => ({ url: `/service-categories/${id}/permanent`, method: "DELETE" }),
+      invalidatesTags: ["Service"],
+    }),
   }),
 });
 
@@ -37,4 +39,5 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  usePermanentlyDeleteCategoryMutation,
 } = serviceCategoriesApi;

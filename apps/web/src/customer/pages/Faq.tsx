@@ -11,20 +11,37 @@ export default function Faq() {
   const { t, i18n } = useTranslation();
   const { data, isLoading } = useListPublicFaqsQuery();
   const isAr = i18n.language === "ar";
+  const faqs = data ?? [];
 
   return (
-    <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-2xl font-bold">{t("content:faq.title")}</h1>
-      {isLoading && <Skeleton active />}
-      {!isLoading && (
-        <Collapse
-          items={(data ?? []).map((item) => ({
-            key: item.id,
-            label: isAr ? item.questionAr : item.questionEn || item.questionAr,
-            children: <p>{isAr ? item.answerAr : item.answerEn || item.answerAr}</p>,
-          }))}
-        />
-      )}
-    </div>
+    <main className="home-section min-h-[60vh] bg-white px-4 sm:px-6">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-8">
+          <h1 className="home-section-title">{t("content:faq.title")}</h1>
+        </div>
+
+        {isLoading ? <Skeleton active paragraph={{ rows: 5 }} /> : null}
+
+        {!isLoading && faqs.length > 0 ? (
+          <Collapse
+            className="home-faq"
+            defaultActiveKey={faqs[0]?.id ? [faqs[0].id] : []}
+            items={faqs.map((item) => ({
+              key: item.id,
+              label: isAr ? item.questionAr : item.questionEn || item.questionAr,
+              children: (
+                <p className="m-0 whitespace-pre-line">
+                  {isAr ? item.answerAr : item.answerEn || item.answerAr}
+                </p>
+              ),
+            }))}
+          />
+        ) : null}
+
+        {!isLoading && faqs.length === 0 ? (
+          <p className="m-0 text-muted">{t("content:home.faq.empty")}</p>
+        ) : null}
+      </div>
+    </main>
   );
 }

@@ -5,14 +5,8 @@ const pricingTypeEnum = z.enum(["FIXED", "PROPERTY_SIZE", "HOURLY", "QUANTITY", 
 
 export const createServiceSchema = z.object({
   categoryId: z.string().uuid(),
-  slug: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9-]+$/, "slug must be lowercase letters, numbers, and hyphens"),
   nameAr: z.string().trim().min(1).max(200),
-  nameEn: z.string().trim().min(1).max(200),
   descriptionAr: z.string().trim().optional(),
-  descriptionEn: z.string().trim().optional(),
   pricingType: pricingTypeEnum,
   basePrice: moneySchema.nullable().optional(),
   minimumPrice: moneySchema.nullable().optional(),

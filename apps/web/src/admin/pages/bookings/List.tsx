@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Checkbox, Select, Table, Tag } from "antd";
+import { Button, Checkbox, Select, Table, Tag } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useListAllBookingsQuery, type BookingStatus } from "../../../api/bookingsApi";
@@ -29,18 +30,29 @@ export default function BookingsList() {
   return (
     <div className="p-4 sm:p-6">
       <h1 className="mb-4 text-xl font-semibold">{t("admin:bookings.title")}</h1>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Select
-          allowClear
-          placeholder={t("admin:bookings.filterByStatus")}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            allowClear
+            placeholder={t("admin:bookings.filterByStatus")}
+            size="large"
+            className="w-full sm:w-64"
+            options={enumOptions("bookingStatus", STATUSES)}
+            onChange={setStatus}
+          />
+          <Checkbox checked={needsScheduling} onChange={(e) => setNeedsScheduling(e.target.checked)}>
+            {t("admin:bookings.needsScheduling")}
+          </Checkbox>
+        </div>
+        <Button
+          type="primary"
           size="large"
-          className="w-full sm:w-64"
-          options={enumOptions("bookingStatus", STATUSES)}
-          onChange={setStatus}
-        />
-        <Checkbox checked={needsScheduling} onChange={(e) => setNeedsScheduling(e.target.checked)}>
-          {t("admin:bookings.needsScheduling")}
-        </Checkbox>
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/admin/bookings/new")}
+          className="w-full font-semibold sm:w-auto"
+        >
+          {t("admin:bookings.addBooking")}
+        </Button>
       </div>
       <Table
         loading={isLoading}

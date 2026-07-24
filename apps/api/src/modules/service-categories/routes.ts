@@ -41,6 +41,16 @@ serviceCategoriesRouter.patch(
 );
 
 serviceCategoriesRouter.delete(
+  "/service-categories/:id/permanent",
+  authenticate,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    await service.deleteCategory(requireParam(req, "id"));
+    res.status(204).send();
+  })
+);
+
+serviceCategoriesRouter.delete(
   "/service-categories/:id",
   authenticate,
   requireRole("ADMIN"),

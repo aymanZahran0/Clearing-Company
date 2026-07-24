@@ -9,12 +9,17 @@
   },
   "home": {
     "hero": {
+      "kicker": "خدمات تنظيف موثوقة في أبها وخميس مشيط",
       "fallbackTitle": "خدمات تنظيف احترافية في عسير",
       "fallbackBody": "نقدم خدمات تنظيف منزلية وتجارية موثوقة في أبها وخميس مشيط، بفريق مدرب وحجز سهل عبر الإنترنت أو الهاتف.",
       "primaryCta": "احجز الآن",
       "secondaryCta": "استعرض الخدمات"
     },
     "services": {
+      "headline": "حلول تنظيف تناسب كل احتياج",
+      "details": "التفاصيل",
+      "startsAt": "يبدأ من {{price}}",
+      "customQuote": "حسب المساحة",
       "title": "خدماتنا",
       "viewAll": "عرض جميع الخدمات",
       "empty": "لا تتوفر خدمات حاليًا"
@@ -31,6 +36,7 @@
       "step4Body": "يصل فريقنا المدرب في الموعد المحدد لإنجاز العمل بجودة عالية."
     },
     "whyUs": {
+      "kicker": "لماذا نقاء عسير",
       "title": "لماذا تختارنا",
       "fallbackFeature1Title": "فريق مدرب ومحترف",
       "fallbackFeature1Body": "طاقم عمل مدرب على أعلى معايير الجودة والسلامة.",
@@ -46,7 +52,9 @@
     },
     "trust": {
       "title": "موثوق من عملائنا",
-      "completedBookings": "أكثر من {{count}} حجز مكتمل",
+      "completedBookingsLabel": "حجز مكتمل",
+      "averageRatingLabel": "تقييم العملاء",
+      "completedBookings": "{{count}} حجز مكتمل",
       "averageRating": "تقييم {{rating}} من 5",
       "fallbackBody": "نلتزم بأعلى معايير الجودة والاحترافية في كل خدمة نقدمها."
     },
@@ -66,7 +74,8 @@
       "quickLinksTitle": "روابط سريعة",
       "servicesTitle": "الخدمات",
       "contactTitle": "تواصل معنا",
-      "rightsReserved": "© {{year}} نقاء عسير. جميع الحقوق محفوظة."
+      "rightsReserved": "© {{year}} نقاء عسير. جميع الحقوق محفوظة.",
+      "poweredBy": "Powered by Zahran"
     }
   }
 }

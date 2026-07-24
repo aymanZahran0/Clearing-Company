@@ -68,9 +68,7 @@ export const listBookingsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export const bookingReferenceLookupQuerySchema = z.object({
-  token: z.string().min(1),
-});
+export const bookingReferenceLookupQuerySchema = z.object({});
 
 // T110/T111 (US4): schedule/reschedule share the same shape — pick a
 // TimeSlot (capacity-checked) and optionally leave an internal note.

@@ -14,7 +14,7 @@ import {
 // /admin/catalog/services/:slug/images, ready to be linked from a catalog
 // list once one ships — same pattern as ChecklistTemplateEditor.tsx.
 export default function ServiceImages() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { data: serviceData, isLoading, refetch } = useGetServiceBySlugQuery(slug ?? "", { skip: !slug });
   const [uploadImage, { isLoading: isUploading }] = useUploadServiceImageMutation();
@@ -46,7 +46,7 @@ export default function ServiceImages() {
   return (
     <div className="p-4 sm:p-6">
       <h1 className="mb-4 text-xl font-semibold">
-        {t("admin:serviceImages.title")} — {i18n.language === "ar" ? serviceData.nameAr : serviceData.nameEn}
+        {t("admin:serviceImages.title")} — {serviceData.nameAr}
       </h1>
 
       <div className="mb-6 flex flex-wrap gap-3">

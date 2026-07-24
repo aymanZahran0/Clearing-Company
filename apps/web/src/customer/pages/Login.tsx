@@ -23,8 +23,12 @@ export default function Login() {
       const result = await login(values).unwrap();
       dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
+      if (result.user.role === "ADMIN") {
+        navigate("/admin", { replace: true });
+        return;
+      }
       const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/bookings";
-      navigate(redirectTo);
+      navigate(redirectTo, { replace: true });
     } catch {
       // toast shown by the global RTK Query error middleware
     }

@@ -67,7 +67,7 @@ export async function getServicesReport(from?: Date, to?: Date) {
         ...(from || to ? { completedAt: { gte: from, lte: to } } : {}),
       },
     },
-    include: { service: { select: { nameAr: true, nameEn: true } } },
+    include: { service: { select: { nameAr: true } } },
   });
 
   const byService = new Map<string, { nameAr: string; nameEn: string; count: number; revenue: number }>();
@@ -75,7 +75,7 @@ export async function getServicesReport(from?: Date, to?: Date) {
     const key = item.serviceId;
     const existing = byService.get(key) ?? {
       nameAr: item.service.nameAr,
-      nameEn: item.service.nameEn,
+      nameEn: item.service.nameAr,
       count: 0,
       revenue: 0,
     };
@@ -136,7 +136,7 @@ export async function exportBookingsCsv(
       booking.referenceNumber,
       booking.status,
       booking.customer.user.fullName,
-      booking.items[0]?.service.nameEn ?? "",
+      booking.items[0]?.service.nameAr ?? "",
       booking.scheduledStartAt?.toISOString() ?? "",
       String(booking.totalSnapshot ?? ""),
       booking.currency,

@@ -22,6 +22,7 @@
     "title": "حسابات المسؤولين"
   },
   "bookings": {
+    "addBooking": "إضافة حجز",
     "address": "العنوان",
     "apartment": "شقة",
     "arrived": "تم الوصول",
@@ -39,10 +40,23 @@
     "customer": "العميل",
     "customerNotes": "ملاحظات العميل",
     "customerStepTitle": "العميل",
+    "locationStepTitle": "الموقع",
     "enRoute": "في الطريق",
     "enRouteError": "تعذر تسجيل التوجه",
     "filterByStatus": "تصفية حسب الحالة",
     "history": "السجل",
+    "historyReasons": {
+      "bookingCreated": "تم إنشاء الحجز",
+      "bookingSubmitted": "تم إرسال الحجز",
+      "confirmedByAdmin": "تم التأكيد بواسطة المسؤول",
+      "executionCompleted": "تم إكمال التنفيذ",
+      "executionStarted": "بدأ التنفيذ",
+      "rescheduled": "تمت إعادة الجدولة",
+      "rescheduledWithCapacityOverride": "تمت إعادة الجدولة مع تجاوز السعة",
+      "scheduled": "تمت الجدولة",
+      "scheduledWithCapacityOverride": "تمت الجدولة مع تجاوز السعة",
+      "seededSampleBooking": "حجز تجريبي"
+    },
     "internalHandlingNote": "ملاحظة داخلية",
     "internalHandlingNoteOptional": "ملاحظة داخلية (اختياري)",
     "needsScheduling": "بحاجة إلى جدولة",
@@ -133,6 +147,7 @@
     "startDate": "تاريخ البدء"
   },
   "common": {
+    "actions": "الإجراءات",
     "active": "نشط",
     "add": "إضافة",
     "create": "إنشاء",
@@ -227,6 +242,7 @@
     "dashboard": "لوحة التحكم",
     "catalogCategories": "الكتالوج: الفئات",
     "catalogServices": "الكتالوج: الخدمات",
+    "catalogServiceAreas": "الكتالوج: مناطق الخدمة",
     "catalogAddOns": "الكتالوج: الإضافات",
     "catalogChecklist": "الكتالوج: قائمة الجودة",
     "bookings": "الحجوزات",
@@ -391,6 +407,8 @@
     "uploadImage": "رفع صورة"
   },
   "settings": {
+    "deleteConfirm": "هل تريد حذف هذا الإعداد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleted": "تم حذف {{key}}",
     "saved": "تم حفظ {{key}}",
     "saveError": "تعذر حفظ {{key}}",
     "title": "إعدادات النظام"

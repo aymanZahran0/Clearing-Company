@@ -81,7 +81,7 @@ export default function DiscountCodes() {
             render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: DiscountCode) =>
               row.active && (
                 <Button danger size="small" onClick={() => disableCode(row.id)}>

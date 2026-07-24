@@ -32,7 +32,27 @@ export interface Booking {
   totalSnapshot: number | null;
   currency: string;
   createdAt: string;
-  items?: Array<{ serviceId: string }>;
+  qualityIssues?: Array<{
+    id: string;
+    status: "OPEN" | "IN_REVIEW" | "RESOLVED" | "CLOSED";
+    resolution: string | null;
+  }>;
+  review?: {
+    id: string;
+    rating: number;
+    submittedAt: string;
+  } | null;
+  items?: Array<{
+    id: string;
+    serviceId: string;
+    addOnId: string | null;
+    descriptionSnapshot: string;
+    quantity: number;
+    unitPriceSnapshot: number;
+    totalSnapshot: number;
+    durationMinutesSnapshot: number;
+    service?: { id: string; nameAr: string; nameEn: string };
+  }>;
   customer?: { user: { fullName: string; phoneNormalized: string | null; email: string | null } };
   address?: {
     city: string;
@@ -121,12 +141,9 @@ export const bookingsApi = baseApi.injectEndpoints({
     }),
     getBookingByReference: builder.query<
       { referenceNumber: string; status: BookingStatus; scheduledStartAt: string | null; serviceName: string },
-      { referenceNumber: string; token: string }
+      string
     >({
-      query: ({ referenceNumber, token }) => ({
-        url: `/bookings/reference/${referenceNumber}`,
-        params: { token },
-      }),
+      query: (referenceNumber) => `/bookings/reference/${encodeURIComponent(referenceNumber)}`,
     }),
     confirmBooking: builder.mutation<
       Booking,
@@ -144,6 +161,7 @@ export const bookingsApi = baseApi.injectEndpoints({
       string
     >({
       query: (id) => `/bookings/${id}/history`,
+      providesTags: ["Booking"],
     }),
     scheduleBooking: builder.mutation<
       Booking,

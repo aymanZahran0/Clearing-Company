@@ -7,6 +7,9 @@ import type { RootState } from "../../../app/store";
 import { resetWizard } from "../../../features/bookingWizard/wizardSlice";
 import { useCreateBookingMutation } from "../../../api/bookingsApi";
 import { getOrCreateIdempotencyKey, clearIdempotencyKey } from "../../../lib/idempotency";
+import { createSaudiMobileSchema } from "../../../lib/validation";
+import { WizardStepCard } from "./WizardStepCard";
+import { WizardConfirmButton } from "./WizardConfirmButton";
 
 interface ConfirmationValues {
   contactName: string;
@@ -21,6 +24,10 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
   const wizard = useSelector((state: RootState) => state.bookingWizard);
   const [createBooking, { isLoading }] = useCreateBookingMutation();
   const [reference, setReference] = useState<string | null>(null);
+  const phoneSchema = createSaudiMobileSchema(
+    t("customer:confirmationStep.phoneRequired"),
+    t("customer:confirmationStep.phoneInvalid"),
+  );
 
   async function onFinish(values: ConfirmationValues) {
     if (!wizard.quoteId || !wizard.addressId || !wizard.propertyType || !wizard.requestedDate) return;
@@ -81,36 +88,55 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <Form<ConfirmationValues> layout="vertical" onFinish={onFinish} requiredMark={false}>
-      <Form.Item name="contactName" label={t("auth.fullName")} rules={[{ required: true }]}>
-        <Input size="large" />
-      </Form.Item>
-      <Form.Item name="contactPhone" label={t("auth.phone")} rules={[{ required: true }]}>
-        <Input size="large" inputMode="tel" />
-      </Form.Item>
-      <Form.Item
-        name="consentAccepted"
-        valuePropName="checked"
-        rules={[
-          {
-            validator: (_, v) =>
-              v ? Promise.resolve() : Promise.reject(new Error(t("customer:confirmationStep.acceptTermsRequired"))),
-          },
-        ]}
-      >
-        <Checkbox>{t("customer:confirmationStep.acceptTerms")}</Checkbox>
-      </Form.Item>
-      {!wizard.quoteId && (
-        <Alert type="warning" message={t("customer:confirmationStep.completePreviousSteps")} />
-      )}
-      <Space className="mt-4 flex justify-between">
-        <Button size="large" onClick={onBack}>
-          {t("common.cancel")}
-        </Button>
-        <Button type="primary" htmlType="submit" size="large" loading={isLoading}>
-          {t("auth.submit")}
-        </Button>
-      </Space>
-    </Form>
+    <WizardStepCard title={t("customer:bookingWizard.steps.confirm")}>
+      <Form<ConfirmationValues> layout="vertical" onFinish={onFinish} requiredMark={false} className="wizard-form">
+        <Form.Item name="contactName" label={t("auth.fullName")} rules={[{ required: true }]}>
+          <Input size="large" />
+        </Form.Item>
+        <Form.Item
+          name="contactPhone"
+          label={t("auth.phone")}
+          normalize={(value: string) => value.replace(/\D/g, "").slice(0, 10)}
+          rules={[
+            {
+              validator: async (_, value) => {
+                await phoneSchema.validate(value);
+              },
+            },
+          ]}
+        >
+          <Input
+            size="large"
+            inputMode="numeric"
+            autoComplete="tel"
+            maxLength={10}
+            placeholder="05XXXXXXXX"
+          />
+        </Form.Item>
+        <Form.Item
+          name="consentAccepted"
+          valuePropName="checked"
+          rules={[
+            {
+              validator: (_, v) =>
+                v ? Promise.resolve() : Promise.reject(new Error(t("customer:confirmationStep.acceptTermsRequired"))),
+            },
+          ]}
+        >
+          <Checkbox>{t("customer:confirmationStep.acceptTerms")}</Checkbox>
+        </Form.Item>
+        {!wizard.quoteId && (
+          <Alert type="warning" message={t("customer:confirmationStep.completePreviousSteps")} />
+        )}
+        <Space className="mt-4 flex justify-between">
+          <Button size="large" onClick={onBack}>
+            {t("common.cancel")}
+          </Button>
+          <WizardConfirmButton htmlType="submit" loading={isLoading}>
+            {t("auth.submit")}
+          </WizardConfirmButton>
+        </Space>
+      </Form>
+    </WizardStepCard>
   );
 }

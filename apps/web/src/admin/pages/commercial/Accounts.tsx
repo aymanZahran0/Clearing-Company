@@ -8,6 +8,7 @@ import {
   type CommercialAccount,
   type CreateCommercialAccountInput,
 } from "../../../api/commercialApi";
+import { createSaudiMobileSchema } from "../../../lib/validation";
 
 // T154 (US7)
 export default function Accounts() {
@@ -16,6 +17,7 @@ export default function Accounts() {
   const { data: accounts, isLoading } = useListCommercialAccountsQuery();
   const [createAccount, { isLoading: isCreating }] = useCreateCommercialAccountMutation();
   const [open, setOpen] = useState(false);
+  const phoneSchema = createSaudiMobileSchema(t("auth.phoneRequired"), t("auth.phoneInvalid"));
 
   async function onFinish(values: CreateCommercialAccountInput) {
     try {
@@ -70,9 +72,16 @@ export default function Accounts() {
           <Form.Item
             name="billingContactPhone"
             label={t("admin:commercial.billingContactPhone")}
-            rules={[{ required: true }]}
+            normalize={(value: string) => value.replace(/\D/g, "").slice(0, 10)}
+            rules={[
+              {
+                validator: async (_, value) => {
+                  await phoneSchema.validate(value);
+                },
+              },
+            ]}
           >
-            <Input size="large" />
+            <Input size="large" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="05XXXXXXXX" />
           </Form.Item>
           <Form.Item name="billingContactEmail" label={t("admin:commercial.billingContactEmail")}>
             <Input size="large" />

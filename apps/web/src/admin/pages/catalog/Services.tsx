@@ -1,26 +1,28 @@
 import { useState } from "react";
-import { Button, Form, Input, InputNumber, Modal, Select, Switch, Table, Tag, message } from "antd";
+import { Button, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Tag, Upload, message } from "antd";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd/es/upload/interface";
 import { useTranslation } from "react-i18next";
 import { useListAllCategoriesQuery } from "../../../api/serviceCategoriesApi";
 import {
   useCreateServiceMutation,
   useDeleteServiceMutation,
   useListServicesQuery,
+  usePermanentlyDeleteServiceMutation,
+  useUploadServiceImageMutation,
   useUpdateServiceMutation,
   type Service,
 } from "../../../api/servicesApi";
 import { enumLabel } from "../../../lib/enumLabels";
 import { enumOptions } from "../../../lib/enumOptions";
+import { formatCurrency } from "../../../lib/formatters";
 
 const PRICING_TYPES: Service["pricingType"][] = ["FIXED", "PROPERTY_SIZE", "HOURLY", "QUANTITY", "CUSTOM_QUOTE"];
 
 interface FormValues {
   categoryId: string;
-  slug: string;
   nameAr: string;
-  nameEn: string;
   descriptionAr?: string;
-  descriptionEn?: string;
   pricingType: Service["pricingType"];
   basePrice?: number;
   minimumPrice?: number;
@@ -37,16 +39,24 @@ export default function Services() {
   const [createService, { isLoading: isCreating }] = useCreateServiceMutation();
   const [updateService] = useUpdateServiceMutation();
   const [deleteService] = useDeleteServiceMutation();
+  const [permanentlyDeleteService] = usePermanentlyDeleteServiceMutation();
+  const [uploadServiceImage, { isLoading: isUploading }] = useUploadServiceImageMutation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageList, setImageList] = useState<UploadFile[]>([]);
 
   function openCreate() {
     setEditing(null);
+    setImageFile(null);
+    setImageList([]);
     setOpen(true);
   }
 
   function openEdit(svc: Service) {
     setEditing(svc);
+    setImageFile(null);
+    setImageList([]);
     setOpen(true);
   }
 
@@ -57,12 +67,23 @@ export default function Services() {
       minimumPrice: values.minimumPrice != null ? Math.round(values.minimumPrice * 100) : null,
     };
     try {
+      let savedService: Service;
       if (editing) {
-        await updateService({ id: editing.id, body }).unwrap();
+        savedService = await updateService({ id: editing.id, body }).unwrap();
       } else {
-        await createService(body).unwrap();
+        savedService = await createService(body).unwrap();
+      }
+      if (imageFile) {
+        await uploadServiceImage({
+          serviceId: savedService.id,
+          file: imageFile,
+          altTextAr: values.nameAr,
+          sortOrder: -((editing?.images.length ?? 0) + 1),
+        }).unwrap();
       }
       setOpen(false);
+      setImageFile(null);
+      setImageList([]);
       message.success(t("catalog:serviceSaved"));
     } catch {
       // toast shown by the global RTK Query error middleware
@@ -76,6 +97,15 @@ export default function Services() {
       } else {
         await updateService({ id: svc.id, body: { active: true } }).unwrap();
       }
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
+
+  async function remove(svc: Service) {
+    try {
+      await permanentlyDeleteService(svc.id).unwrap();
+      message.success(t("catalog:deleted"));
     } catch {
       // toast shown by the global RTK Query error middleware
     }
@@ -95,13 +125,16 @@ export default function Services() {
         dataSource={data}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:content.titleEn"), dataIndex: "nameEn" },
           { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
-          { title: t("catalog:slug"), dataIndex: "slug" },
           {
             title: t("catalog:pricingType"),
             dataIndex: "pricingType",
             render: (value: string) => enumLabel("pricingType", value),
+          },
+          {
+            title: t("catalog:basePriceSar"),
+            dataIndex: "basePrice",
+            render: (value: number | null) => (value != null ? formatCurrency(value, i18n.language) : "—"),
           },
           {
             title: t("admin:common.active"),
@@ -109,7 +142,7 @@ export default function Services() {
             render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: Service) => (
               <div className="flex flex-wrap gap-2">
                 <Button size="small" onClick={() => openEdit(row)}>
@@ -118,6 +151,22 @@ export default function Services() {
                 <Button size="small" danger={row.active} onClick={() => toggleActive(row)}>
                   {row.active ? t("catalog:deactivate") : t("catalog:activate")}
                 </Button>
+                <Popconfirm
+                  title={t("catalog:delete")}
+                  description={t("catalog:deleteConfirm")}
+                  okText={t("catalog:delete")}
+                  cancelText={t("common.cancel")}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => remove(row)}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    aria-label={t("catalog:delete")}
+                    title={t("catalog:delete")}
+                  />
+                </Popconfirm>
               </div>
             ),
           },
@@ -154,20 +203,41 @@ export default function Services() {
               }))}
             />
           </Form.Item>
-          <Form.Item name="nameEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
           <Form.Item name="nameAr" label={t("admin:content.titleAr")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="slug" label={t("catalog:slug")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
-          <Form.Item name="descriptionEn" label={t("catalog:descriptionEn")}>
-            <Input.TextArea rows={2} />
-          </Form.Item>
           <Form.Item name="descriptionAr" label={t("catalog:descriptionAr")}>
             <Input.TextArea rows={2} />
+          </Form.Item>
+          <Form.Item label={t("catalog:serviceImage")}>
+            {editing?.images[0] && imageList.length === 0 && (
+              <div className="mb-3">
+                <Image
+                  src={editing.images[0].url}
+                  alt={editing.images[0].altTextAr ?? editing.nameAr}
+                  width={120}
+                  height={80}
+                  className="rounded-lg object-cover"
+                />
+              </div>
+            )}
+            <Upload
+              accept="image/jpeg,image/png,image/webp"
+              beforeUpload={(file) => {
+                setImageFile(file);
+                setImageList([file]);
+                return false;
+              }}
+              fileList={imageList}
+              maxCount={1}
+              onRemove={() => {
+                setImageFile(null);
+                setImageList([]);
+              }}
+            >
+              <Button icon={<UploadOutlined />}>{t("catalog:chooseServiceImage")}</Button>
+            </Upload>
+            <div className="mt-2 text-sm text-muted">{t("catalog:serviceImageHint")}</div>
           </Form.Item>
           <Form.Item name="pricingType" label={t("catalog:pricingType")} rules={[{ required: true }]}>
             <Select size="large" virtual={false} options={enumOptions("pricingType", PRICING_TYPES)} />
@@ -184,7 +254,7 @@ export default function Services() {
           <Form.Item name="requiresManualQuote" label={t("catalog:requiresManualQuote")} valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Button type="primary" htmlType="submit" size="large" block loading={isCreating}>
+          <Button type="primary" htmlType="submit" size="large" block loading={isCreating || isUploading}>
             {t("admin:common.save")}
           </Button>
         </Form>

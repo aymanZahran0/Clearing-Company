@@ -69,6 +69,7 @@ export const baseApi = createApi({
     "Address",
     "Service",
     "Booking",
+    "Payment",
     "Quote",
     "Subscription",
     "QualityIssue",

@@ -65,7 +65,7 @@ export default function AdminAccountsList() {
             render: (v: string | null) => (v ? formatDateTime(v, i18n.language) : "—"),
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: AdminAccount) => (
               <div className="flex flex-wrap gap-2">
                 {row.status === "SUSPENDED" ? (

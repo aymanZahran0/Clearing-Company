@@ -1,4 +1,3 @@
-import { timingSafeEqual } from "node:crypto";
 import { ApiError } from "@nuqaa-asir/shared";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
@@ -118,7 +117,7 @@ export async function createBooking(
           create: [
             {
               serviceId: service.id,
-              descriptionSnapshot: service.nameEn,
+              descriptionSnapshot: service.nameAr,
               quantity: 1,
               unitPriceSnapshot: breakdown.subtotal,
               totalSnapshot: breakdown.subtotal,
@@ -192,10 +191,18 @@ export async function getBookingById(id: string, requestingUser: { id: string; r
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
-      items: true,
+      items: { include: { service: true } },
       address: true,
       preferredTimeSlot: true,
       customer: { select: { user: { select: { fullName: true, phoneNormalized: true, email: true } } } },
+      qualityIssues: {
+        where: { source: { in: ["REVIEW", "COMPLAINT"] } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+      review: {
+        select: { id: true, rating: true, submittedAt: true },
+      },
     },
   });
   if (!booking) {
@@ -215,6 +222,13 @@ export async function listOwnBookings(
   const [items, total] = await Promise.all([
     prisma.booking.findMany({
       where,
+      include: {
+        qualityIssues: {
+          where: { source: { in: ["REVIEW", "COMPLAINT"] } },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
       orderBy: { createdAt: "desc" },
       skip: (filters.page - 1) * filters.pageSize,
       take: filters.pageSize,
@@ -260,35 +274,22 @@ export async function listAllBookings(filters: {
   return { items, total, page: filters.page, pageSize: filters.pageSize };
 }
 
-// FR-077: reference alone is never sufficient; requires the unguessable
-// verification token issued at creation.
-export async function getBookingByReference(referenceNumber: string, token: string) {
+// Public tracking exposes only a reduced, non-PII summary and is protected
+// by the strict public-endpoint rate limiter in routes.ts.
+export async function getBookingByReference(referenceNumber: string) {
   const booking = await prisma.booking.findUnique({
-    where: { referenceNumber },
+    where: { referenceNumber: referenceNumber.trim().toUpperCase() },
     include: { items: { include: { service: true }, take: 1 } },
   });
   if (!booking) {
     throw new ApiError(404, "NOT_FOUND", "Booking not found");
   }
-  if (!constantTimeEquals(booking.verificationToken, token)) {
-    throw new ApiError(403, "FORBIDDEN", "Invalid verification token");
-  }
-
   return {
     referenceNumber: booking.referenceNumber,
     status: booking.status,
     scheduledStartAt: booking.scheduledStartAt,
-    serviceName: booking.items[0]?.service.nameEn ?? "",
+    serviceName: booking.items[0]?.service.nameAr ?? "",
   };
-}
-
-// Constant-time comparison so response timing can't reveal how much of
-// the verification token matched (FR-077).
-function constantTimeEquals(a: string, b: string): boolean {
-  const bufferA = Buffer.from(a);
-  const bufferB = Buffer.from(b);
-  if (bufferA.length !== bufferB.length) return false;
-  return timingSafeEqual(bufferA, bufferB);
 }
 
 // FR-034: cannot confirm without price, address, service date, and valid

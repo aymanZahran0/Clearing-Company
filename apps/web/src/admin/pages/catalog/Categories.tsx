@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Button, Form, Input, InputNumber, Modal, Table, Tag, message } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Popconfirm, Table, Tag, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useListAllCategoriesQuery,
+  usePermanentlyDeleteCategoryMutation,
   useUpdateCategoryMutation,
   type ServiceCategoryWritableFields,
 } from "../../../api/serviceCategoriesApi";
@@ -20,6 +22,7 @@ export default function Categories() {
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+  const [permanentlyDeleteCategory] = usePermanentlyDeleteCategoryMutation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceCategory | null>(null);
 
@@ -61,6 +64,15 @@ export default function Categories() {
     }
   }
 
+  async function remove(category: ServiceCategory) {
+    try {
+      await permanentlyDeleteCategory(category.id).unwrap();
+      message.success(t("catalog:deleted"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
+
   async function move(category: ServiceCategory, direction: -1 | 1) {
     const index = sorted.findIndex((c) => c.id === category.id);
     const neighbor = sorted[index + direction];
@@ -88,16 +100,14 @@ export default function Categories() {
         scroll={{ x: true }}
         pagination={false}
         columns={[
-          { title: t("admin:content.titleEn"), dataIndex: "nameEn" },
           { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
-          { title: t("catalog:slug"), dataIndex: "slug" },
           {
             title: t("admin:common.active"),
             dataIndex: "active",
             render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: ServiceCategory) => (
               <div className="flex flex-wrap gap-2">
                 <Button size="small" onClick={() => move(row, -1)}>
@@ -112,6 +122,22 @@ export default function Categories() {
                 <Button size="small" danger={row.active} onClick={() => toggleActive(row)}>
                   {row.active ? t("catalog:deactivate") : t("catalog:activate")}
                 </Button>
+                <Popconfirm
+                  title={t("catalog:delete")}
+                  description={t("catalog:deleteConfirm")}
+                  okText={t("catalog:delete")}
+                  cancelText={t("common.cancel")}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => remove(row)}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    aria-label={t("catalog:delete")}
+                    title={t("catalog:delete")}
+                  />
+                </Popconfirm>
               </div>
             ),
           },
@@ -130,13 +156,7 @@ export default function Categories() {
           requiredMark={false}
           initialValues={editing ?? { sortOrder: 0 }}
         >
-          <Form.Item name="nameEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
           <Form.Item name="nameAr" label={t("admin:content.titleAr")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
-          <Form.Item name="slug" label={t("catalog:slug")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
           <Form.Item name="sortOrder" label={t("catalog:sortOrder")}>

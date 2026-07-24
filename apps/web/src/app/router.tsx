@@ -2,8 +2,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppShell, AdminShell } from "../components/layout/AppShell";
 import NotFoundPage from "../pages/NotFoundPage";
 import RouteErrorPage from "../pages/RouteErrorPage";
-import { RequireAuth } from "../guards/RequireAuth";
 import { RequireRole } from "../guards/RequireRole";
+import { RequireGuest } from "../guards/RequireGuest";
 import Home from "../customer/pages/Home";
 import ServiceCatalog from "../customer/pages/ServiceCatalog";
 import ServiceDetail from "../customer/pages/ServiceDetail";
@@ -37,6 +37,7 @@ import ClosedDates from "../admin/pages/schedule/ClosedDates";
 import ChecklistTemplateEditor from "../admin/pages/catalog/ChecklistTemplateEditor";
 import ServiceImages from "../admin/pages/catalog/ServiceImages";
 import Categories from "../admin/pages/catalog/Categories";
+import AdminServiceAreas from "../admin/pages/catalog/ServiceAreas";
 import Services from "../admin/pages/catalog/Services";
 import AddOns from "../admin/pages/catalog/AddOns";
 import CatalogChecklist from "../admin/pages/catalog/CatalogChecklist";
@@ -127,18 +128,22 @@ const router = createBrowserRouter([
     path: "/login",
     errorElement: <RouteErrorPage />,
     element: (
-      <AppShell>
-        <Login />
-      </AppShell>
+      <RequireGuest>
+        <AppShell>
+          <Login />
+        </AppShell>
+      </RequireGuest>
     ),
   },
   {
     path: "/register",
     errorElement: <RouteErrorPage />,
     element: (
-      <AppShell>
-        <Register />
-      </AppShell>
+      <RequireGuest>
+        <AppShell>
+          <Register />
+        </AppShell>
+      </RequireGuest>
     ),
   },
   {
@@ -163,116 +168,120 @@ const router = createBrowserRouter([
     path: "/booking/new",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <BookingWizard />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/bookings",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <BookingsList />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/bookings/:id",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <BookingDetail />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/profile",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <Profile />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/addresses",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <Addresses />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/invoices",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <InvoicesAndPayments />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/bookings/:id/review",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <ReviewForm />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/bookings/:id/complaint",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <ComplaintForm />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/subscriptions",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <Subscriptions />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/notifications",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireAuth>
+      <RequireRole role="CUSTOMER">
         <AppShell>
           <CustomerNotifications />
         </AppShell>
-      </RequireAuth>
+      </RequireRole>
     ),
   },
   {
     path: "/admin/login",
     errorElement: <RouteErrorPage />,
-    element: <AdminLogin />,
+    element: (
+      <RequireGuest authenticatedPath="/admin">
+        <AdminLogin />
+      </RequireGuest>
+    ),
   },
   {
     path: "/admin",
@@ -402,6 +411,17 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <Services />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/catalog/service-areas",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AdminServiceAreas />
         </AdminShell>
       </RequireRole>
     ),

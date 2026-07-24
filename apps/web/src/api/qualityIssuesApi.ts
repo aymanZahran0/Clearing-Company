@@ -68,7 +68,7 @@ export const qualityIssuesApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ id, ...body }) => ({ url: `/quality-issues/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["QualityIssue"],
+      invalidatesTags: ["QualityIssue", "Booking"],
     }),
     createReworkBooking: builder.mutation<{ id: string; referenceNumber: string }, string>({
       query: (id) => ({ url: `/quality-issues/${id}/rework`, method: "POST" }),

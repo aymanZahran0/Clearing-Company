@@ -7,7 +7,6 @@ import { prisma } from "../../src/lib/prisma.js";
 describe("GET /bookings/reference/:referenceNumber (FR-077)", () => {
   const app = createApp();
   let referenceNumber: string;
-  let verificationToken: string;
 
   beforeEach(async () => {
     const area = await prisma.serviceArea.create({
@@ -21,7 +20,6 @@ describe("GET /bookings/reference/:referenceNumber (FR-077)", () => {
         categoryId: category.id,
         slug: "lookup-service",
         nameAr: "أ",
-        nameEn: "Lookup Service",
         pricingType: "FIXED",
         basePrice: 15000,
       },
@@ -62,37 +60,26 @@ describe("GET /bookings/reference/:referenceNumber (FR-077)", () => {
       });
 
     referenceNumber = bookingRes.body.referenceNumber;
-    const dbBooking = await prisma.booking.findUniqueOrThrow({ where: { id: bookingRes.body.id } });
-    verificationToken = dbBooking.verificationToken;
   });
 
-  it("returns a reduced-PII summary when the correct token is supplied", async () => {
-    const res = await request(app).get(
-      `/api/v1/bookings/reference/${referenceNumber}?token=${verificationToken}`
-    );
+  it("returns a reduced-PII summary using only the reference number", async () => {
+    const res = await request(app).get(`/api/v1/bookings/reference/${referenceNumber}`);
     expect(res.status).toBe(200);
     expect(res.body.referenceNumber).toBe(referenceNumber);
     expect(res.body).not.toHaveProperty("customerId");
     expect(res.body).not.toHaveProperty("addressId");
   });
 
-  it("rejects lookup with a missing token", async () => {
-    const res = await request(app).get(`/api/v1/bookings/reference/${referenceNumber}`);
-    expect(res.status).toBe(422);
-  });
-
-  it("rejects lookup with an incorrect token, without revealing booking details", async () => {
+  it("accepts a lowercase reference number", async () => {
     const res = await request(app).get(
-      `/api/v1/bookings/reference/${referenceNumber}?token=wrong-token-value-that-is-long-enough`
+      `/api/v1/bookings/reference/${referenceNumber.toLowerCase()}`
     );
-    expect(res.status).toBe(403);
-    expect(res.body).not.toHaveProperty("status");
+    expect(res.status).toBe(200);
+    expect(res.body.referenceNumber).toBe(referenceNumber);
   });
 
   it("rejects lookup for a nonexistent reference", async () => {
-    const res = await request(app).get(
-      `/api/v1/bookings/reference/NA-00000000-000000?token=${verificationToken}`
-    );
+    const res = await request(app).get(`/api/v1/bookings/reference/NA-00000000-000000`);
     expect(res.status).toBe(404);
   });
 });

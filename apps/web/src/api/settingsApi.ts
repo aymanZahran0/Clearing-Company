@@ -18,7 +18,11 @@ export const settingsApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/settings", method: "PATCH", body }),
       invalidatesTags: ["Setting"],
     }),
+    deleteSetting: builder.mutation<void, string>({
+      query: (key) => ({ url: `/settings/${key}`, method: "DELETE" }),
+      invalidatesTags: ["Setting"],
+    }),
   }),
 });
 
-export const { useListSettingsQuery, useUpdateSettingMutation } = settingsApi;
+export const { useListSettingsQuery, useUpdateSettingMutation, useDeleteSettingMutation } = settingsApi;

@@ -21,6 +21,19 @@ import { RecordPaymentDialog } from "../payments/RecordPaymentDialog";
 import { PaymentsList } from "../payments/Invoices";
 import { enumLabel } from "../../../lib/enumLabels";
 
+const HISTORY_REASON_KEYS: Record<string, string> = {
+  "Booking created": "bookingCreated",
+  "Booking submitted": "bookingSubmitted",
+  "Confirmed by Admin": "confirmedByAdmin",
+  "Scheduled": "scheduled",
+  "Scheduled with capacity override": "scheduledWithCapacityOverride",
+  "Rescheduled": "rescheduled",
+  "Rescheduled with capacity override": "rescheduledWithCapacityOverride",
+  "Execution started": "executionStarted",
+  "Execution completed": "executionCompleted",
+  "Seeded sample booking": "seededSampleBooking",
+};
+
 export default function BookingDetail() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -61,6 +74,10 @@ export default function BookingDetail() {
   );
   const checklistComplete =
     !!checklistRun && checklistRun.template.items.filter((item) => item.required).every((item) => answeredIds.has(item.id));
+  const localizeHistoryReason = (reason: string) => {
+    const key = HISTORY_REASON_KEYS[reason];
+    return key ? t(`admin:bookings.historyReasons.${key}`) : reason;
+  };
 
   return (
     <div className="p-4 sm:p-6">
@@ -194,7 +211,7 @@ export default function BookingDetail() {
         <h2 className="mb-2 text-base font-medium">{t("admin:bookings.history")}</h2>
         <Timeline
           items={history?.map((entry) => ({
-            children: `${entry.fromStatus ? enumLabel("bookingStatus", entry.fromStatus) : "—"} → ${enumLabel("bookingStatus", entry.toStatus)} (${formatDateTime(entry.createdAt, i18n.language)})${entry.reason ? `: ${entry.reason}` : ""}`,
+            children: `${entry.fromStatus ? enumLabel("bookingStatus", entry.fromStatus) : "—"} → ${enumLabel("bookingStatus", entry.toStatus)} (${formatDateTime(entry.createdAt, i18n.language)})${entry.reason ? `: ${localizeHistoryReason(entry.reason)}` : ""}`,
           }))}
         />
       </div>

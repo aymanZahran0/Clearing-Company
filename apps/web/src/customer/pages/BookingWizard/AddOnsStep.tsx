@@ -5,6 +5,8 @@ import type { RootState } from "../../../app/store";
 import { setAddOnIds } from "../../../features/bookingWizard/wizardSlice";
 import { useListServicesQuery } from "../../../api/servicesApi";
 import { formatCurrency } from "../../../lib/formatters";
+import { WizardStepCard } from "./WizardStepCard";
+import { WizardConfirmButton } from "./WizardConfirmButton";
 
 export function AddOnsStep({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { t, i18n } = useTranslation();
@@ -19,7 +21,7 @@ export function AddOnsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
   }
 
   return (
-    <div>
+    <WizardStepCard title={t("customer:bookingWizard.steps.addOns")}>
       <Checkbox.Group
         className="flex flex-col gap-3"
         defaultValue={wizard.addOnIds}
@@ -38,10 +40,10 @@ export function AddOnsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
         <Button size="large" onClick={onBack}>
           {t("common.cancel")}
         </Button>
-        <Button type="primary" size="large" onClick={() => handleNext(wizard.addOnIds)}>
+        <WizardConfirmButton onClick={() => handleNext(wizard.addOnIds)}>
           {t("common.confirm")}
-        </Button>
+        </WizardConfirmButton>
       </Space>
-    </div>
+    </WizardStepCard>
   );
 }

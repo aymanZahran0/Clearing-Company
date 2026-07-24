@@ -92,7 +92,7 @@ export default function RescheduleRequestsList() {
             render: (v: RescheduleRequestStatus) => <Tag color={STATUS_COLOR[v]}>{t(STATUS_LABEL_KEYS[v])}</Tag>,
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: RescheduleRequest) =>
               row.status === "PENDING" ? (
                 <div className="flex flex-wrap gap-2">

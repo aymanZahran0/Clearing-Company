@@ -215,9 +215,17 @@ const API_ERROR_MESSAGES: Record<string, { ar: string; en: string }> = {
     ar: "فئة الخدمة غير موجودة",
     en: "Service category not found",
   },
+  "Cannot delete a category that contains services": {
+    ar: "لا يمكن حذف فئة تحتوي على خدمات",
+    en: "Cannot delete a category that contains services",
+  },
   "Add-on not found": {
     ar: "الإضافة غير موجودة",
     en: "Add-on not found",
+  },
+  "Cannot delete a service used by bookings or quotes": {
+    ar: "لا يمكن حذف خدمة مستخدمة في حجوزات أو عروض أسعار",
+    en: "Cannot delete a service used by bookings or quotes",
   },
 
   // reviews / complaints

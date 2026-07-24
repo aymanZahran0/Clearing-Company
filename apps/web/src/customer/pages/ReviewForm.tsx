@@ -1,7 +1,8 @@
-import { Button, Form, Input, Rate, message } from "antd";
+import { Alert, Button, Form, Input, Rate, Skeleton, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCreateReviewMutation } from "../../api/reviewsApi";
+import { useGetBookingQuery } from "../../api/bookingsApi";
 
 interface ReviewFormValues {
   rating: number;
@@ -14,6 +15,33 @@ export default function ReviewForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [createReview, { isLoading }] = useCreateReviewMutation();
+  const { data: booking, isLoading: isBookingLoading } = useGetBookingQuery(id ?? "", {
+    skip: !id,
+  });
+
+  if (isBookingLoading) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Skeleton active />
+      </div>
+    );
+  }
+
+  if (!booking || booking.status !== "COMPLETED" || booking.review) {
+    return (
+      <div className="p-4 sm:p-6">
+        <Alert
+          type="info"
+          showIcon
+          message={
+            booking?.review
+              ? t("customer:reviewForm.alreadyReviewed")
+              : t("customer:reviewForm.onlyCompleted")
+          }
+        />
+      </div>
+    );
+  }
 
   async function onFinish(values: ReviewFormValues) {
     if (!id) return;

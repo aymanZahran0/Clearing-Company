@@ -6,6 +6,8 @@ import type { RootState } from "../../../app/store";
 import { setDiscountCode, setQuoteId } from "../../../features/bookingWizard/wizardSlice";
 import { useEstimateQuoteMutation } from "../../../api/quotesApi";
 import { formatCurrency } from "../../../lib/formatters";
+import { WizardStepCard } from "./WizardStepCard";
+import { WizardConfirmButton } from "./WizardConfirmButton";
 
 export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { t, i18n } = useTranslation();
@@ -49,7 +51,7 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
   const breakdown = quote?.priceBreakdownJson;
 
   return (
-    <div>
+    <WizardStepCard title={t("customer:bookingWizard.steps.quote")}>
       {isLoading && <Skeleton active />}
       {breakdown?.requiresManualReview && (
         <Alert
@@ -86,7 +88,7 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
         </div>
       )}
       <Input.Search
-        className="mt-4"
+        className="wizard-form mt-4"
         placeholder={t("customer:quoteReview.discountCode")}
         size="large"
         onSearch={(value) => dispatch(setDiscountCode(value || null))}
@@ -95,10 +97,10 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
         <Button size="large" onClick={onBack}>
           {t("common.cancel")}
         </Button>
-        <Button type="primary" size="large" disabled={!quote} onClick={onNext}>
+        <WizardConfirmButton disabled={!quote} onClick={onNext}>
           {t("common.confirm")}
-        </Button>
+        </WizardConfirmButton>
       </Space>
-    </div>
+    </WizardStepCard>
   );
 }

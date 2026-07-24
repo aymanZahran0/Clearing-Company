@@ -106,7 +106,7 @@ export default function ChecklistTemplateEditor() {
             ),
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, __: DraftItem, index: number) => (
               <Button danger onClick={() => removeItem(index)}>
                 {t("admin:checklistTemplate.remove")}

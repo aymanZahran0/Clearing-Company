@@ -40,7 +40,7 @@ describe("HeroSection", () => {
   it("renders fallback Arabic copy and both CTAs when no content block is configured", () => {
     renderWithProviders(<HeroSection />);
     expect(screen.getByText("خدمات تنظيف احترافية في عسير")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "احجز الآن" })).toHaveAttribute("href", "/booking/new");
+    expect(screen.getByRole("link", { name: "احجز الآن" })).toHaveAttribute("href", "/services");
     expect(screen.getByRole("link", { name: "استعرض الخدمات" })).toHaveAttribute("href", "/services");
   });
 
@@ -70,10 +70,10 @@ describe("WhyChooseUsSection", () => {
     expect(screen.getByText("حجز سهل ومرن")).toBeInTheDocument();
   });
 
-  it("renders the content block body instead of fallback features when configured", () => {
+  it("uses the configured intro while retaining the structured benefit list", () => {
     renderWithProviders(<WhyChooseUsSection block={{ ...CONTENT_BLOCK, key: "home-why-us" }} />);
     expect(screen.getByText("نص مخصص")).toBeInTheDocument();
-    expect(screen.queryByText("فريق مدرب ومحترف")).not.toBeInTheDocument();
+    expect(screen.getByText("فريق مدرب ومحترف")).toBeInTheDocument();
   });
 });
 

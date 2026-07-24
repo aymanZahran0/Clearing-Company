@@ -33,7 +33,6 @@ interface SubscriptionFormValues {
 // subscription's detail/pause/resume/cancel + occurrence editor.
 export default function SubscriptionEditor() {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNew = !id;
@@ -135,7 +134,7 @@ export default function SubscriptionEditor() {
         <Form.Item name="serviceId" label={t("admin:subscriptions.service")} rules={[{ required: true }]}>
           <Select
             size="large"
-            options={services?.map((s) => ({ value: s.id, label: isAr ? s.nameAr : s.nameEn }))}
+            options={services?.map((s) => ({ value: s.id, label: s.nameAr }))}
           />
         </Form.Item>
         <Form.Item name="frequency" label={t("admin:subscriptions.frequency")} rules={[{ required: true }]}>

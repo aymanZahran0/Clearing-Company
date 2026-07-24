@@ -4,8 +4,6 @@ import { HeroSection } from "../components/home/HeroSection";
 import { ServicesSection } from "../components/home/ServicesSection";
 import { HowItWorksSection } from "../components/home/HowItWorksSection";
 import { WhyChooseUsSection } from "../components/home/WhyChooseUsSection";
-import { ServiceAreasSection } from "../components/home/ServiceAreasSection";
-import { TrustSection } from "../components/home/TrustSection";
 import { FaqPreviewSection } from "../components/home/FaqPreviewSection";
 import { ContactCtaSection } from "../components/home/ContactCtaSection";
 import { PublicFooter } from "../components/home/PublicFooter";
@@ -25,7 +23,6 @@ export default function Home() {
   const isAr = i18n.language === "ar";
 
   const sections = (data ?? []).filter((block) => block.type === "SECTION");
-  const heroBlock = sections.find((b) => b.key === "home-hero");
   const whyUsBlock = sections.find((b) => b.key === "home-why-us");
   const trustBlock = sections.find((b) => b.key === "home-trust");
   const contactBlock = sections.find((b) => b.key === "home-contact");
@@ -34,24 +31,24 @@ export default function Home() {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    <div>
-      <HeroSection block={heroBlock} />
+    <main className="home-page overflow-hidden bg-paper text-ink">
+      <HeroSection />
       <ServicesSection />
       <HowItWorksSection />
-      <WhyChooseUsSection block={whyUsBlock} />
-      <ServiceAreasSection />
-      <TrustSection block={trustBlock} />
+      <WhyChooseUsSection block={whyUsBlock} trustBlock={trustBlock} />
       <FaqPreviewSection />
       <ContactCtaSection block={contactBlock} />
       {unknownSections.map((block) => (
-        <section key={block.id} className="px-4 py-10 sm:px-6 sm:py-14">
+        <section key={block.id} className="home-section px-4 sm:px-6">
           <div className="mx-auto max-w-4xl">
-            <h2 className="mb-2 text-2xl font-bold">{isAr ? block.titleAr : block.titleEn || block.titleAr}</h2>
+            <h2 className="mb-2 text-2xl font-bold">
+              {isAr ? block.titleAr : block.titleEn || block.titleAr}
+            </h2>
             <p className="text-base">{isAr ? block.bodyAr : block.bodyEn || block.bodyAr}</p>
           </div>
         </section>
       ))}
       <PublicFooter />
-    </div>
+    </main>
   );
 }

@@ -9,6 +9,7 @@
   },
   "home": {
     "hero": {
+      "kicker": "Trusted cleaning services in Abha and Khamis Mushait",
       "fallbackTitle": "Professional Cleaning Services in Asir",
       "fallbackBody": "Reliable residential and commercial cleaning across Abha and Khamis Mushait, with a trained team and easy booking online or by phone.",
       "primaryCta": "Book Now",
@@ -16,7 +17,11 @@
     },
     "services": {
       "title": "Our Services",
+      "headline": "Cleaning solutions for every need",
       "viewAll": "View All Services",
+      "details": "Details",
+      "startsAt": "From {{price}}",
+      "customQuote": "Custom quote",
       "empty": "No services available right now"
     },
     "howItWorks": {
@@ -31,6 +36,7 @@
       "step4Body": "Our trained team arrives on schedule to deliver a high-quality job."
     },
     "whyUs": {
+      "kicker": "Why Nuqaa Asir",
       "title": "Why Choose Us",
       "fallbackFeature1Title": "Trained, Professional Staff",
       "fallbackFeature1Body": "Our crews are trained to the highest quality and safety standards.",
@@ -46,7 +52,9 @@
     },
     "trust": {
       "title": "Trusted by Our Customers",
-      "completedBookings": "{{count}}+ completed bookings",
+      "completedBookingsLabel": "Completed bookings",
+      "averageRatingLabel": "Customer rating",
+      "completedBookings": "{{count}} completed bookings",
       "averageRating": "{{rating}} / 5 average rating",
       "fallbackBody": "We hold every service we deliver to the highest standard of quality and professionalism."
     },
@@ -66,7 +74,8 @@
       "quickLinksTitle": "Quick Links",
       "servicesTitle": "Services",
       "contactTitle": "Contact",
-      "rightsReserved": "© {{year}} Nuqaa Asir. All rights reserved."
+      "rightsReserved": "© {{year}} Nuqaa Asir. All rights reserved.",
+      "poweredBy": "Powered by Zahran"
     }
   }
 }

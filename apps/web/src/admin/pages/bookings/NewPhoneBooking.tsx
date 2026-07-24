@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Form, Input, List, Radio, Select, Steps, message } from "antd";
+import { Button, Card, Form, Input, List, Select, Steps, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +12,10 @@ import { useListServiceAreasQuery, useListServicesQuery } from "../../../api/ser
 import { useEstimateQuoteMutation } from "../../../api/quotesApi";
 import { useCreateAdminBookingMutation } from "../../../api/bookingsApi";
 import { formatCurrency } from "../../../lib/formatters";
+import { enumOptions } from "../../../lib/enumOptions";
+import { createSaudiMobileSchema } from "../../../lib/validation";
+
+const PROPERTY_TYPES = ["APARTMENT", "VILLA", "OFFICE", "SHOP", "CLINIC", "FURNISHED_UNIT", "OTHER"];
 
 /**
  * Single-screen equivalent of the Customer Portal's Booking Wizard,
@@ -22,14 +26,18 @@ export default function NewPhoneBooking() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const phoneSchema = createSaudiMobileSchema(t("auth.phoneRequired"), t("auth.phoneInvalid"));
 
   // Step 1: customer
   const [phoneSearch, setPhoneSearch] = useState("");
-  const { data: searchResults } = useSearchCustomersQuery({ search: phoneSearch }, { skip: !phoneSearch });
+  const { data: searchResults, isFetching: isLoadingCustomers } = useSearchCustomersQuery({
+    search: phoneSearch || undefined,
+    pageSize: 100,
+  });
   const [createCustomer] = useCreateCustomerMutation();
   const [customer, setCustomer] = useState<CustomerSummary | null>(null);
 
-  // Step 2: service + address + schedule
+  // Steps 2 and 3: location, then service + schedule
   const { data: services } = useListServicesQuery();
   const { data: areas } = useListServiceAreasQuery();
   const [createAddress] = useCreateAddressForCustomerMutation();
@@ -56,6 +64,7 @@ export default function NewPhoneBooking() {
     if (!customer) return;
     const address = await createAddress({ customerId: customer.id, body: values }).unwrap();
     setAddressId(address.id);
+    setStep(2);
   }
 
   async function handleGetQuote(values: { requestedDate: string; propertyType: string }) {
@@ -70,7 +79,7 @@ export default function NewPhoneBooking() {
       addressId,
       requestedDate: values.requestedDate,
     }).unwrap();
-    setStep(2);
+    setStep(3);
   }
 
   async function handleSubmit() {
@@ -102,6 +111,7 @@ export default function NewPhoneBooking() {
         current={step}
         items={[
           { title: t("admin:bookings.customerStepTitle") },
+          { title: t("admin:bookings.locationStepTitle") },
           { title: t("admin:bookings.serviceAddressStepTitle") },
           { title: t("admin:bookings.confirmStepTitle") },
         ]}
@@ -113,11 +123,15 @@ export default function NewPhoneBooking() {
           <Input.Search
             placeholder={t("admin:bookings.searchByPhonePlaceholder")}
             size="large"
+            value={phoneSearch}
+            onChange={(event) => setPhoneSearch(event.target.value)}
             onSearch={setPhoneSearch}
+            allowClear
             className="mb-4"
           />
           <List
             dataSource={searchResults?.items}
+            loading={isLoadingCustomers}
             renderItem={(c) => (
               <List.Item
                 onClick={() => {
@@ -136,8 +150,19 @@ export default function NewPhoneBooking() {
               <Form.Item name="fullName" label={t("auth.fullName")} rules={[{ required: true }]}>
                 <Input size="large" />
               </Form.Item>
-              <Form.Item name="phone" label={t("auth.phone")} rules={[{ required: true }]}>
-                <Input size="large" />
+              <Form.Item
+                name="phone"
+                label={t("auth.phone")}
+                normalize={(value: string) => value.replace(/\D/g, "").slice(0, 10)}
+                rules={[
+                  {
+                    validator: async (_, value) => {
+                      await phoneSchema.validate(value);
+                    },
+                  },
+                ]}
+              >
+                <Input size="large" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="05XXXXXXXX" />
               </Form.Item>
               <Button type="primary" htmlType="submit" size="large" block>
                 {t("common.confirm")}
@@ -149,73 +174,72 @@ export default function NewPhoneBooking() {
 
       {step === 1 && customer && (
         <Card title={`${customer.fullName} — ${customer.phone}`}>
-          {!addressId ? (
-            <Form layout="vertical" onFinish={handleCreateAddress} requiredMark={false}>
-              <Form.Item
-                name="serviceAreaId"
-                label={t("customer:addressStep.serviceArea")}
-                rules={[{ required: true }]}
-              >
-                <Select
-                  size="large"
-                  options={areas?.map((a) => ({
-                    value: a.id,
-                    label: i18n.language === "ar" ? a.nameAr : a.nameEn,
-                  }))}
-                />
-              </Form.Item>
-              <Form.Item name="city" label={t("customer:addressStep.city")} rules={[{ required: true }]}>
-                <Input size="large" />
-              </Form.Item>
-              <Form.Item
-                name="neighborhood"
-                label={t("customer:addressStep.neighborhood")}
-                rules={[{ required: true }]}
-              >
-                <Input size="large" />
-              </Form.Item>
-              <Button type="primary" htmlType="submit" size="large" block>
-                {t("common.confirm")}
-              </Button>
-            </Form>
-          ) : (
-            <Form layout="vertical" onFinish={handleGetQuote} requiredMark={false}>
-              <Form.Item name="propertyType" label={t("admin:bookings.propertyType")} rules={[{ required: true }]}>
-                <Radio.Group>
-                  <Radio value="APARTMENT">{t("admin:bookings.apartment")}</Radio>
-                  <Radio value="VILLA">{t("admin:bookings.villa")}</Radio>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item
-                name="requestedDate"
-                label={t("admin:bookings.requestedDate")}
-                rules={[{ required: true }]}
-              >
-                <Input type="date" size="large" />
-              </Form.Item>
-              <Form.Item
-                name="serviceId"
-                label={t("admin:bookings.service")}
-                rules={[{ required: true }]}
-              >
-                <Select
-                  size="large"
-                  onChange={setServiceId}
-                  options={services?.map((s) => ({
-                    value: s.id,
-                    label: i18n.language === "ar" ? s.nameAr : s.nameEn,
-                  }))}
-                />
-              </Form.Item>
-              <Button type="primary" htmlType="submit" size="large" block disabled={!serviceId}>
-                {t("common.confirm")}
-              </Button>
-            </Form>
-          )}
+          <Form layout="vertical" onFinish={handleCreateAddress} requiredMark={false}>
+            <Form.Item
+              name="serviceAreaId"
+              label={t("customer:addressStep.serviceArea")}
+              rules={[{ required: true }]}
+            >
+              <Select
+                size="large"
+                options={areas?.map((a) => ({
+                  value: a.id,
+                  label: i18n.language === "ar" ? a.nameAr : a.nameEn,
+                }))}
+              />
+            </Form.Item>
+            <Form.Item name="city" label={t("customer:addressStep.city")} rules={[{ required: true }]}>
+              <Input size="large" />
+            </Form.Item>
+            <Form.Item
+              name="neighborhood"
+              label={t("customer:addressStep.neighborhood")}
+              rules={[{ required: true }]}
+            >
+              <Input size="large" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" size="large" block>
+              {t("common.confirm")}
+            </Button>
+          </Form>
         </Card>
       )}
 
-      {step === 2 && quote && (
+      {step === 2 && customer && addressId && (
+        <Card title={`${customer.fullName} — ${customer.phone}`}>
+          <Form layout="vertical" onFinish={handleGetQuote} requiredMark={false}>
+            <Form.Item name="propertyType" label={t("admin:bookings.propertyType")} rules={[{ required: true }]}>
+              <Select size="large" options={enumOptions("propertyType", PROPERTY_TYPES)} />
+            </Form.Item>
+            <Form.Item
+              name="requestedDate"
+              label={t("admin:bookings.requestedDate")}
+              rules={[{ required: true }]}
+            >
+              <Input type="date" size="large" />
+            </Form.Item>
+            <Form.Item
+              name="serviceId"
+              label={t("admin:bookings.service")}
+              rules={[{ required: true }]}
+            >
+              <Select
+                size="large"
+                onChange={setServiceId}
+                options={services?.map((s) => ({
+                  value: s.id,
+                  label: s.nameAr,
+                }))}
+              />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" size="large" block disabled={!serviceId}>
+              {t("common.confirm")}
+            </Button>
+          </Form>
+        </Card>
+      )}
+
+      {step === 3 && quote && (
         <Card>
           <p className="mb-4 text-lg font-semibold">
             {formatCurrency(quote.priceBreakdownJson.total, i18n.language)}

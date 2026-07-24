@@ -32,19 +32,29 @@ function LocaleAwareConfigProvider({ children }: PropsWithChildren) {
   return (
     <ConfigProvider
       direction={direction}
-      // Ant Design's default primary (#1677ff) fails WCAG 2.1 AA contrast
-      // both as white-on-primary button text (~4.1:1) and as
-      // primary-on-tint selected-menu-item text (~3.66:1); both need 4.5:1
-      // (constitution Principle IV). This darker blue keeps the same hue
-      // while clearing 4.5:1 in both directions. colorTextDescription
-      // (used by e.g. Statistic titles) has the same problem at its
-      // default #8c8c8c (~3.36:1 on white) — darkened for the same reason.
+      // Brand primary per DESIGN.md: deep Nuqaa navy (#00375B), paired
+      // with restrained teal (#006477) for links and supporting actions.
+      // White-on-primary comfortably clears WCAG AA contrast
+      // (constitution Principle IV needs 4.5:1). colorTextDescription
+      // (used by e.g. Statistic titles) is the DESIGN.md `muted` token —
+      // oklch(0.52 0.02 358), 5.6:1 on white — darkened from Ant Design's
+      // default #8c8c8c (~3.36:1) for the same AA reason.
       theme={{
         token: {
-          colorPrimary: "#0958d9",
-          colorLink: "#0958d9",
-          colorLinkHover: "#0958d9",
-          colorTextDescription: "#595959",
+          colorPrimary: "#00375B",
+          colorLink: "#006477",
+          colorLinkHover: "#00536C",
+          colorTextDescription: "#555F69",
+          colorText: "#151B21",
+          colorBorder: "#D2D8DF",
+          borderRadius: 12,
+          fontFamily: "Tajawal, ui-sans-serif, system-ui, sans-serif",
+          // Ant Design derives controlHeightLG from controlHeight × 1.25
+          // (32 × 1.25 = 40px by default), so every size="large" control —
+          // the app's stated touch-target size (DESIGN.md's 44px Rule) —
+          // was actually rendering 4px short. Set explicitly rather than
+          // relying on the derived default.
+          controlHeightLG: 44,
         },
       }}
       form={{

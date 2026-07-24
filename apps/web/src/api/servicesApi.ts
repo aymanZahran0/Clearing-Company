@@ -23,9 +23,7 @@ export interface Service {
   categoryId: string;
   slug: string;
   nameAr: string;
-  nameEn: string;
   descriptionAr: string | null;
-  descriptionEn: string | null;
   pricingType: "FIXED" | "PROPERTY_SIZE" | "HOURLY" | "QUANTITY" | "CUSTOM_QUOTE";
   basePrice: number | null;
   minimumPrice: number | null;
@@ -38,11 +36,8 @@ export interface Service {
 
 export interface ServiceWritableFields {
   categoryId: string;
-  slug: string;
   nameAr: string;
-  nameEn: string;
   descriptionAr?: string;
-  descriptionEn?: string;
   pricingType: Service["pricingType"];
   basePrice?: number | null;
   minimumPrice?: number | null;
@@ -65,6 +60,7 @@ export interface ServiceArea {
   nameEn: string;
   city: string;
   travelFee: number;
+  active: boolean;
 }
 
 export const servicesApi = baseApi.injectEndpoints({
@@ -92,18 +88,23 @@ export const servicesApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/services/${id}`, method: "DELETE" }),
       invalidatesTags: ["Service"],
     }),
+    permanentlyDeleteService: builder.mutation<void, string>({
+      query: (id) => ({ url: `/services/${id}/permanent`, method: "DELETE" }),
+      invalidatesTags: ["Service"],
+    }),
     listServiceAreas: builder.query<ServiceArea[], void>({
       query: () => "/service-areas",
     }),
     uploadServiceImage: builder.mutation<
       ServiceImage,
-      { serviceId: string; file: File; altTextAr?: string; altTextEn?: string }
+      { serviceId: string; file: File; altTextAr?: string; altTextEn?: string; sortOrder?: number }
     >({
-      query: ({ serviceId, file, altTextAr, altTextEn }) => {
+      query: ({ serviceId, file, altTextAr, altTextEn, sortOrder }) => {
         const formData = new FormData();
         formData.append("image", file);
         if (altTextAr) formData.append("altTextAr", altTextAr);
         if (altTextEn) formData.append("altTextEn", altTextEn);
+        if (sortOrder != null) formData.append("sortOrder", String(sortOrder));
         return { url: `/services/${serviceId}/images`, method: "POST", body: formData };
       },
       invalidatesTags: ["Service"],
@@ -123,6 +124,7 @@ export const {
   useCreateServiceMutation,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
+  usePermanentlyDeleteServiceMutation,
   useUploadServiceImageMutation,
   useDeleteServiceImageMutation,
 } = servicesApi;

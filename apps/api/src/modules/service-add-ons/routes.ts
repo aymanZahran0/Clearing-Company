@@ -44,6 +44,16 @@ serviceAddOnsRouter.patch(
 );
 
 serviceAddOnsRouter.delete(
+  "/service-add-ons/:id/permanent",
+  authenticate,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    await service.deleteAddOn(requireParam(req, "id"));
+    res.status(204).send();
+  })
+);
+
+serviceAddOnsRouter.delete(
   "/service-add-ons/:id",
   authenticate,
   requireRole("ADMIN"),

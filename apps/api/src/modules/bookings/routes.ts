@@ -6,6 +6,7 @@ import { validateRequest } from "../../middleware/validateRequest.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
 import { requireParam } from "../../lib/params.js";
 import { prisma } from "../../lib/prisma.js";
+import { strictRateLimit } from "../../middleware/rateLimit.js";
 import { moneySchema } from "@nuqaa-asir/shared";
 import { ApiError } from "@nuqaa-asir/shared";
 import {
@@ -49,10 +50,10 @@ bookingsRouter.post(
 
 bookingsRouter.get(
   "/bookings/reference/:referenceNumber",
+  strictRateLimit,
   validateRequest({ query: bookingReferenceLookupQuerySchema }),
   asyncHandler(async (req, res) => {
-    const { token } = req.query as unknown as { token: string };
-    res.json(await service.getBookingByReference(requireParam(req, "referenceNumber"), token));
+    res.json(await service.getBookingByReference(requireParam(req, "referenceNumber")));
   })
 );
 

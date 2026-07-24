@@ -51,6 +51,16 @@ servicesRouter.patch(
 );
 
 servicesRouter.delete(
+  "/services/:id/permanent",
+  authenticate,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    await service.deleteService(requireParam(req, "id"));
+    res.status(204).send();
+  })
+);
+
+servicesRouter.delete(
   "/services/:id",
   authenticate,
   requireRole("ADMIN"),

@@ -1,11 +1,15 @@
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "@nuqaa-asir/shared";
+import { v4 as uuidv4 } from "uuid";
 import type { CreateServiceInput, UpdateServiceInput } from "./schema.js";
 
 export function listServices(categoryId?: string, includeInactive = false) {
   return prisma.service.findMany({
     where: { ...(includeInactive ? {} : { active: true }), ...(categoryId ? { categoryId } : {}) },
-    include: { images: true, addOns: includeInactive ? true : { where: { active: true } } },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      addOns: includeInactive ? true : { where: { active: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 }
@@ -13,7 +17,10 @@ export function listServices(categoryId?: string, includeInactive = false) {
 export async function getServiceBySlug(slug: string) {
   const service = await prisma.service.findFirst({
     where: { slug, active: true },
-    include: { images: true, addOns: { where: { active: true } } },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      addOns: { where: { active: true } },
+    },
   });
   if (!service) {
     throw new ApiError(404, "NOT_FOUND", "Service not found");
@@ -30,11 +37,7 @@ export async function getServiceById(id: string) {
 }
 
 export async function createService(input: CreateServiceInput) {
-  const existing = await prisma.service.findUnique({ where: { slug: input.slug } });
-  if (existing) {
-    throw new ApiError(409, "CONFLICT", "A service with this slug already exists");
-  }
-  return prisma.service.create({ data: input });
+  return prisma.service.create({ data: { ...input, slug: uuidv4() } });
 }
 
 export async function updateService(id: string, input: UpdateServiceInput) {
@@ -45,4 +48,16 @@ export async function updateService(id: string, input: UpdateServiceInput) {
 export async function disableService(id: string) {
   await getServiceById(id);
   await prisma.service.update({ where: { id }, data: { active: false } });
+}
+
+export async function deleteService(id: string) {
+  await getServiceById(id);
+  const [bookingItems, quotes] = await Promise.all([
+    prisma.bookingItem.count({ where: { serviceId: id } }),
+    prisma.quote.count({ where: { serviceId: id } }),
+  ]);
+  if (bookingItems > 0 || quotes > 0) {
+    throw new ApiError(409, "CONFLICT", "Cannot delete a service used by bookings or quotes");
+  }
+  await prisma.service.delete({ where: { id } });
 }

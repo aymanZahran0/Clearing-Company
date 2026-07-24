@@ -1,60 +1,81 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Card, Col, Row, Skeleton, Button } from "antd";
-import { useListServicesQuery } from "../../../api/servicesApi";
+import { Skeleton } from "antd";
+import { useListServicesQuery, type Service } from "../../../api/servicesApi";
 import { formatCurrency } from "../../../lib/formatters";
+import { Reveal } from "./HomeMotion";
+import defaultServiceImage from "../../../assets/logo/logo-without-name.png";
 
 const MAX_SERVICES_SHOWN = 6;
+
+function getServicePrice(service: Service, language: string, customQuoteLabel: string) {
+  const price = service.basePrice ?? service.minimumPrice;
+  if (price == null) return customQuoteLabel;
+  return formatCurrency(price, language);
+}
 
 // US1 scenario 2: active services from the existing services API — no
 // business content duplicated in code (FR-006).
 export function ServicesSection() {
   const { t, i18n } = useTranslation();
   const { data: services, isLoading } = useListServicesQuery();
-  const isAr = i18n.language === "ar";
-  const activeServices = (services ?? []).filter((s) => s.active).slice(0, MAX_SERVICES_SHOWN);
+  const activeServices = (services ?? []).filter((service) => service.active).slice(0, MAX_SERVICES_SHOWN);
 
   if (!isLoading && activeServices.length === 0) return null;
 
   return (
-    <section className="px-4 py-10 sm:px-6 sm:py-14">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold sm:text-3xl">{t("content:home.services.title")}</h2>
-          <Link to="/services">
-            <Button>{t("content:home.services.viewAll")}</Button>
-          </Link>
-        </div>
-        {isLoading && <Skeleton active />}
-        <Row gutter={[16, 16]}>
-          {activeServices.map((service) => (
-            <Col xs={24} sm={12} md={8} key={service.id}>
-              <Link to={`/services/${service.slug}`}>
-                <Card
-                  hoverable
-                  cover={
-                    service.images[0] ? (
+    <section className="home-section home-services px-4 sm:px-6" aria-labelledby="home-services-title">
+      <Reveal>
+        <div className="mx-auto max-w-7xl">
+          <div className="home-services-header">
+            <div>
+              <p className="home-services-label">{t("content:home.services.title")}</p>
+              <h2 id="home-services-title" className="home-section-title">
+                {t("content:home.services.headline")}
+              </h2>
+            </div>
+            <Link to="/services" className="home-services-view-all">
+              {t("content:home.services.viewAll")}
+            </Link>
+          </div>
+
+          {isLoading ? <Skeleton active paragraph={{ rows: 8 }} /> : (
+            <div className="home-services-grid">
+              {activeServices.map((service) => {
+                const description = service.descriptionAr;
+                const price = getServicePrice(service, i18n.language, t("content:home.services.customQuote"));
+                const serviceImage = service.images[0];
+                return (
+                  <Link
+                    to={`/services/${service.slug}`}
+                    className="home-service-card"
+                    key={service.id}
+                    aria-label={`${service.nameAr} — ${t("content:home.services.details")}`}
+                  >
+                    <div className="home-service-media">
                       <img
-                        src={service.images[0].url}
-                        alt={isAr ? service.images[0].altTextAr ?? "" : service.images[0].altTextEn ?? ""}
-                        loading="lazy"
-                        className="h-40 w-full object-cover"
+                        src={serviceImage?.url || defaultServiceImage}
+                        alt={serviceImage?.altTextAr || service.nameAr}
+                        className={serviceImage ? undefined : "is-fallback"}
                       />
-                    ) : undefined
-                  }
-                >
-                  <Card.Meta
-                    title={isAr ? service.nameAr : service.nameEn}
-                    description={
-                      service.basePrice != null ? formatCurrency(service.basePrice, i18n.language) : t("common:common.confirm")
-                    }
-                  />
-                </Card>
-              </Link>
-            </Col>
-          ))}
-        </Row>
-      </div>
+                    </div>
+                    <h3>{service.nameAr}</h3>
+                    {description && <p>{description}</p>}
+                    <div className="home-service-card-footer">
+                      <strong>
+                        {service.minimumPrice != null || service.basePrice != null
+                          ? t("content:home.services.startsAt", { price })
+                          : price}
+                      </strong>
+                      <span className="home-service-details">{t("content:home.services.details")} <b aria-hidden="true">←</b></span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Reveal>
     </section>
   );
 }

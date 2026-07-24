@@ -1,5 +1,5 @@
-import { ApiError } from "@nuqaa-asir/shared";
-import { S3StorageAdapter, type StorageAdapter } from "./index.js";
+import path from "node:path";
+import { LocalStorageAdapter, S3StorageAdapter, type StorageAdapter } from "./index.js";
 
 let cached: StorageAdapter | null = null;
 
@@ -11,13 +11,23 @@ export function getStorageAdapter(): StorageAdapter {
   if (cached) return cached;
 
   const bucket = process.env.OBJECT_STORAGE_BUCKET;
-  if (!bucket) {
-    throw new ApiError(
-      503,
-      "INTERNAL_ERROR",
-      "Object storage is not configured (OBJECT_STORAGE_BUCKET missing)"
+  const driver =
+    process.env.OBJECT_STORAGE_DRIVER ??
+    (process.env.OBJECT_STORAGE_ENDPOINT ||
+    process.env.OBJECT_STORAGE_PUBLIC_URL ||
+    process.env.AWS_ACCESS_KEY_ID
+      ? "s3"
+      : "local");
+
+  if (driver === "local") {
+    cached = new LocalStorageAdapter(
+      getLocalUploadRoot(),
+      process.env.API_PUBLIC_URL ?? `http://localhost:${process.env.PORT ?? "4000"}`
     );
+    return cached;
   }
+
+  if (!bucket) throw new Error("OBJECT_STORAGE_BUCKET is required for the S3 storage driver");
 
   cached = new S3StorageAdapter({
     endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
@@ -25,4 +35,8 @@ export function getStorageAdapter(): StorageAdapter {
     publicBaseUrl: process.env.OBJECT_STORAGE_PUBLIC_URL,
   });
   return cached;
+}
+
+export function getLocalUploadRoot() {
+  return path.resolve(process.env.LOCAL_UPLOAD_DIR ?? path.join(process.cwd(), "uploads"));
 }

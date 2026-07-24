@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button, Collapse } from "antd";
 import { useListPublicFaqsQuery } from "../../../api/contentApi";
+import { Reveal } from "./HomeMotion";
 
 const MAX_FAQS_SHOWN = 4;
 
@@ -16,15 +17,18 @@ export function FaqPreviewSection() {
   if (!isLoading && preview.length === 0) return null;
 
   return (
-    <section className="bg-gray-50 px-4 py-10 sm:px-6 sm:py-14">
+    <section className="home-section bg-white px-4 sm:px-6">
+      <Reveal>
       <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold sm:text-3xl">{t("content:home.faq.title")}</h2>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <h2 className="home-section-title">{t("content:home.faq.title")}</h2>
           <Link to="/faq">
-            <Button>{t("content:home.faq.viewAll")}</Button>
+            <Button className="home-outline-button">{t("content:home.faq.viewAll")}</Button>
           </Link>
         </div>
         <Collapse
+          className="home-faq"
+          defaultActiveKey={preview[0]?.id ? [preview[0].id] : []}
           items={preview.map((faq) => ({
             key: faq.id,
             label: isAr ? faq.questionAr : faq.questionEn || faq.questionAr,
@@ -32,6 +36,7 @@ export function FaqPreviewSection() {
           }))}
         />
       </div>
+      </Reveal>
     </section>
   );
 }

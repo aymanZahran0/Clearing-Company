@@ -7,3 +7,4 @@ export interface StorageAdapter {
 }
 
 export { S3StorageAdapter } from "./s3Adapter.js";
+export { LocalStorageAdapter } from "./localAdapter.js";

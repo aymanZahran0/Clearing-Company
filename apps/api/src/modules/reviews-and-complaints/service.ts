@@ -84,6 +84,16 @@ export async function createComplaint(
   if (!booking || booking.customerId !== customerId) {
     throw new ApiError(404, "NOT_FOUND", "Booking not found");
   }
+  if (booking.status !== "COMPLETED" && booking.status !== "COMPLAINT_OPENED") {
+    throw new ApiError(409, "CONFLICT", "Only completed bookings can have a complaint");
+  }
+
+  const existingCustomerIssue = await prisma.qualityIssue.findFirst({
+    where: { bookingId, source: { in: ["REVIEW", "COMPLAINT"] } },
+  });
+  if (existingCustomerIssue) {
+    throw new ApiError(409, "CONFLICT", "A complaint or low-rating issue already exists for this booking");
+  }
 
   return prisma.$transaction(async (tx) => {
     const issue = await tx.qualityIssue.create({
@@ -150,16 +160,65 @@ export async function updateQualityIssue(
     throw new ApiError(422, "VALIDATION_ERROR", "resolution is required before closing a quality issue");
   }
 
-  const updated = await prisma.qualityIssue.update({
-    where: { id },
-    data: {
-      category: input.category,
-      severity: input.severity,
-      ownerUserId: input.ownerUserId,
-      status: input.status,
-      resolution: input.resolution,
-      resolvedAt: input.status === "RESOLVED" || input.status === "CLOSED" ? new Date() : issue.resolvedAt,
-    },
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.qualityIssue.update({
+      where: { id },
+      data: {
+        category: input.category,
+        severity: input.severity,
+        ownerUserId: input.ownerUserId,
+        status: input.status,
+        resolution: input.resolution,
+        resolvedAt:
+          input.status === "RESOLVED" || input.status === "CLOSED"
+            ? new Date()
+            : input.status
+              ? null
+              : issue.resolvedAt,
+      },
+    });
+
+    if (
+      (issue.source === "COMPLAINT" || issue.source === "REVIEW") &&
+      input.status &&
+      input.status !== issue.status
+    ) {
+      const booking = await tx.booking.findUnique({ where: { id: issue.bookingId } });
+      if (booking) {
+        const issueIsActive = input.status === "OPEN" || input.status === "IN_REVIEW";
+        const anotherActiveCustomerIssue = issueIsActive
+          ? null
+          : await tx.qualityIssue.findFirst({
+              where: {
+                bookingId: issue.bookingId,
+                id: { not: issue.id },
+                source: { in: ["REVIEW", "COMPLAINT"] },
+                status: { in: ["OPEN", "IN_REVIEW"] },
+              },
+            });
+        const targetBookingStatus =
+          issueIsActive || anotherActiveCustomerIssue ? "COMPLAINT_OPENED" : "COMPLETED";
+
+        if (booking.status !== targetBookingStatus) {
+          assertTransition(booking.status, targetBookingStatus);
+          await tx.booking.update({
+            where: { id: booking.id },
+            data: { status: targetBookingStatus },
+          });
+          await tx.bookingStatusHistory.create({
+            data: {
+              bookingId: booking.id,
+              fromStatus: booking.status,
+              toStatus: targetBookingStatus,
+              reason: `Complaint status changed to ${input.status}`,
+              actorUserId: actor.actorUserId,
+            },
+          });
+        }
+      }
+    }
+
+    return result;
   });
 
   await recordAuditEntry({

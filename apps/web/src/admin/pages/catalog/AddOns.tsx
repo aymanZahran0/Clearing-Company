@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Button, Form, Input, InputNumber, Modal, Select, Table, Tag, message } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Table, Tag, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
   useCreateAddOnMutation,
   useDeleteAddOnMutation,
   useListAllAddOnsQuery,
+  usePermanentlyDeleteAddOnMutation,
   useUpdateAddOnMutation,
 } from "../../../api/serviceAddOnsApi";
 import { useListServicesQuery, type ServiceAddOn } from "../../../api/servicesApi";
@@ -13,7 +15,6 @@ import { enumOptions } from "../../../lib/enumOptions";
 interface FormValues {
   serviceId: string;
   nameAr: string;
-  nameEn: string;
   pricingMode: ServiceAddOn["pricingMode"];
   unitPrice: number;
   durationImpactMinutes?: number;
@@ -22,17 +23,18 @@ interface FormValues {
 // T047 (US4): create/edit/activate for ServiceAddOn, with per-service
 // assignment via the serviceId Select.
 export default function AddOns() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: services } = useListServicesQuery({ includeInactive: true });
   const { data, isLoading } = useListAllAddOnsQuery();
   const [createAddOn, { isLoading: isCreating }] = useCreateAddOnMutation();
   const [updateAddOn] = useUpdateAddOnMutation();
   const [deleteAddOn] = useDeleteAddOnMutation();
+  const [permanentlyDeleteAddOn] = usePermanentlyDeleteAddOnMutation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceAddOn | null>(null);
 
   const serviceNameById = new Map(
-    (services ?? []).map((s) => [s.id, i18n.language === "ar" ? s.nameAr : s.nameEn]),
+    (services ?? []).map((s) => [s.id, s.nameAr]),
   );
 
   function openCreate() {
@@ -46,7 +48,11 @@ export default function AddOns() {
   }
 
   async function onFinish(values: FormValues) {
-    const body = { ...values, unitPrice: Math.round(values.unitPrice * 100) };
+    const body = {
+      ...values,
+      nameEn: values.nameAr,
+      unitPrice: Math.round(values.unitPrice * 100),
+    };
     try {
       if (editing) {
         await updateAddOn({ id: editing.id, body }).unwrap();
@@ -72,6 +78,15 @@ export default function AddOns() {
     }
   }
 
+  async function remove(addOn: ServiceAddOn) {
+    try {
+      await permanentlyDeleteAddOn(addOn.id).unwrap();
+      message.success(t("catalog:deleted"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
+
   return (
     <div className="p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -86,7 +101,6 @@ export default function AddOns() {
         dataSource={data}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:content.titleEn"), dataIndex: "nameEn" },
           { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
           {
             title: t("admin:pricing.selectService"),
@@ -98,7 +112,7 @@ export default function AddOns() {
             render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: ServiceAddOn) => (
               <div className="flex flex-wrap gap-2">
                 <Button size="small" onClick={() => openEdit(row)}>
@@ -107,6 +121,22 @@ export default function AddOns() {
                 <Button size="small" danger={row.active} onClick={() => toggleActive(row)}>
                   {row.active ? t("catalog:deactivate") : t("catalog:activate")}
                 </Button>
+                <Popconfirm
+                  title={t("catalog:delete")}
+                  description={t("catalog:deleteConfirm")}
+                  okText={t("catalog:delete")}
+                  cancelText={t("common.cancel")}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => remove(row)}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    aria-label={t("catalog:delete")}
+                    title={t("catalog:delete")}
+                  />
+                </Popconfirm>
               </div>
             ),
           },
@@ -135,12 +165,9 @@ export default function AddOns() {
               virtual={false}
               options={(services ?? []).map((s) => ({
                 value: s.id,
-                label: i18n.language === "ar" ? s.nameAr : s.nameEn,
+                label: s.nameAr,
               }))}
             />
-          </Form.Item>
-          <Form.Item name="nameEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
-            <Input size="large" />
           </Form.Item>
           <Form.Item name="nameAr" label={t("admin:content.titleAr")} rules={[{ required: true }]}>
             <Input size="large" />

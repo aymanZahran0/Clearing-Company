@@ -68,6 +68,33 @@ export async function getPaymentStatus(bookingId: string): Promise<
   return "PARTIALLY_PAID";
 }
 
+// Batched read for the Customer's own Invoices & Payments list. Every
+// completed booking is expected to have an invoice (previously guaranteed
+// by the customer portal calling getOrCreateInvoice once per booking row);
+// this preserves that guarantee by creating any missing invoice here, but
+// does it as one server-side pass instead of one network round-trip per
+// booking, so the client makes a single request either way.
+export async function listOwnInvoices(customerId: string) {
+  const completedBookings = await prisma.booking.findMany({
+    where: { customerId, status: "COMPLETED" },
+    select: { id: true },
+  });
+
+  const existing = await prisma.invoice.findMany({
+    where: { bookingId: { in: completedBookings.map((b) => b.id) } },
+  });
+  const existingBookingIds = new Set(existing.map((inv) => inv.bookingId));
+  const missingBookingIds = completedBookings
+    .map((b) => b.id)
+    .filter((id) => !existingBookingIds.has(id));
+
+  const created = await Promise.all(missingBookingIds.map((bookingId) => getOrCreateInvoice(bookingId)));
+
+  return [...existing, ...created].sort(
+    (a, b) => b.issuedAt.getTime() - a.issuedAt.getTime()
+  );
+}
+
 // FR-064: non-fiscal internal receipt, generated on demand from the
 // booking's locked price snapshot — never a ZATCA-compliant e-invoice.
 export async function getOrCreateInvoice(bookingId: string) {

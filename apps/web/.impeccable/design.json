@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-19T00:00:00.000Z",
+  "title": "Design System: Nuqaa Asir",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Nuqaa Navy",
+        "canonical": "#00375B",
+        "tonalRamp": ["#001A2B", "#00375B", "#00536C", "#006477", "#4A8E9D", "#8FC0CB", "#D5F1F6", "#E7F4F9"]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Navy Hover",
+        "canonical": "#00536C"
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Teal",
+        "canonical": "#006477",
+        "tonalRamp": ["#00110F", "#003532", "#005652", "#147874", "#449D98", "#6BC3BD", "#AFDBD8", "#CCF9F5"]
+      },
+      "bg": { "role": "neutral", "displayName": "Pure White", "canonical": "oklch(1 0 0)" },
+      "surface": { "role": "neutral", "displayName": "Paper", "canonical": "#FAF8F4" },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0B121A",
+        "tonalRamp": ["#0D0A0B", "#2D2729", "#4D4648", "#6E6769", "#928A8C", "#B7AFB1", "#D4CFD1", "#F2EDEE"]
+      },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "#555F69" },
+      "border": { "role": "neutral", "displayName": "Hairline", "canonical": "#E0E5EB" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero H1 only, one per page." },
+      "headline": { "displayName": "Headline", "purpose": "Section H2s." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy, descriptions, max 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Buttons, nav items, form labels." }
+    },
+    "shadows": [
+      { "name": "chrome", "value": "0 1px 2px rgba(0,0,0,0.05)", "purpose": "Sticky header/footer separation from content." },
+      { "name": "hover-lift", "value": "0 6px 16px rgba(0,0,0,0.08)", "purpose": "Interactive card hover only (Ant Design hoverable Card default)." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default Ant Design state transitions (hover, focus, drawer open/close)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA button (e.g. 'Book a service'), large size for 44px touch target.",
+      "html": "<button class=\"ds-btn-primary\">Book a service</button>",
+      "css": ".ds-btn-primary { background: #00375B; color: #FFFFFF; padding: 12px 24px; min-height: 44px; border-radius: 6px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: background 0.2s cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: #00536C; } .ds-btn-primary:focus-visible { outline: 2px solid #00375B; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ghost/outline button for secondary CTAs (e.g. 'Browse services').",
+      "html": "<button class=\"ds-btn-secondary\">Browse services</button>",
+      "css": ".ds-btn-secondary { background: #FFFFFF; color: #0B121A; padding: 12px 24px; min-height: 44px; border-radius: 6px; border: 1px solid #E0E5EB; font-weight: 600; font-size: 16px; cursor: pointer; transition: border-color 0.2s cubic-bezier(0.4,0,0.2,1); } .ds-btn-secondary:hover { border-color: #00375B; color: #00375B; } .ds-btn-secondary:focus-visible { outline: 2px solid #00375B; outline-offset: 2px; }"
+    },
+    {
+      "name": "Service Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Catalog service card, flat at rest, lifts on hover.",
+      "html": "<a class=\"ds-card\" href=\"#\"><img class=\"ds-card-img\" src=\"\" alt=\"\" /><div class=\"ds-card-body\"><p class=\"ds-card-title\">Deep Cleaning</p><p class=\"ds-card-desc\">150 SAR</p></div></a>",
+      "css": ".ds-card { display: block; background: #FFFFFF; border-radius: 8px; border: 1px solid #F3F4F6; overflow: hidden; text-decoration: none; color: inherit; transition: box-shadow 0.2s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1); } .ds-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); transform: translateY(-2px); } .ds-card-img { width: 100%; height: 160px; object-fit: cover; } .ds-card-body { padding: 16px; } .ds-card-title { font-weight: 600; font-size: 16px; color: #1A1416; margin: 0; } .ds-card-desc { font-size: 14px; color: #736469; margin: 4px 0 0; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "44px-tall header/drawer nav item, active state uses the primary token.",
+      "html": "<a class=\"ds-nav-link ds-nav-link--active\" href=\"#\">الخدمات</a>",
+      "css": ".ds-nav-link { display: inline-flex; align-items: center; min-height: 44px; padding: 12px; border-radius: 6px; font-size: 16px; color: #006477; text-decoration: none; transition: color 0.2s cubic-bezier(0.4,0,0.2,1), background 0.2s cubic-bezier(0.4,0,0.2,1); } .ds-nav-link:hover { color: #00375B; background: #F7F9FA; } .ds-nav-link--active { color: #00375B; background: #E7F4F9; font-weight: 700; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-accent",
+      "description": "Teal confirmation/status pill, white text for readable contrast on the saturated fill.",
+      "html": "<span class=\"ds-badge\">مؤكد</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; background: #006477; color: #FFFFFF; font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Trusted Professional",
+    "overview": "Nuqaa Asir reads as a real, organized operation: clean, competent, and unfussy. The system uses a deep Nuqaa Navy (#00375B) drawn from the logo, a restrained Teal (#006477) for supporting interactions, and a pale blue tint (#E7F4F9) for selected states. Red remains semantic and is reserved for errors or destructive actions.\n\nQuiet surfaces let navy, teal, and clear typographic hierarchy carry the brand without discount clutter or crowded marketplace styling.",
+    "keyCharacteristics": [
+      "Deep Nuqaa Navy primary aligned with the logo",
+      "Pure white surfaces; brand lives in primary + accent + typography, not background tint",
+      "Flat by default; elevation is a hover response, not a resting state",
+      "Generous 44px minimum touch targets throughout (Customer and Admin alike)",
+      "Fully bilingual, RTL-mirrored — logical spacing and alignment, never hardcoded left/right"
+    ],
+    "rules": [
+      { "name": "The Restraint Rule", "body": "Navy carries primary actions and active states; teal supports links and secondary interactions. Pale blue is reserved for selection and focus.", "section": "colors" },
+      { "name": "The Semantic Red Rule", "body": "Wine, pink, and warm red are not brand navigation colors. Red is reserved for errors, destructive actions, and urgent states.", "section": "colors" },
+      { "name": "The One System Stack Rule", "body": "Every weight and size comes from the same font stack. The navy/teal palette and spacing carry the brand voice.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces rest flat. Shadow is earned by interaction (hover, focus), never applied decoratively to a static card or section.", "section": "elevation" },
+      { "name": "The 44px Rule", "body": "Every tappable element — nav link, button, drawer toggle, logout — is at least 44×44px. Non-negotiable across both Customer and Admin, not just \"large\" screens.", "section": "components" }
+    ],
+    "dos": [
+      "Do use Nuqaa Navy (#00375B) for primary actions and active navigation, with Navy Tint (#E7F4F9) for selected backgrounds.",
+      "Do use Teal (#006477) for links and supporting interactions.",
+      "Do size every interactive element to at least 44×44px (The 44px Rule) — this is a bilingual, cross-generation customer base, not a power-user tool.",
+      "Do mirror all spacing, icons, and Drawer placement per reading direction (RTL for Arabic, the default locale) — logical properties, never hardcoded left/right.",
+      "Do keep cards flat at rest; reserve shadow for hover/interaction (The Flat-By-Default Rule)."
+    ],
+    "donts": [
+      "Don't build discount-banner clutter, stock icons, or crowded undifferentiated listings — the explicit \"generic gig-economy app\" anti-reference from PRODUCT.md.",
+      "Don't use wine, pink, or warm red for brand navigation or primary actions; reserve red for semantic danger and error states.",
+      "Don't introduce a second display typeface for \"personality.\" One system stack, carried by size/weight/color.",
+      "Don't substitute Ant Design's default bright blue (#1677ff) for the darker Nuqaa Navy.",
+      "Don't apply resting shadows to static cards or sections — elevation is earned by hover, not decoration."
+    ]
+  }
+}

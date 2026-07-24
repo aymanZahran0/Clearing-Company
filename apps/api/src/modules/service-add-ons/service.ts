@@ -27,3 +27,17 @@ export async function disableAddOn(id: string) {
   }
   await prisma.serviceAddOn.update({ where: { id }, data: { active: false } });
 }
+
+export async function deleteAddOn(id: string) {
+  const existing = await prisma.serviceAddOn.findUnique({
+    where: { id },
+    include: { _count: { select: { bookingItems: true } } },
+  });
+  if (!existing) {
+    throw new ApiError(404, "NOT_FOUND", "Add-on not found");
+  }
+  if (existing._count.bookingItems > 0) {
+    throw new ApiError(409, "CONFLICT", "Cannot delete an add-on used by bookings");
+  }
+  await prisma.serviceAddOn.delete({ where: { id } });
+}

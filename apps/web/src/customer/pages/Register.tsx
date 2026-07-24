@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { useRegisterMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
 import { baseApi } from "../../api/baseApi";
+import { createSaudiMobileSchema } from "../../lib/validation";
 
 interface RegisterFormValues {
   fullName: string;
@@ -19,6 +20,7 @@ export default function Register() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [register, { isLoading }] = useRegisterMutation();
+  const phoneSchema = createSaudiMobileSchema(t("auth.phoneRequired"), t("auth.phoneInvalid"));
 
   async function onFinish(values: RegisterFormValues) {
     try {
@@ -45,9 +47,16 @@ export default function Register() {
         <Form.Item
           name="phone"
           label={t("auth.phone")}
-          rules={[{ required: true }]}
+          normalize={(value: string) => value.replace(/\D/g, "").slice(0, 10)}
+          rules={[
+            {
+              validator: async (_, value) => {
+                await phoneSchema.validate(value);
+              },
+            },
+          ]}
         >
-          <Input size="large" inputMode="tel" autoComplete="tel" placeholder="05XXXXXXXX" />
+          <Input size="large" inputMode="numeric" autoComplete="tel" maxLength={10} placeholder="05XXXXXXXX" />
         </Form.Item>
         <Form.Item name="email" label={t("auth.email")} rules={[{ type: "email" }]}>
           <Input size="large" inputMode="email" autoComplete="email" />

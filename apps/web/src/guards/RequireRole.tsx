@@ -15,10 +15,11 @@ interface RequireRoleProps extends PropsWithChildren {
  */
 export function RequireRole({ role, children }: RequireRoleProps) {
   const user = useSelector((state: RootState) => state.auth.user);
+  const fallbackPath = user?.role === "ADMIN" ? "/admin" : "/";
 
   return (
     <RequireAuth loginPath={role === "ADMIN" ? "/admin/login" : "/login"}>
-      {user?.role === role ? <>{children}</> : <Navigate to="/" replace />}
+      {user?.role === role ? <>{children}</> : <Navigate to={fallbackPath} replace />}
     </RequireAuth>
   );
 }

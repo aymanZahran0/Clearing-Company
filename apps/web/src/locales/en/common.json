@@ -22,6 +22,8 @@
     "register": "Register",
     "fullName": "Full Name",
     "phone": "Mobile Number",
+    "phoneRequired": "Mobile number is required",
+    "phoneInvalid": "Enter a 10-digit mobile number starting with 05",
     "email": "Email (optional)",
     "password": "Password",
     "identifier": "Mobile number or email",

@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import type { RootState } from "../../../app/store";
 import { setServiceId } from "../../../features/bookingWizard/wizardSlice";
 import { useListServicesQuery } from "../../../api/servicesApi";
+import { WizardSteps } from "./WizardSteps";
 import { PropertyStep } from "./PropertyStep";
 import { AddressStep } from "./AddressStep";
 import { AddOnsStep } from "./AddOnsStep";
@@ -64,6 +65,7 @@ export default function BookingWizard() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
+      <h1 className="mb-4 text-xl font-semibold text-ink">{t("customer:bookingWizard.title")}</h1>
       {/* US3 scenario 3: below `sm`, a vertical compact list reads far
           better than 6 horizontal titles squeezed into 360px — rendered
           via CSS breakpoints (not a resize listener) so it stays correct
@@ -73,14 +75,12 @@ export default function BookingWizard() {
         direction="vertical"
         size="small"
         items={visibleStepKeys.map((key) => ({ title: t(`customer:bookingWizard.steps.${key}`) }))}
-        className="mb-6 sm:hidden"
+        className="wizard-steps-mobile mb-6"
       />
-      <Steps
+      <WizardSteps
         current={currentVisibleIndex}
-        direction="horizontal"
-        size="small"
-        items={visibleStepKeys.map((key) => ({ title: t(`customer:bookingWizard.steps.${key}`) }))}
-        className="mb-6 hidden sm:flex"
+        steps={visibleStepKeys.map((key) => ({ key, label: t(`customer:bookingWizard.steps.${key}`) }))}
+        className="wizard-steps-desktop mb-6"
       />
       {currentKey === "property" && <PropertyStep onNext={next} />}
       {currentKey === "address" && <AddressStep onNext={next} onBack={back} />}

@@ -6,6 +6,8 @@ import type { RootState } from "../../../app/store";
 import { setAddress } from "../../../features/bookingWizard/wizardSlice";
 import { useCreateOwnAddressMutation, useListOwnAddressesQuery } from "../../../api/addressesApi";
 import { useListServiceAreasQuery } from "../../../api/servicesApi";
+import { WizardStepCard } from "./WizardStepCard";
+import { WizardConfirmButton } from "./WizardConfirmButton";
 
 interface NewAddressValues {
   city: string;
@@ -37,7 +39,7 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
   }
 
   return (
-    <div>
+    <WizardStepCard title={t("customer:bookingWizard.steps.address")}>
       {addresses && addresses.length > 0 && !showNewForm && (
         <Radio.Group
           onChange={(e) => setSelected(e.target.value)}
@@ -59,7 +61,12 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
       )}
 
       {showNewForm && (
-        <Form<NewAddressValues> layout="vertical" onFinish={onCreate} requiredMark={false} className="mt-3">
+        <Form<NewAddressValues>
+          layout="vertical"
+          onFinish={onCreate}
+          requiredMark={false}
+          className="wizard-form mt-3"
+        >
           <Form.Item name="serviceAreaId" label={t("customer:addressStep.serviceArea")} rules={[{ required: true }]}>
             <Select
               size="large"
@@ -78,9 +85,9 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
           <Form.Item name="street" label={t("customer:addressStep.street")}>
             <Input size="large" />
           </Form.Item>
-          <Button type="primary" htmlType="submit" size="large" loading={isCreating} block>
+          <WizardConfirmButton htmlType="submit" loading={isCreating} block>
             {t("common.save")}
-          </Button>
+          </WizardConfirmButton>
         </Form>
       )}
 
@@ -88,10 +95,10 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
         <Button size="large" onClick={onBack}>
           {t("common.cancel")}
         </Button>
-        <Button type="primary" size="large" disabled={!selected} onClick={handleNext}>
+        <WizardConfirmButton disabled={!selected} onClick={handleNext}>
           {t("common.confirm")}
-        </Button>
+        </WizardConfirmButton>
       </Space>
-    </div>
+    </WizardStepCard>
   );
 }

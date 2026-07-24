@@ -1,14 +1,24 @@
-import { Button, Card, Input, message } from "antd";
+import { Button, Card, Input, Popconfirm, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useListSettingsQuery, useUpdateSettingMutation } from "../../../api/settingsApi";
+import { useDeleteSettingMutation, useListSettingsQuery, useUpdateSettingMutation } from "../../../api/settingsApi";
 
 // T175 (US-Polish)
 export default function SystemSettings() {
   const { t } = useTranslation();
   const { data, isLoading, refetch } = useListSettingsQuery();
   const [updateSetting, { isLoading: isSaving }] = useUpdateSettingMutation();
+  const [deleteSetting] = useDeleteSettingMutation();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  async function onDelete(key: string) {
+    try {
+      await deleteSetting(key).unwrap();
+      message.success(t("admin:settings.deleted", { key }));
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
 
   async function onSave(key: string) {
     const raw = drafts[key];
@@ -41,9 +51,21 @@ export default function SystemSettings() {
             onChange={(e) => setDrafts((prev) => ({ ...prev, [setting.key]: e.target.value }))}
             className="mb-2"
           />
-          <Button type="primary" loading={isSaving} onClick={() => onSave(setting.key)}>
-            {t("admin:common.save")}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="primary" loading={isSaving} onClick={() => onSave(setting.key)}>
+              {t("admin:common.save")}
+            </Button>
+            <Popconfirm
+              title={t("admin:common.delete")}
+              description={t("admin:settings.deleteConfirm")}
+              okText={t("admin:common.delete")}
+              cancelText={t("common.cancel")}
+              okButtonProps={{ danger: true }}
+              onConfirm={() => onDelete(setting.key)}
+            >
+              <Button danger>{t("admin:common.delete")}</Button>
+            </Popconfirm>
+          </div>
         </Card>
       ))}
     </div>

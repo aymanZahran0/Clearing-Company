@@ -60,7 +60,9 @@ export async function deleteServiceImage(id: string) {
   if (!image) {
     throw new ApiError(404, "NOT_FOUND", "Image not found");
   }
-  const key = image.url.split(`/${process.env.OBJECT_STORAGE_BUCKET}/`)[1];
+  const pathname = new URL(image.url, "http://localhost").pathname;
+  const servicePathIndex = pathname.indexOf("/services/");
+  const key = servicePathIndex >= 0 ? pathname.slice(servicePathIndex + 1) : null;
   if (key) {
     await getStorageAdapter().delete(key);
   }

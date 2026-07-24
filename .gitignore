@@ -19,6 +19,7 @@ npm-debug.log*
 coverage/
 playwright-report/
 test-results/
+uploads/
 
 # Prisma
 apps/api/prisma/migrations/dev.db

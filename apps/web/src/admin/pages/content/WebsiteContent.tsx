@@ -17,11 +17,11 @@ export default function WebsiteContent() {
   const [upsertBlock, { isLoading: isSaving }] = useUpsertContentBlockMutation();
   const [deleteBlock] = useDeleteContentBlockMutation();
   const [open, setOpen] = useState(false);
-  const [form] = Form.useForm<ContentBlockInput>();
+  const [form] = Form.useForm<Omit<ContentBlockInput, "titleEn">>();
 
-  async function onFinish(values: ContentBlockInput) {
+  async function onFinish(values: Omit<ContentBlockInput, "titleEn">) {
     try {
-      await upsertBlock(values).unwrap();
+      await upsertBlock({ ...values, titleEn: values.titleAr }).unwrap();
       setOpen(false);
       form.resetFields();
       message.success(t("admin:content.blockSaved"));
@@ -50,14 +50,14 @@ export default function WebsiteContent() {
             dataIndex: "type",
             render: (value: string) => enumLabel("websiteContentBlockType", value),
           },
-          { title: t("admin:content.titleEn"), dataIndex: "titleEn" },
+          { title: t("admin:content.titleAr"), dataIndex: "titleAr" },
           {
             title: t("admin:content.active"),
             dataIndex: "active",
             render: (v: boolean) => (v ? t("common.yes") : t("common.no")),
           },
           {
-            title: "",
+            title: t("admin:common.actions"),
             render: (_: unknown, row: { id: string }) => (
               <Button danger size="small" onClick={() => deleteBlock(row.id)}>
                 {t("admin:common.delete")}
@@ -67,7 +67,12 @@ export default function WebsiteContent() {
         ]}
       />
       <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:content.contentBlock")}>
-        <Form<ContentBlockInput> form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form<Omit<ContentBlockInput, "titleEn">>
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          requiredMark={false}
+        >
           <Form.Item name="key" label={t("admin:content.key")} rules={[{ required: true }]}>
             <Input size="large" placeholder="e.g. home_hero" />
           </Form.Item>
@@ -75,9 +80,6 @@ export default function WebsiteContent() {
             <Select size="large" options={enumOptions("websiteContentBlockType", ["PAGE", "SECTION"])} />
           </Form.Item>
           <Form.Item name="titleAr" label={t("admin:content.titleAr")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
-          <Form.Item name="titleEn" label={t("admin:content.titleEn")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
           <Form.Item name="bodyAr" label={t("admin:content.bodyAr")} rules={[{ required: true }]}>
