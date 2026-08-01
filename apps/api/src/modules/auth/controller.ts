@@ -6,10 +6,13 @@ const REFRESH_COOKIE_NAME = "refreshToken";
 const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function refreshCookieOptions() {
+  const production = process.env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
+    secure: production,
+    // The production web and API projects use distinct vercel.app origins.
+    // Cross-site refresh cookies therefore require SameSite=None + Secure.
+    sameSite: (production ? "none" : "strict") as "none" | "strict",
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     path: "/api/v1/auth",
   };
@@ -47,7 +50,7 @@ export async function refreshHandler(req: Request, res: Response) {
 
 export async function logoutHandler(req: Request, res: Response) {
   await authService.logout(req.cookies?.[REFRESH_COOKIE_NAME]);
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: "/api/v1/auth" });
+  res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
   res.status(204).send();
 }
 

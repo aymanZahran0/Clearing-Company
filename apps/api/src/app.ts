@@ -31,6 +31,9 @@ import { serviceImagesRouter } from "./modules/service-images/routes.js";
 import { rescheduleRequestsRouter } from "./modules/reschedule-requests/routes.js";
 import { prisma } from "./lib/prisma.js";
 import { getLocalUploadRoot } from "./lib/storage/factory.js";
+import { runJob } from "./lib/jobs/scheduler.js";
+import { expireStaleQuotes } from "./jobs/expireStaleQuotes.js";
+import { generateSubscriptionOccurrences } from "./jobs/generateSubscriptionOccurrences.js";
 
 export function createApp() {
   const app = express();
@@ -68,6 +71,22 @@ export function createApp() {
       db = false;
     }
     res.json({ status: db ? "ok" : "degraded", db, timestamp: new Date().toISOString() });
+  });
+
+  // Vercel Cron invokes this endpoint with `Authorization: Bearer <CRON_SECRET>`.
+  // The database advisory locks make duplicate/overlapping invocations safe.
+  app.get("/api/v1/cron/maintenance", async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret || req.headers.authorization !== `Bearer ${cronSecret}`) {
+      res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } });
+      return;
+    }
+
+    await Promise.all([
+      runJob("EXPIRE_STALE_QUOTES", expireStaleQuotes),
+      runJob("GENERATE_SUBSCRIPTION_OCCURRENCES", generateSubscriptionOccurrences),
+    ]);
+    res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
   });
 
   app.use("/api/v1", openapiRouter);
