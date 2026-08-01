@@ -1,0 +1,17 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "nuqaa-asir-maintenance-cron",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["*/15 * * * *"],
+  },
+  "vars": {
+    "API_CRON_URL": "https://nuqaa-asir-api.vercel.app/api/v1/cron/maintenance",
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+}

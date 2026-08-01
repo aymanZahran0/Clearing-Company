@@ -18,7 +18,14 @@ function refreshCookieOptions() {
   };
 }
 
-function toPublicUser(user: { id: string; email: string | null; phoneNormalized: string | null; role: string; status: string; fullName: string }) {
+function toPublicUser(user: {
+  id: string;
+  email: string | null;
+  phoneNormalized: string | null;
+  role: string;
+  status: string;
+  fullName: string;
+}) {
   return {
     id: user.id,
     fullName: user.fullName,

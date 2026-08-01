@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
+import { createRequire } from "node:module";
 import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { standardRateLimit } from "./middleware/rateLimit.js";
@@ -34,6 +34,11 @@ import { getLocalUploadRoot } from "./lib/storage/factory.js";
 import { runJob } from "./lib/jobs/scheduler.js";
 import { expireStaleQuotes } from "./jobs/expireStaleQuotes.js";
 import { generateSubscriptionOccurrences } from "./jobs/generateSubscriptionOccurrences.js";
+
+// Vercel's Express builder resolves Helmet through its CommonJS declaration.
+// Loading it explicitly keeps the callable export correctly typed in ESM.
+const require = createRequire(import.meta.url);
+const helmet: typeof import("helmet").default = require("helmet");
 
 export function createApp() {
   const app = express();
@@ -118,3 +123,8 @@ export function createApp() {
 
   return app;
 }
+
+// Vercel detects src/app.ts as the Express entrypoint and requires the app
+// instance as the default export. Local development imports the same instance.
+export const app = createApp();
+export default app;

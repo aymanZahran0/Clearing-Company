@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 // The integration suite runs many sequential requests against auth/booking
 // endpoints in a single process (vitest.integration.config.ts's

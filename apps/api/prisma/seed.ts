@@ -20,7 +20,12 @@ const NOTIFICATION_TEMPLATES = [
 // modes so the pricing-calculation paths all have real seed coverage.
 const CATEGORIES = [
   { slug: "residential", nameAr: "التنظيف المنزلي", nameEn: "Residential Cleaning", sortOrder: 1 },
-  { slug: "commercial-recurring", nameAr: "التنظيف التجاري والدوري", nameEn: "Commercial & Recurring", sortOrder: 2 },
+  {
+    slug: "commercial-recurring",
+    nameAr: "التنظيف التجاري والدوري",
+    nameEn: "Commercial & Recurring",
+    sortOrder: 2,
+  },
   { slug: "specialty", nameAr: "خدمات متخصصة", nameEn: "Specialty Cleaning", sortOrder: 3 },
 ] as const;
 
@@ -100,12 +105,42 @@ const SERVICES = [
 ];
 
 const CHECKLIST_ITEMS = [
-  { labelAr: "تم تنظيف جميع الأسطح", labelEn: "All surfaces wiped down", type: "YES_NO" as const, required: true },
-  { labelAr: "تم كنس/شفط جميع الأرضيات", labelEn: "All floors swept/vacuumed", type: "YES_NO" as const, required: true },
-  { labelAr: "ملاحظات إضافية", labelEn: "Additional notes", type: "TEXT" as const, required: false },
-  { labelAr: "مدة التنفيذ الفعلية (دقائق)", labelEn: "Actual duration (minutes)", type: "NUMBER" as const, required: false },
-  { labelAr: "توقيع العميل عند الاستلام", labelEn: "Customer sign-off", type: "SIGNATURE" as const, required: true },
-  { labelAr: "تعليم أي مشكلة لاحظها الفني", labelEn: "Flag any issue noticed", type: "ISSUE_FLAG" as const, required: false },
+  {
+    labelAr: "تم تنظيف جميع الأسطح",
+    labelEn: "All surfaces wiped down",
+    type: "YES_NO" as const,
+    required: true,
+  },
+  {
+    labelAr: "تم كنس/شفط جميع الأرضيات",
+    labelEn: "All floors swept/vacuumed",
+    type: "YES_NO" as const,
+    required: true,
+  },
+  {
+    labelAr: "ملاحظات إضافية",
+    labelEn: "Additional notes",
+    type: "TEXT" as const,
+    required: false,
+  },
+  {
+    labelAr: "مدة التنفيذ الفعلية (دقائق)",
+    labelEn: "Actual duration (minutes)",
+    type: "NUMBER" as const,
+    required: false,
+  },
+  {
+    labelAr: "توقيع العميل عند الاستلام",
+    labelEn: "Customer sign-off",
+    type: "SIGNATURE" as const,
+    required: true,
+  },
+  {
+    labelAr: "تعليم أي مشكلة لاحظها الفني",
+    labelEn: "Flag any issue noticed",
+    type: "ISSUE_FLAG" as const,
+    required: false,
+  },
 ];
 
 function timeSlotRows(days: number, startDate: Date) {
@@ -131,21 +166,24 @@ function timeSlotRows(days: number, startDate: Date) {
 }
 
 async function main() {
+  const seedDemoData = process.env.SEED_DEMO_DATA === "true";
   // Never seed production with a shared/default Admin password — this
   // seed is for local/staging environments only (quickstart.md).
-  const adminPasswordHash = await bcrypt.hash("ChangeMe123!", 12);
+  const adminPasswordHash = seedDemoData ? await bcrypt.hash("ChangeMe123!", 12) : null;
 
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@nuqaa-asir.local" },
-    update: {},
-    create: {
-      fullName: "Admin",
-      email: "admin@nuqaa-asir.local",
-      passwordHash: adminPasswordHash,
-      role: "ADMIN",
-      status: "ACTIVE",
-    },
-  });
+  const admin = seedDemoData
+    ? await prisma.user.upsert({
+        where: { email: "admin@nuqaa-asir.local" },
+        update: {},
+        create: {
+          fullName: "Admin",
+          email: "admin@nuqaa-asir.local",
+          passwordHash: adminPasswordHash!,
+          role: "ADMIN",
+          status: "ACTIVE",
+        },
+      })
+    : null;
 
   for (const template of NOTIFICATION_TEMPLATES) {
     await prisma.notificationTemplate.upsert({
@@ -307,113 +345,125 @@ async function main() {
 
   // Sample customer + address for the "sample bookings across every
   // status" requirement below.
-  let customer = await prisma.user.findUnique({ where: { email: "customer@example.com" } });
-  if (!customer) {
-    customer = await prisma.user.create({
-      data: {
-        fullName: "Sara Al-Qahtani",
-        email: "customer@example.com",
-        phoneNormalized: "+966501112233",
-        passwordHash: await bcrypt.hash("ChangeMe123!", 12),
-        role: "CUSTOMER",
-        status: "ACTIVE",
-        customerProfile: { create: { preferredChannel: "WHATSAPP", customerType: "INDIVIDUAL" } },
-      },
-    });
-  }
-
-  let address = await prisma.customerAddress.findFirst({ where: { customerId: customer.id } });
-  if (!address) {
-    address = await prisma.customerAddress.create({
-      data: {
-        customerId: customer.id,
-        label: "Home",
-        city: "Abha",
-        neighborhood: "Al Numan",
-        serviceAreaId: abha.id,
-        isDefault: true,
-      },
-    });
-    // Second address in the other launch service area, so both areas have
-    // seeded coverage rather than only Abha.
-    await prisma.customerAddress.create({
-      data: {
-        customerId: customer.id,
-        label: "Office",
-        city: "Khamis Mushait",
-        neighborhood: "Al Nasim",
-        serviceAreaId: khamisMushait.id,
-        isDefault: false,
-      },
-    });
-  }
-
-  // Sample bookings across every BookingStatus value (research.md R5's
-  // 9-value enum), so seeded data exercises every downstream screen
-  // (Admin list filters, dashboard overdue/unscheduled counts, quality
-  // queue) without needing to manually walk a booking through its
-  // lifecycle first.
-  const sampleStatuses = [
-    "DRAFT",
-    "PENDING",
-    "CONFIRMED",
-    "RESCHEDULED",
-    "IN_PROGRESS",
-    "COMPLETED",
-    "CANCELLED",
-    "REJECTED",
-    "COMPLAINT_OPENED",
-  ] as const;
-
-  for (const status of sampleStatuses) {
-    const referenceNumber = `SEED-${status}`;
-    const existingBooking = await prisma.booking.findUnique({ where: { referenceNumber } });
-    if (existingBooking) continue;
-
-    const unpricedStatuses: readonly string[] = ["DRAFT", "PENDING", "REJECTED"];
-    const hasPrice = !unpricedStatuses.includes(status);
-    const booking = await prisma.booking.create({
-      data: {
-        referenceNumber,
-        verificationToken: `seed-token-${status.toLowerCase()}`,
-        customerId: customer.id,
-        addressId: address.id,
-        source: "WEB",
-        status,
-        propertyType: "APARTMENT",
-        propertyDetailsJson: { rooms: 3, areaSqm: 120 },
-        preferredDate: new Date(),
-        scheduledStartAt: status === "CONFIRMED" || status === "IN_PROGRESS" || status === "COMPLETED" ? new Date() : null,
-        scheduledEndAt: status === "CONFIRMED" || status === "IN_PROGRESS" || status === "COMPLETED" ? new Date(Date.now() + 2 * 60 * 60 * 1000) : null,
-        arrivedAt: status === "IN_PROGRESS" || status === "COMPLETED" ? new Date() : null,
-        startedAt: status === "IN_PROGRESS" || status === "COMPLETED" ? new Date() : null,
-        completedAt: status === "COMPLETED" || status === "COMPLAINT_OPENED" ? new Date() : null,
-        cancellationReason: status === "CANCELLED" ? "Customer requested cancellation" : null,
-        cancelledByRole: status === "CANCELLED" ? "CUSTOMER" : null,
-        rejectionReason: status === "REJECTED" ? "Outside current service capacity" : null,
-        subtotalSnapshot: hasPrice ? 20000 : null,
-        taxSnapshot: hasPrice ? 3000 : 0,
-        totalSnapshot: hasPrice ? 23000 : null,
-        createdByUserId: admin.id,
-        items: {
-          create: [
-            {
-              serviceId: homeCleaningId,
-              descriptionSnapshot: "Comprehensive Home Cleaning",
-              quantity: 1,
-              unitPriceSnapshot: 20000,
-              totalSnapshot: 20000,
-              durationMinutesSnapshot: 120,
-            },
-          ],
+  if (seedDemoData) {
+    let customer = await prisma.user.findUnique({ where: { email: "customer@example.com" } });
+    if (!customer) {
+      customer = await prisma.user.create({
+        data: {
+          fullName: "Sara Al-Qahtani",
+          email: "customer@example.com",
+          phoneNormalized: "+966501112233",
+          passwordHash: await bcrypt.hash("ChangeMe123!", 12),
+          role: "CUSTOMER",
+          status: "ACTIVE",
+          customerProfile: { create: { preferredChannel: "WHATSAPP", customerType: "INDIVIDUAL" } },
         },
-      },
-    });
+      });
+    }
 
-    await prisma.bookingStatusHistory.create({
-      data: { bookingId: booking.id, fromStatus: null, toStatus: status, reason: "Seeded sample booking" },
-    });
+    let address = await prisma.customerAddress.findFirst({ where: { customerId: customer.id } });
+    if (!address) {
+      address = await prisma.customerAddress.create({
+        data: {
+          customerId: customer.id,
+          label: "Home",
+          city: "Abha",
+          neighborhood: "Al Numan",
+          serviceAreaId: abha.id,
+          isDefault: true,
+        },
+      });
+      // Second address in the other launch service area, so both areas have
+      // seeded coverage rather than only Abha.
+      await prisma.customerAddress.create({
+        data: {
+          customerId: customer.id,
+          label: "Office",
+          city: "Khamis Mushait",
+          neighborhood: "Al Nasim",
+          serviceAreaId: khamisMushait.id,
+          isDefault: false,
+        },
+      });
+    }
 
+    // Sample bookings across every BookingStatus value (research.md R5's
+    // 9-value enum), so seeded data exercises every downstream screen
+    // (Admin list filters, dashboard overdue/unscheduled counts, quality
+    // queue) without needing to manually walk a booking through its
+    // lifecycle first.
+    const sampleStatuses = [
+      "DRAFT",
+      "PENDING",
+      "CONFIRMED",
+      "RESCHEDULED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED",
+      "REJECTED",
+      "COMPLAINT_OPENED",
+    ] as const;
+
+    for (const status of sampleStatuses) {
+      const referenceNumber = `SEED-${status}`;
+      const existingBooking = await prisma.booking.findUnique({ where: { referenceNumber } });
+      if (existingBooking) continue;
+
+      const unpricedStatuses: readonly string[] = ["DRAFT", "PENDING", "REJECTED"];
+      const hasPrice = !unpricedStatuses.includes(status);
+      const booking = await prisma.booking.create({
+        data: {
+          referenceNumber,
+          verificationToken: `seed-token-${status.toLowerCase()}`,
+          customerId: customer.id,
+          addressId: address.id,
+          source: "WEB",
+          status,
+          propertyType: "APARTMENT",
+          propertyDetailsJson: { rooms: 3, areaSqm: 120 },
+          preferredDate: new Date(),
+          scheduledStartAt:
+            status === "CONFIRMED" || status === "IN_PROGRESS" || status === "COMPLETED"
+              ? new Date()
+              : null,
+          scheduledEndAt:
+            status === "CONFIRMED" || status === "IN_PROGRESS" || status === "COMPLETED"
+              ? new Date(Date.now() + 2 * 60 * 60 * 1000)
+              : null,
+          arrivedAt: status === "IN_PROGRESS" || status === "COMPLETED" ? new Date() : null,
+          startedAt: status === "IN_PROGRESS" || status === "COMPLETED" ? new Date() : null,
+          completedAt: status === "COMPLETED" || status === "COMPLAINT_OPENED" ? new Date() : null,
+          cancellationReason: status === "CANCELLED" ? "Customer requested cancellation" : null,
+          cancelledByRole: status === "CANCELLED" ? "CUSTOMER" : null,
+          rejectionReason: status === "REJECTED" ? "Outside current service capacity" : null,
+          subtotalSnapshot: hasPrice ? 20000 : null,
+          taxSnapshot: hasPrice ? 3000 : 0,
+          totalSnapshot: hasPrice ? 23000 : null,
+          createdByUserId: admin!.id,
+          items: {
+            create: [
+              {
+                serviceId: homeCleaningId,
+                descriptionSnapshot: "Comprehensive Home Cleaning",
+                quantity: 1,
+                unitPriceSnapshot: 20000,
+                totalSnapshot: 20000,
+                durationMinutesSnapshot: 120,
+              },
+            ],
+          },
+        },
+      });
+
+      await prisma.bookingStatusHistory.create({
+        data: {
+          bookingId: booking.id,
+          fromStatus: null,
+          toStatus: status,
+          reason: "Seeded sample booking",
+        },
+      });
+    }
   }
 
   // US1/US5: sample public-site content so a fresh environment's Home page

@@ -20,6 +20,7 @@ coverage/
 playwright-report/
 test-results/
 uploads/
+.wrangler/
 
 # Prisma
 apps/api/prisma/migrations/dev.db
@@ -31,3 +32,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+.vercel
+.env*
