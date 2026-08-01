@@ -30,8 +30,8 @@ test.describe("Admin reviews operational and revenue reports (User Story 8)", ()
     // Export: default (no PII) download.
     await page.goto("/admin/reports/export");
     const downloadPromise = page.waitForEvent("download");
-    await page.getByRole("button", { name: /Download CSV|تنزيل ملف CSV/ }).click();
+    await page.getByRole("button", { name: /Download Excel file|تنزيل ملف Excel/ }).click();
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toBe("bookings-export.csv");
+    expect(download.suggestedFilename()).toBe("bookings-export.xlsx");
   });
 });

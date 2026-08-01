@@ -144,6 +144,13 @@
     "PAGE": "Page",
     "SECTION": "Section"
   },
+  "socialMediaPlatform": {
+    "FACEBOOK": "Facebook",
+    "INSTAGRAM": "Instagram",
+    "TIKTOK": "TikTok",
+    "X": "X (Twitter)",
+    "WHATSAPP": "WhatsApp"
+  },
   "rescheduleRequestStatus": {
     "PENDING": "Pending",
     "APPROVED": "Approved",

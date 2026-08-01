@@ -13,10 +13,10 @@ export function HowItWorksSection() {
     <section className="home-section bg-white px-4 sm:px-6">
       <Reveal>
       <div className="mx-auto max-w-6xl">
-        <h2 className="home-section-title mb-10 text-center">{t("content:home.howItWorks.title")}</h2>
+        <h2 className="home-section-title pb-5 text-center">{t("content:home.howItWorks.title")}</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEP_KEYS.map((n) => (
-            <div key={n} className="home-step-card flex flex-col items-center gap-3 rounded-2xl bg-paper p-6 text-center">
+            <div key={n} className="home-step-card flex flex-col items-center gap-3 rounded-2xl bg-[var(--customer-page-bg)] p-6 text-center">
               <div
                 aria-hidden="true"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-black text-white"

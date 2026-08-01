@@ -9,6 +9,7 @@ import { HeroSection } from "../../src/customer/components/home/HeroSection";
 import { HowItWorksSection } from "../../src/customer/components/home/HowItWorksSection";
 import { WhyChooseUsSection } from "../../src/customer/components/home/WhyChooseUsSection";
 import { TrustSection } from "../../src/customer/components/home/TrustSection";
+import { ContactCtaSection } from "../../src/customer/components/home/ContactCtaSection";
 import type { ContentBlock } from "../../src/api/contentApi";
 import "../../src/lib/i18n";
 
@@ -83,5 +84,18 @@ describe("TrustSection", () => {
     expect(screen.getByText("نلتزم بأعلى معايير الجودة والاحترافية في كل خدمة نقدمها.")).toBeInTheDocument();
     expect(screen.queryByText(/حجز مكتمل/)).not.toBeInTheDocument();
     expect(screen.queryByText(/تقييم/)).not.toBeInTheDocument();
+  });
+});
+
+describe("ContactCtaSection", () => {
+  it("links the WhatsApp booking button to the configured business number", () => {
+    renderWithProviders(<ContactCtaSection />);
+    const whatsappLink = screen.getByRole("link", { name: /واتساب/ });
+
+    expect(whatsappLink).toHaveAttribute(
+      "href",
+      expect.stringContaining("https://wa.me/+966502266402?text="),
+    );
+    expect(whatsappLink).toHaveAttribute("target", "_blank");
   });
 });

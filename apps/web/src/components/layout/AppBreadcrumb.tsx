@@ -71,12 +71,11 @@ const EN_LABELS: Record<string, string> = {
   notifications: "Notifications", admin: "Dashboard", schedule: "Scheduling", day: "Daily calendar",
   week: "Weekly calendar", "time-slots": "Time slots", "operating-hours": "Operating hours",
   "closed-dates": "Closed dates", catalog: "Catalog", categories: "Categories", "add-ons": "Add-ons",
-  checklist: "Checklist", images: "Service images", quality: "Quality", reviews: "Reviews",
-  commercial: "Commercial accounts", reports: "Reports", revenue: "Revenue report",
-  export: "Export reports", "audit-log": "Audit log", "job-runs": "Scheduled jobs",
+  checklist: "Checklist", images: "Service images", reports: "Reports", revenue: "Revenue report",
+  export: "Export reports",
   "reschedule-requests": "Reschedule requests", content: "Content", website: "Website content",
-  faqs: "FAQs", settings: "System settings", accounts: "Admin accounts", customers: "Customers",
-  pricing: "Pricing", "discount-codes": "Discount codes", rules: "Pricing rules",
+  faqs: "FAQs", settings: "System settings", customers: "Customers",
+  pricing: "Pricing", "discount-codes": "Discount codes",
   templates: "Notification templates", log: "Notification log", new: "Add new",
 };
 
@@ -90,11 +89,7 @@ const LINKABLE_PATHS = new Set([
   "/admin/catalog/categories",
   "/admin/catalog/services",
   "/admin/catalog/add-ons",
-  "/admin/catalog/checklist",
-  "/admin/quality/reviews",
-  "/admin/quality/complaints",
   "/admin/subscriptions",
-  "/admin/commercial",
   "/admin/customers",
 ]);
 

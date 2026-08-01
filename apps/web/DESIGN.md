@@ -8,6 +8,7 @@ colors:
   accent: "#006477"
   bg: "#FFFFFF"
   surface: "#FAF8F4"
+  customer-page-bg: "#F3F8F7"
   ink: "#0B121A"
   muted: "#555F69"
   border: "#E0E5EB"
@@ -89,6 +90,7 @@ A restrained palette: one confident brand color, one supporting accent, and quie
 
 ### Neutral
 - **Pure White** (`#FFFFFF`): the default background across both Customer and Admin surfaces.
+- **Customer Mint** (`#F3F8F7`): the shared pale mint background across Customer routes and quiet section surfaces.
 - **Paper** (`#FAF8F4`): restrained secondary surface.
 - **Ink** (`#0B121A`): primary body and heading text.
 - **Muted** (`#555F69`): secondary text, descriptions, and captions.

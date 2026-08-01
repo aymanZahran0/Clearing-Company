@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Table, Tag, message } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
@@ -95,6 +95,7 @@ export default function AddOns() {
           {t("catalog:newAddOn")}
         </Button>
       </div>
+      <div className="rounded-2xl border border-[#EAF0EF] bg-white p-2 shadow-sm sm:p-3">
       <Table
         loading={isLoading}
         rowKey="id"
@@ -109,7 +110,9 @@ export default function AddOns() {
           {
             title: t("admin:common.active"),
             dataIndex: "active",
-            render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
+            render: (v: boolean, row: ServiceAddOn) => (
+              <Switch checked={v} onChange={() => toggleActive(row)} aria-label={t("admin:common.active") as string} />
+            ),
           },
           {
             title: t("admin:common.actions"),
@@ -117,9 +120,6 @@ export default function AddOns() {
               <div className="flex flex-wrap gap-2">
                 <Button size="small" onClick={() => openEdit(row)}>
                   {t("catalog:edit")}
-                </Button>
-                <Button size="small" danger={row.active} onClick={() => toggleActive(row)}>
-                  {row.active ? t("catalog:deactivate") : t("catalog:activate")}
                 </Button>
                 <Popconfirm
                   title={t("catalog:delete")}
@@ -142,6 +142,7 @@ export default function AddOns() {
           },
         ]}
       />
+      </div>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}

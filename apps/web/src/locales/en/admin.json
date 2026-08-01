@@ -157,8 +157,7 @@
   },
   "content": {
     "active": "Active",
-    "answerAr": "Answer (Arabic)",
-    "answerEn": "Answer (English)",
+    "answerAr": "Answer",
     "blockSaved": "Content block saved",
     "blockSaveError": "Could not save the content block",
     "bodyAr": "Body (Arabic)",
@@ -171,8 +170,7 @@
     "newFaq": "New FAQ",
     "newFaqItem": "New FAQ Item",
     "newOrUpdateBlock": "New / Update Block",
-    "questionAr": "Question (Arabic)",
-    "questionEn": "Question (English)",
+    "questionAr": "Question",
     "titleAr": "Title (Arabic)",
     "titleEn": "Title (English)",
     "type": "Type",
@@ -266,6 +264,7 @@
     "rescheduleRequests": "Reschedule Requests",
     "websiteContent": "Website Content",
     "faqs": "FAQs",
+    "socialMedia": "Social Media",
     "systemSettings": "System Settings",
     "adminAccounts": "Admin Accounts",
     "discountCodes": "Discount Codes",
@@ -295,6 +294,12 @@
     "calculation": "Calculation",
     "calculationType": "Calculation Type",
     "code": "Code",
+    "activate": "Activate",
+    "cannotDeleteUsedCode": "A previously used code cannot be deleted because it belongs to booking history",
+    "codeActivated": "Discount code activated",
+    "codeDeactivated": "Discount code deactivated",
+    "codeDeleted": "Discount code deleted",
+    "deleteCodeConfirm": "Delete this discount code permanently?",
     "disable": "Disable",
     "discountCodeCreated": "Discount code created",
     "discountCodeCreateError": "Could not create the discount code",
@@ -313,11 +318,20 @@
     "validRange": "Valid Range"
   },
   "quality": {
+    "address": "Service address",
+    "bookingReference": "Booking reference",
     "category": "Category",
     "changeStatus": "Change status",
     "complaintsTitle": "Complaints",
     "createReworkBooking": "Create Rework Booking",
     "description": "Description",
+    "customerName": "Customer name",
+    "email": "Email",
+    "phone": "Phone",
+    "service": "Service",
+    "serviceDate": "Service date",
+    "submittedAt": "Complaint submitted",
+    "updatedAt": "Last updated",
     "lowRatingReviewsTitle": "Low-Rating Reviews",
     "qualityIssue": "Quality Issue",
     "resolution": "Resolution",
@@ -336,13 +350,17 @@
     "averageRating": "Average Rating",
     "completedBookings": "Completed Bookings",
     "count": "Count",
-    "downloadCsv": "Download CSV",
+    "dateRangeHelp": "Leave empty to export all bookings",
+    "dateRangeLabel": "Date range",
+    "downloadExcel": "Download Excel file",
     "entityId": "Entity ID",
     "entityType": "Entity Type",
     "exportBookingsTitle": "Export Bookings",
+    "exportDescription": "Download booking data as a formatted Excel file for a specific date range, with an option to include sensitive customer details when needed.",
     "exportError": "Could not generate the export",
+    "exportSuccess": "Export downloaded successfully",
     "filterByEntityType": "Filter by entity type (e.g. Booking)",
-    "includePii": "Include phone and address (audit-logged)",
+    "includePii": "Include phone and address",
     "qualityIssueStatus": "Quality Issue Status",
     "qualityReportTitle": "Quality Report",
     "revenue": "Revenue",
@@ -406,9 +424,31 @@
     "uploadError": "Could not upload the image — check file type (JPEG/PNG/WebP) and size (max 5MB)",
     "uploadImage": "Upload Image"
   },
+  "socialMedia": {
+    "title": "Social Media Links",
+    "description": "Add each account's link and turn on the ones you want shown in the website footer.",
+    "active": "Active",
+    "urlPlaceholder": "https://...",
+    "urlRequired": "Please enter a valid URL",
+    "saved": "{{platform}} saved"
+  },
   "settings": {
     "deleteConfirm": "Delete this setting permanently? This action cannot be undone.",
     "deleted": "{{key}} deleted",
+    "fields": {
+      "booking_horizon_weeks": {
+        "label": "Booking horizon in weeks",
+        "description": "How many weeks ahead customers can select a booking date."
+      },
+      "default_locale": {
+        "label": "Default language",
+        "description": "The system's default language and region."
+      },
+      "tax_rate": {
+        "label": "Tax rate",
+        "description": "The VAT rate applied to prices."
+      }
+    },
     "saved": "{{key}} saved",
     "saveError": "Could not save {{key}}",
     "title": "System Settings"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Tag, Upload, message } from "antd";
+import { Button, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Upload, message } from "antd";
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,7 @@ import {
 import { enumLabel } from "../../../lib/enumLabels";
 import { enumOptions } from "../../../lib/enumOptions";
 import { formatCurrency } from "../../../lib/formatters";
+import defaultServiceImage from "../../../assets/logo/logo-without-name.png";
 
 const PRICING_TYPES: Service["pricingType"][] = ["FIXED", "PROPERTY_SIZE", "HOURLY", "QUANTITY", "CUSTOM_QUOTE"];
 
@@ -119,13 +120,30 @@ export default function Services() {
           {t("catalog:newService")}
         </Button>
       </div>
+      <div className="rounded-2xl border border-[#EAF0EF] bg-white p-2 shadow-sm sm:p-3">
       <Table
         loading={isLoading}
         rowKey="id"
         dataSource={data}
         scroll={{ x: true }}
         columns={[
-          { title: t("admin:content.titleAr"), dataIndex: "nameAr" },
+          {
+            title: t("admin:content.titleAr"),
+            dataIndex: "nameAr",
+            render: (value: string, row: Service) => (
+              <div className="flex items-center gap-3">
+                <Image
+                  src={row.images[0]?.url || defaultServiceImage}
+                  alt={row.images[0]?.altTextAr ?? value}
+                  width={44}
+                  height={44}
+                  preview={false}
+                  className={`shrink-0 rounded-lg ${row.images[0] ? "object-cover" : "bg-paper object-contain p-1"}`}
+                />
+                <span>{value}</span>
+              </div>
+            ),
+          },
           {
             title: t("catalog:pricingType"),
             dataIndex: "pricingType",
@@ -139,7 +157,9 @@ export default function Services() {
           {
             title: t("admin:common.active"),
             dataIndex: "active",
-            render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
+            render: (v: boolean, row: Service) => (
+              <Switch checked={v} onChange={() => toggleActive(row)} aria-label={t("admin:common.active") as string} />
+            ),
           },
           {
             title: t("admin:common.actions"),
@@ -147,9 +167,6 @@ export default function Services() {
               <div className="flex flex-wrap gap-2">
                 <Button size="small" onClick={() => openEdit(row)}>
                   {t("catalog:edit")}
-                </Button>
-                <Button size="small" danger={row.active} onClick={() => toggleActive(row)}>
-                  {row.active ? t("catalog:deactivate") : t("catalog:activate")}
                 </Button>
                 <Popconfirm
                   title={t("catalog:delete")}
@@ -172,6 +189,7 @@ export default function Services() {
           },
         ]}
       />
+      </div>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}

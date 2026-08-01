@@ -57,7 +57,7 @@ discountCodesRouter.delete(
   authenticate,
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    await service.disableDiscountCode(requireParam(req, "id"));
+    await service.deleteDiscountCode(requireParam(req, "id"));
     res.status(204).send();
   })
 );

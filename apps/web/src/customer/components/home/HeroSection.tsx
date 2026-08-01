@@ -14,8 +14,6 @@ export function HeroSection({ block }: HeroSectionProps) {
 
   return (
     <section className="home-hero relative overflow-hidden px-4 sm:px-6">
-      <span aria-hidden="true" className="home-orb home-orb-a" />
-      <span aria-hidden="true" className="home-orb home-orb-b" />
       <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-14">
         <div className="text-center lg:text-start">
           <span className="home-kicker">{t("content:home.hero.kicker")}</span>

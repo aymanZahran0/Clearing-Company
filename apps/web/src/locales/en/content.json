@@ -67,6 +67,7 @@
       "title": "Get in Touch",
       "body": "Have a question? Our team is ready to help over WhatsApp or phone.",
       "whatsappCta": "Chat on WhatsApp",
+      "whatsappTooltip": "Book your service via WhatsApp",
       "trackBookingCta": "Track Your Booking"
     },
     "footer": {

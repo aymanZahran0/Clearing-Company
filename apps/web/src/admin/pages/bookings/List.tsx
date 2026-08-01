@@ -58,6 +58,7 @@ export default function BookingsList() {
         loading={isLoading}
         rowKey="id"
         dataSource={data?.items}
+        rowClassName="cursor-pointer"
         onRow={(booking) => ({ onClick: () => navigate(`/admin/bookings/${booking.id}`) })}
         scroll={{ x: true }}
         columns={[

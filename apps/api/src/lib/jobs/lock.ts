@@ -1,5 +1,7 @@
 import { prisma } from "../prisma.js";
-import type { JobName } from "@prisma/client";
+export type JobName =
+  | "EXPIRE_STALE_QUOTES"
+  | "GENERATE_SUBSCRIPTION_OCCURRENCES";
 
 // research.md R2: Postgres session-level advisory locks give mutual
 // exclusion across overlapping cron ticks (and across multiple API
@@ -7,7 +9,6 @@ import type { JobName } from "@prisma/client";
 // gets a fixed, distinct key.
 const LOCK_KEYS: Record<JobName, number> = {
   EXPIRE_STALE_QUOTES: 84001,
-  FLAG_OVERDUE_BOOKINGS: 84002,
   GENERATE_SUBSCRIPTION_OCCURRENCES: 84003,
 };
 

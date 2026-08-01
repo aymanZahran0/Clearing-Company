@@ -20,8 +20,7 @@ reviewsAndComplaintsRouter.post(
   requireRole("CUSTOMER"),
   validateRequest({ body: createReviewSchema }),
   asyncHandler(async (req, res) => {
-    const review = await service.createReview(requireParam(req, "id"), req.user!.id, req.body);
-    res.status(201).json(review);
+    res.status(201).json(await service.createReview(requireParam(req, "id"), req.user!.id, req.body));
   })
 );
 
@@ -31,8 +30,7 @@ reviewsAndComplaintsRouter.post(
   requireRole("CUSTOMER"),
   validateRequest({ body: createComplaintSchema }),
   asyncHandler(async (req, res) => {
-    const issue = await service.createComplaint(requireParam(req, "id"), req.user!.id, req.body);
-    res.status(201).json(issue);
+    res.status(201).json(await service.createComplaint(requireParam(req, "id"), req.user!.id, req.body));
   })
 );
 
@@ -41,27 +39,14 @@ reviewsAndComplaintsRouter.get(
   authenticate,
   requireRole("ADMIN"),
   validateRequest({ query: listQualityIssuesQuerySchema }),
-  asyncHandler(async (req, res) => {
-    res.json(await service.listQualityIssues(req.query as never));
-  })
-);
-
-reviewsAndComplaintsRouter.get(
-  "/quality-issues/alerts",
-  authenticate,
-  requireRole("ADMIN"),
-  asyncHandler(async (_req, res) => {
-    res.json(await service.getQualityAlerts());
-  })
+  asyncHandler(async (req, res) => res.json(await service.listQualityIssues(req.query as never)))
 );
 
 reviewsAndComplaintsRouter.get(
   "/quality-issues/:id",
   authenticate,
   requireRole("ADMIN"),
-  asyncHandler(async (req, res) => {
-    res.json(await service.getQualityIssue(requireParam(req, "id")));
-  })
+  asyncHandler(async (req, res) => res.json(await service.getQualityIssue(requireParam(req, "id"))))
 );
 
 reviewsAndComplaintsRouter.patch(
@@ -70,25 +55,6 @@ reviewsAndComplaintsRouter.patch(
   requireRole("ADMIN"),
   validateRequest({ body: updateQualityIssueSchema }),
   asyncHandler(async (req, res) => {
-    const issue = await service.updateQualityIssue(requireParam(req, "id"), req.body, {
-      actorUserId: req.user!.id,
-      ipAddress: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-    res.json(issue);
-  })
-);
-
-reviewsAndComplaintsRouter.post(
-  "/quality-issues/:id/rework",
-  authenticate,
-  requireRole("ADMIN"),
-  asyncHandler(async (req, res) => {
-    const booking = await service.createReworkBooking(requireParam(req, "id"), {
-      actorUserId: req.user!.id,
-      ipAddress: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-    res.status(201).json(booking);
+    res.json(await service.updateQualityIssue(requireParam(req, "id"), req.body, req.user!.id));
   })
 );

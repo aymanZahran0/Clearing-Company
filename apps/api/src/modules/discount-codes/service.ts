@@ -25,12 +25,15 @@ export async function updateDiscountCode(id: string, input: UpdateDiscountCodeIn
   return prisma.discountCode.update({ where: { id }, data: input });
 }
 
-export async function disableDiscountCode(id: string) {
+export async function deleteDiscountCode(id: string) {
   const existing = await prisma.discountCode.findUnique({ where: { id } });
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Discount code not found");
   }
-  await prisma.discountCode.update({ where: { id }, data: { active: false } });
+  if (existing.usageCount > 0) {
+    throw new ApiError(409, "CONFLICT", "Used discount codes cannot be deleted");
+  }
+  await prisma.discountCode.delete({ where: { id } });
 }
 
 interface StoredBreakdown {

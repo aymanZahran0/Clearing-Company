@@ -1,21 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "antd";
+import { WhatsAppOutlined } from "@ant-design/icons";
 import type { ContentBlock } from "../../../api/contentApi";
+import { buildWhatsAppUrl } from "../../../lib/whatsapp";
 
 interface ContactCtaSectionProps {
   block?: ContentBlock;
 }
 
-// US1 scenario 3 (contact CTA section). WhatsApp remains the existing
-// manual, Admin-initiated click-to-chat channel (002 clarification) — no
-// business phone/WhatsApp number is configured anywhere in the system to
-// link to here, so this section surfaces the Admin-configured
-// `home-contact` content block (if any) plus the existing booking-lookup
-// route, rather than fabricating contact details.
 export function ContactCtaSection({ block }: ContactCtaSectionProps) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const whatsappMessage = isAr
+    ? "مرحبًا، أريد حجز خدمة تنظيف."
+    : "Hello, I would like to book a cleaning service.";
+  const whatsappUrl = buildWhatsAppUrl(whatsappMessage);
 
   return (
     <section className="home-contact px-4 sm:px-6">
@@ -25,6 +25,21 @@ export function ContactCtaSection({ block }: ContactCtaSectionProps) {
           {block ? (isAr ? block.bodyAr : block.bodyEn || block.bodyAr) : t("content:home.contact.body")}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="home-button-link"
+          >
+            <Button
+              type="primary"
+              size="large"
+              icon={<WhatsAppOutlined />}
+              className="home-whatsapp-button"
+            >
+              {t("content:home.contact.whatsappCta")}
+            </Button>
+          </a>
           <Link to="/track">
             <Button size="large" className="home-outline-button">{t("content:home.contact.trackBookingCta")}</Button>
           </Link>

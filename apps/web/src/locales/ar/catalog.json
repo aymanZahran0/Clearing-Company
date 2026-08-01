@@ -16,7 +16,7 @@
   "deleteConfirm": "هل تريد حذف هذا العنصر نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
   "deleted": "تم حذف العنصر",
   "defaultDurationMinutes": "المدة الافتراضية (دقائق)",
-  "descriptionAr": "الوصف (عربي)",
+  "descriptionAr": "الوصف",
   "descriptionEn": "الوصف (إنجليزي)",
   "durationImpactMinutes": "أثر المدة (دقائق)",
   "edit": "تعديل",

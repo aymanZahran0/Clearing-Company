@@ -144,6 +144,13 @@
     "PAGE": "صفحة",
     "SECTION": "قسم"
   },
+  "socialMediaPlatform": {
+    "FACEBOOK": "فيسبوك",
+    "INSTAGRAM": "إنستغرام",
+    "TIKTOK": "تيك توك",
+    "X": "إكس (تويتر)",
+    "WHATSAPP": "واتساب"
+  },
   "rescheduleRequestStatus": {
     "PENDING": "قيد المراجعة",
     "APPROVED": "تمت الموافقة",

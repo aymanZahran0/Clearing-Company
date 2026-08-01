@@ -40,7 +40,7 @@ export const discountCodesApi = baseApi.injectEndpoints({
       query: ({ id, body }) => ({ url: `/discount-codes/${id}`, method: "PATCH", body }),
       invalidatesTags: ["DiscountCode"],
     }),
-    disableDiscountCode: builder.mutation<void, string>({
+    deleteDiscountCode: builder.mutation<void, string>({
       query: (id) => ({ url: `/discount-codes/${id}`, method: "DELETE" }),
       invalidatesTags: ["DiscountCode"],
     }),
@@ -51,5 +51,5 @@ export const {
   useListDiscountCodesQuery,
   useCreateDiscountCodeMutation,
   useUpdateDiscountCodeMutation,
-  useDisableDiscountCodeMutation,
+  useDeleteDiscountCodeMutation,
 } = discountCodesApi;

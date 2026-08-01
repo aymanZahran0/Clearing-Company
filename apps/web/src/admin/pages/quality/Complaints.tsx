@@ -12,12 +12,10 @@ import { enumOptions } from "../../../lib/enumOptions";
 
 const STATUSES: QualityIssueStatus[] = ["OPEN", "IN_REVIEW", "RESOLVED", "CLOSED"];
 
-// T142 (US6): the general quality-issue queue, defaulting to complaints
-// but filterable across every source/status.
 export default function Complaints() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<QualityIssueStatus | undefined>();
+  const [status, setStatus] = useState<QualityIssueStatus>();
   const { data, isLoading } = useListQualityIssuesQuery({ source: "COMPLAINT", status });
 
   return (
@@ -25,9 +23,9 @@ export default function Complaints() {
       <h1 className="mb-4 text-xl font-semibold">{t("admin:quality.complaintsTitle")}</h1>
       <Select
         allowClear
-        placeholder={t("admin:bookings.filterByStatus")}
         size="large"
         className="mb-4 w-full sm:w-64"
+        placeholder={t("admin:bookings.filterByStatus")}
         options={enumOptions("qualityIssueStatus", STATUSES)}
         onChange={setStatus}
       />
@@ -35,25 +33,39 @@ export default function Complaints() {
         loading={isLoading}
         rowKey="id"
         dataSource={data?.items}
-        onRow={(issue) => ({ onClick: () => navigate(`/admin/quality/${issue.id}`) })}
-        scroll={{ x: true }}
+        onRow={(item) => ({ onClick: () => navigate(`/admin/quality/${item.id}`) })}
+        scroll={{ x: 1100 }}
         columns={[
-          { title: t("admin:quality.category"), dataIndex: "category" },
           {
-            title: t("admin:quality.severity"),
-            dataIndex: "severity",
-            render: (value: string) => <Tag>{enumLabel("qualityIssueSeverity", value)}</Tag>,
+            title: t("admin:quality.bookingReference"),
+            render: (_, item) => item.booking.referenceNumber,
           },
           {
-            title: t("admin:bookings.status"),
-            dataIndex: "status",
-            render: (value: string) => <Tag>{enumLabel("qualityIssueStatus", value)}</Tag>,
+            title: t("admin:quality.customerName"),
+            render: (_, item) => item.booking.customer.user.fullName,
           },
           {
-            title: t("admin:bookings.created"),
-            dataIndex: "createdAt",
-            render: (value: string) => formatDateTime(value, i18n.language),
+            title: t("admin:quality.phone"),
+            render: (_, item) => item.booking.customer.user.phoneNormalized ?? "-",
           },
+          {
+            title: t("admin:quality.service"),
+            render: (_, item) => item.booking.items[0]?.service.nameAr ?? "-",
+          },
+          {
+            title: t("admin:quality.category"),
+            dataIndex: "category",
+            render: (value: string) => t(`customer:complaintForm.categories.${value}`),
+          },
+          {
+            title: t("admin:quality.description"),
+            dataIndex: "description",
+            ellipsis: true,
+            width: 220,
+          },
+          { title: t("admin:quality.severity"), dataIndex: "severity", render: (v: string) => <Tag>{enumLabel("qualityIssueSeverity", v)}</Tag> },
+          { title: t("admin:bookings.status"), dataIndex: "status", render: (v: string) => <Tag>{enumLabel("qualityIssueStatus", v)}</Tag> },
+          { title: t("admin:bookings.created"), dataIndex: "createdAt", render: (v: string) => formatDateTime(v, i18n.language) },
         ]}
       />
     </div>

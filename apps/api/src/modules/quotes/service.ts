@@ -1,7 +1,6 @@
 import { ApiError } from "@nuqaa-asir/shared";
 import { prisma } from "../../lib/prisma.js";
 import { calculatePrice } from "../../lib/pricing/calculate.js";
-import { matchesRuleConditions } from "../../lib/pricing/matchRule.js";
 import type { QuoteEstimateRequest } from "./schema.js";
 
 const QUOTE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -39,18 +38,6 @@ export async function estimateQuote(input: QuoteEstimateRequest, customerId?: st
       })
     : [];
 
-  const rules = await prisma.pricingRule.findMany({ where: { serviceId: service.id, active: true } });
-  const matchedRules = rules.map((rule) => ({
-    calculationType: rule.calculationType,
-    amount: Number(rule.amount),
-    priority: rule.priority,
-    matches: matchesRuleConditions(rule.conditionsJson, {
-      propertyType: input.propertyType,
-      conditionModifiers: input.propertySizeInput.conditionModifiers,
-      requestedDate: input.requestedDate,
-    }),
-  }));
-
   const taxRate = await getTaxRate();
 
   let discountCodeRecord = null;
@@ -81,7 +68,7 @@ export async function estimateQuote(input: QuoteEstimateRequest, customerId?: st
       pricingMode: a.pricingMode,
       quantity: 1,
     })),
-    rules: matchedRules,
+    rules: [],
     quantityOrHours,
     travelFee: serviceArea.travelFee,
     taxRate,

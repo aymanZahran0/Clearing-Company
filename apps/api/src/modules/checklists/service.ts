@@ -93,7 +93,7 @@ export async function getOrCreateChecklistRun(bookingId: string) {
 export async function updateChecklistResults(
   bookingId: string,
   input: UpdateChecklistResultsInput,
-  actorUserId: string
+  _actorUserId: string
 ) {
   const run = await getOrCreateChecklistRun(bookingId);
   if (run.completedAt) {
@@ -118,18 +118,6 @@ export async function updateChecklistResults(
         },
       });
 
-      if (result.isIssue) {
-        await tx.qualityIssue.create({
-          data: {
-            bookingId,
-            source: "CHECKLIST_FAILURE",
-            category: "checklist",
-            severity: "MEDIUM",
-            description: result.issueNote ?? "Checklist item flagged during execution",
-            ownerUserId: actorUserId,
-          },
-        });
-      }
     }
   });
 

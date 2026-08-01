@@ -11,10 +11,13 @@ export default function SystemSettings() {
   const [deleteSetting] = useDeleteSettingMutation();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
+  const settingLabel = (key: string) =>
+    t(`admin:settings.fields.${key}.label`, { defaultValue: key });
+
   async function onDelete(key: string) {
     try {
       await deleteSetting(key).unwrap();
-      message.success(t("admin:settings.deleted", { key }));
+      message.success(t("admin:settings.deleted", { key: settingLabel(key) }));
     } catch {
       // toast shown by the global RTK Query error middleware
     }
@@ -32,7 +35,7 @@ export default function SystemSettings() {
     try {
       await updateSetting({ key, value }).unwrap();
       refetch();
-      message.success(t("admin:settings.saved", { key }));
+      message.success(t("admin:settings.saved", { key: settingLabel(key) }));
     } catch {
       // toast shown by the global RTK Query error middleware
     }
@@ -43,8 +46,11 @@ export default function SystemSettings() {
       <h1 className="mb-4 text-xl font-semibold">{t("admin:settings.title")}</h1>
       {isLoading && <Card loading />}
       {data?.map((setting) => (
-        <Card key={setting.id} title={setting.key} className="mb-4">
-          <p className="mb-2 text-sm text-gray-500">{setting.description}</p>
+        <Card key={setting.id} title={settingLabel(setting.key)} className="mb-4">
+          <p className="mb-2 text-sm text-gray-500">
+            {setting.description ||
+              t(`admin:settings.fields.${setting.key}.description`, { defaultValue: "" })}
+          </p>
           <Input
             size="large"
             defaultValue={JSON.stringify(setting.value)}

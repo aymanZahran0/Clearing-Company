@@ -16,9 +16,9 @@ export default function FAQs() {
   const [deleteFaq] = useDeleteFaqItemMutation();
   const [open, setOpen] = useState(false);
 
-  async function onFinish(values: FaqItemInput) {
+  async function onFinish(values: Pick<FaqItemInput, "questionAr" | "answerAr">) {
     try {
-      await createFaq(values).unwrap();
+      await createFaq({ ...values, questionEn: values.questionAr, answerEn: values.answerAr }).unwrap();
       setOpen(false);
       message.success(t("admin:content.faqAdded"));
     } catch {
@@ -45,22 +45,16 @@ export default function FAQs() {
               </Button>,
             ]}
           >
-            <List.Item.Meta title={item.questionEn} description={item.answerEn} />
+            <List.Item.Meta title={item.questionAr} description={item.answerAr} />
           </List.Item>
         )}
       />
       <Modal open={open} onCancel={() => setOpen(false)} footer={null} title={t("admin:content.newFaqItem")}>
-        <Form<FaqItemInput> layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form<Pick<FaqItemInput, "questionAr" | "answerAr">> layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="questionAr" label={t("admin:content.questionAr")} rules={[{ required: true }]}>
             <Input size="large" />
           </Form.Item>
-          <Form.Item name="questionEn" label={t("admin:content.questionEn")} rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
           <Form.Item name="answerAr" label={t("admin:content.answerAr")} rules={[{ required: true }]}>
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          <Form.Item name="answerEn" label={t("admin:content.answerEn")} rules={[{ required: true }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block loading={isSaving}>

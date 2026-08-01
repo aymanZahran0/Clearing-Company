@@ -57,7 +57,6 @@ model User {
   customerProfile             CustomerProfile?
   refreshTokens               RefreshToken[]
   passwordResetTokens         PasswordResetToken[]
-  auditLogEntries             AuditLog[]
   updatedSettings             SystemSetting[]
   rescheduleRequestsSubmitted RescheduleRequest[]  @relation("RescheduleRequestedBy")
   rescheduleRequestsDecided   RescheduleRequest[]  @relation("RescheduleDecidedBy")
@@ -71,14 +70,13 @@ model User {
 // CustomerAddress and the remaining catalog/booking entities stay in
 // Phase 3 as originally planned.
 model CustomerProfile {
-  userId              String   @id
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  preferredChannel    String   @default("WHATSAPP")
-  marketingConsent    Boolean  @default(false)
-  customerType        String   @default("INDIVIDUAL")
-  tags                String[] @default([])
-  internalNotes       String?
-  commercialAccountId String?
+  userId           String   @id
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredChannel String   @default("WHATSAPP")
+  marketingConsent Boolean  @default(false)
+  customerType     String   @default("INDIVIDUAL")
+  tags             String[] @default([])
+  internalNotes    String?
 
   addresses     CustomerAddress[]
   quotes        Quote[]
@@ -114,24 +112,6 @@ model PasswordResetToken {
 }
 
 // FR-004/FR-005: audit entry for every sensitive action.
-model AuditLog {
-  id                 String   @id @default(uuid())
-  actorUserId        String
-  actor              User     @relation(fields: [actorUserId], references: [id])
-  action             String
-  entityType         String
-  entityId           String
-  beforeSnapshotJson Json?
-  afterSnapshotJson  Json?
-  ipAddress          String?
-  userAgent          String?
-  createdAt          DateTime @default(now())
-
-  @@index([entityType, entityId])
-  @@index([actorUserId])
-  @@index([createdAt])
-}
-
 // FR-025 (tax rate), booking-generation horizon, and other Admin-configurable values.
 model SystemSetting {
   id              String   @id @default(uuid())
@@ -196,18 +176,6 @@ enum PricingType {
   CUSTOM_QUOTE
 }
 
-enum PricingRuleType {
-  PROPERTY_TYPE
-  AREA_BAND
-  DAY_TIME
-  CONDITION_MODIFIER
-}
-
-enum CalculationType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
-
 enum DiscountType {
   PERCENTAGE
   FIXED
@@ -260,10 +228,9 @@ model CustomerAddress {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  bookings            Booking[]
-  quotes              Quote[]
-  subscriptions       Subscription[]
-  commercialLocations CommercialLocation[]
+  bookings      Booking[]
+  quotes        Quote[]
+  subscriptions Subscription[]
 
   @@index([customerId])
 }
@@ -313,7 +280,6 @@ model Service {
 
   images             ServiceImage[]
   addOns             ServiceAddOn[]
-  pricingRules       PricingRule[]
   bookingItems       BookingItem[]
   quotes             Quote[]
   checklistTemplates ChecklistTemplate[]
@@ -358,22 +324,6 @@ model ServiceAddOn {
 }
 
 // data-model.md §9.
-model PricingRule {
-  id              String          @id @default(uuid())
-  serviceId       String
-  service         Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  ruleType        PricingRuleType
-  conditionsJson  Json
-  calculationType CalculationType
-  amount          Decimal
-  priority        Int             @default(0)
-  startsAt        DateTime?
-  endsAt          DateTime?
-  active          Boolean         @default(true)
-
-  @@index([serviceId, active])
-}
-
 // data-model.md §10.
 model DiscountCode {
   id              String       @id @default(uuid())
@@ -714,10 +664,6 @@ model ChecklistResult {
   @@unique([checklistRunId, templateItemId])
 }
 
-// data-model.md §18. Created from a failed/flagged checklist item
-// (source = CHECKLIST_FAILURE, Phase 7) or from a customer review/complaint
-// (source ∈ {REVIEW, COMPLAINT}, Phase 8) — same entity either way so the
-// Admin quality queue (T137) is a single unified view.
 model QualityIssue {
   id              String               @id @default(uuid())
   bookingId       String
@@ -738,6 +684,10 @@ model QualityIssue {
   @@index([status])
 }
 
+// data-model.md §18. Created from a failed/flagged checklist item
+// (source = CHECKLIST_FAILURE, Phase 7) or from a customer review/complaint
+// (source ∈ {REVIEW, COMPLAINT}, Phase 8) — same entity either way so the
+// Admin quality queue (T137) is a single unified view.
 // ============================================================================
 // Phase 8 (User Story 6): customer feedback, complaints, and rework
 // ============================================================================
@@ -774,12 +724,6 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
-enum ContractStatus {
-  ACTIVE
-  EXPIRED
-  TERMINATED
-}
-
 // data-model.md §20. The generation job produces `Booking` rows up to an
 // 8-week rolling horizon (FR-056), keyed by the `(subscriptionId,
 // occurrenceDate)` unique constraint on `Booking` for idempotency under
@@ -811,44 +755,6 @@ model Subscription {
 }
 
 // data-model.md §21.
-model CommercialAccount {
-  id                  String   @id @default(uuid())
-  companyName         String
-  billingContactName  String
-  billingContactPhone String
-  billingContactEmail String?
-  notes               String?
-  createdAt           DateTime @default(now())
-
-  locations CommercialLocation[]
-  contracts Contract[]
-}
-
-model CommercialLocation {
-  id                  String            @id @default(uuid())
-  commercialAccountId String
-  commercialAccount   CommercialAccount @relation(fields: [commercialAccountId], references: [id], onDelete: Cascade)
-  addressId           String
-  address             CustomerAddress   @relation(fields: [addressId], references: [id])
-  label               String?
-
-  @@index([commercialAccountId])
-}
-
-model Contract {
-  id                  String            @id @default(uuid())
-  commercialAccountId String
-  commercialAccount   CommercialAccount @relation(fields: [commercialAccountId], references: [id], onDelete: Cascade)
-  startDate           DateTime
-  endDate             DateTime?
-  pricingTermsJson    Json
-  documentReference   String?
-  status              ContractStatus    @default(ACTIVE)
-  createdAt           DateTime          @default(now())
-
-  @@index([commercialAccountId])
-}
-
 // ============================================================================
 // Phase 11 (Polish): CMS content and system settings
 // ============================================================================
@@ -871,6 +777,23 @@ model WebsiteContentBlock {
   active    Boolean                 @default(true)
   createdAt DateTime                @default(now())
   updatedAt DateTime                @updatedAt
+}
+
+enum SocialMediaPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TIKTOK
+  X
+  WHATSAPP
+}
+
+model SocialMediaLink {
+  id        String              @id @default(uuid())
+  platform  SocialMediaPlatform @unique
+  url       String
+  active    Boolean             @default(false)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
 }
 
 model FaqItem {
@@ -921,30 +844,5 @@ model RescheduleRequest {
   @@index([status])
 }
 
-enum JobName {
-  EXPIRE_STALE_QUOTES
-  FLAG_OVERDUE_BOOKINGS
-  GENERATE_SUBSCRIPTION_OCCURRENCES
-}
-
-enum JobRunStatus {
-  SUCCESS
-  FAILURE
-  SKIPPED_LOCKED
-}
-
 // data-model.md §2. One row per scheduled-job invocation, including skipped
 // (lock-contended) ones — enforces "no invocation completes without a row".
-model JobRun {
-  id            String       @id @default(uuid())
-  jobName       JobName
-  startedAt     DateTime     @default(now())
-  finishedAt    DateTime?
-  status        JobRunStatus
-  detail        Json?
-  failureReason String?
-
-  @@index([jobName])
-  @@index([status])
-  @@index([startedAt])
-}

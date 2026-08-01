@@ -40,7 +40,7 @@ export default function ServiceDetail() {
   const hasPrice = listedPrice != null;
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-6 text-ink sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-[var(--customer-page-bg)] px-4 py-6 text-ink sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
         <div className="relative overflow-hidden rounded-2xl bg-primary">
           <img

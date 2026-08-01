@@ -1,4 +1,4 @@
-import { Alert, Button, Skeleton } from "antd";
+import { Button, Skeleton } from "antd";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { useGetBookingQuery } from "../../api/bookingsApi";
@@ -7,7 +7,6 @@ import { CancelDialog } from "../../admin/pages/bookings/CancelDialog";
 import { RescheduleDialog } from "./RescheduleDialog";
 import { enumLabel } from "../../lib/enumLabels";
 import { BOOKING_STATUS_META } from "../../lib/bookingStatusMeta";
-import { QUALITY_ISSUE_STATUS_META } from "../../lib/qualityIssueStatusMeta";
 
 // Bookings that can still be cancelled without a fee (FR-040); once
 // execution has started or the booking has reached a terminal state, the
@@ -38,13 +37,8 @@ export default function BookingDetail() {
   const bookingMeta = BOOKING_STATUS_META[booking.status];
   const serviceItem = booking.items?.find((item) => !item.addOnId);
   const serviceName = serviceItem?.service?.nameAr ?? null;
-  const complaint = booking.qualityIssues?.[0];
-  const displayedStatusMeta = complaint
-    ? QUALITY_ISSUE_STATUS_META[complaint.status]
-    : bookingMeta;
-  const displayedStatusLabel = complaint
-    ? t(`customer:complaintStatus.${complaint.status}`)
-    : enumLabel("bookingStatus", booking.status);
+  const displayedStatusMeta = bookingMeta;
+  const displayedStatusLabel = enumLabel("bookingStatus", booking.status);
 
   return (
     <div className="p-4 sm:p-6">
@@ -111,20 +105,6 @@ export default function BookingDetail() {
           </div>
         )}
 
-        {complaint && (
-          <Alert
-            className="mt-6"
-            type={complaint.status === "RESOLVED" || complaint.status === "CLOSED" ? "success" : "info"}
-            showIcon
-            message={t(`customer:complaintStatus.${complaint.status}`)}
-            description={
-              complaint.resolution
-                ? t("customer:complaintStatus.resolution", { resolution: complaint.resolution })
-                : undefined
-            }
-          />
-        )}
-
         {(booking.status === "COMPLETED" || booking.status === "COMPLAINT_OPENED") && (
           <div className="mt-6 flex flex-wrap gap-3">
             {booking.status === "COMPLETED" && !booking.review && (
@@ -132,7 +112,7 @@ export default function BookingDetail() {
                 <Button size="large">{t("customer:bookingDetail.rateThisService")}</Button>
               </Link>
             )}
-            {!complaint && (
+            {!booking.qualityIssues?.length && (
               <Link to={`/bookings/${booking.id}/complaint`}>
                 <Button size="large">{t("customer:bookingDetail.fileComplaint")}</Button>
               </Link>

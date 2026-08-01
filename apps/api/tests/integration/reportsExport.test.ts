@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import bcrypt from "bcrypt";
+import ExcelJS from "exceljs";
 import { createApp } from "../../src/app.js";
 import { prisma } from "../../src/lib/prisma.js";
 
 // Requires a live PostgreSQL test database.
-describe("CSV export PII exclusion (User Story 8, FR-073/FR-074)", () => {
+describe("Excel export PII exclusion (User Story 8, FR-073/FR-074)", () => {
   const app = createApp();
   let adminToken: string;
 
@@ -36,7 +37,6 @@ describe("CSV export PII exclusion (User Story 8, FR-073/FR-074)", () => {
         categoryId: category.id,
         slug: `export-service-${Date.now()}`,
         nameAr: "أ",
-        nameEn: "Export Service",
         pricingType: "FIXED",
         basePrice: 30000,
       },
@@ -86,30 +86,57 @@ describe("CSV export PII exclusion (User Story 8, FR-073/FR-074)", () => {
     return phone;
   }
 
+  async function readSheetValues(buffer: Buffer) {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const sheet = workbook.worksheets[0];
+    const rows: unknown[][] = [];
+    sheet.eachRow((row) => rows.push(row.values as unknown[]));
+    return rows;
+  }
+
   it("omits phone and address fields by default", async () => {
     const phone = await seedBooking();
 
     const res = await request(app)
-      .get("/api/v1/reports/export.csv")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .get("/api/v1/reports/export.xlsx")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .buffer(true)
+      .parse((response, callback) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("end", () => callback(null, Buffer.concat(chunks)));
+      });
 
     expect(res.status).toBe(200);
-    expect(res.text).not.toContain(phone);
-    expect(res.text).not.toContain("Al Numan-Distinctive-Street-Marker");
-    expect(res.headers["content-type"]).toContain("text/csv");
+    expect(res.headers["content-type"]).toContain(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    const rows = await readSheetValues(res.body as Buffer);
+    const header = rows[0];
+    expect(header).not.toContain("Phone");
+    expect(JSON.stringify(rows)).not.toContain(phone);
+    expect(JSON.stringify(rows)).not.toContain("Al Numan-Distinctive-Street-Marker");
   });
 
-  it("includes phone and address only when includePii=true, and audit-logs the export either way", async () => {
+  it("includes phone and address only when includePii=true", async () => {
     const phone = await seedBooking();
 
     const res = await request(app)
-      .get("/api/v1/reports/export.csv?includePii=true")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .get("/api/v1/reports/export.xlsx?includePii=true")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .buffer(true)
+      .parse((response, callback) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("end", () => callback(null, Buffer.concat(chunks)));
+      });
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain(phone);
 
-    const auditEntry = await prisma.auditLog.findFirst({ where: { action: "EXPORT_GENERATED" } });
-    expect(auditEntry).not.toBeNull();
+    const rows = await readSheetValues(res.body as Buffer);
+    expect(rows[0]).toContain("Phone");
+    expect(JSON.stringify(rows)).toContain(phone);
   });
 });

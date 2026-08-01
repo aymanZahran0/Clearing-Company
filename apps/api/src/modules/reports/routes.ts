@@ -40,16 +40,7 @@ reportsRouter.get(
 );
 
 reportsRouter.get(
-  "/reports/quality",
-  authenticate,
-  requireRole("ADMIN"),
-  asyncHandler(async (_req, res) => {
-    res.json(await service.getQualityReport());
-  })
-);
-
-reportsRouter.get(
-  "/reports/export.csv",
+  "/reports/export.xlsx",
   authenticate,
   requireRole("ADMIN"),
   validateRequest({ query: exportQuerySchema }),
@@ -59,12 +50,12 @@ reportsRouter.get(
       to?: Date;
       includePii: boolean;
     };
-    const csv = await service.exportBookingsCsv(
+    const buffer = await service.exportBookingsWorkbook(
       { from, to, includePii },
       { actorUserId: req.user!.id, ipAddress: req.ip, userAgent: req.headers["user-agent"] }
     );
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", "attachment; filename=bookings-export.csv");
-    res.send(csv);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", "attachment; filename=bookings-export.xlsx");
+    res.send(buffer);
   })
 );

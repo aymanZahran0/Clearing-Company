@@ -1084,21 +1084,26 @@ paths:
       summary: Completion rate, cancellation rate, average rating, complaint rate (Admin)
       responses: { "200": { description: OK } }
 
-  /reports/export.csv:
+  /reports/export.xlsx:
     get:
       tags: [Reports]
-      summary: Export a filtered report as CSV/spreadsheet-compatible file (Admin)
+      summary: Export bookings as a formatted Excel workbook (Admin)
       parameters:
         - in: query
-          name: report
-          required: true
-          schema: { type: string, enum: [bookings, revenue, customers, quality] }
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: includePii
+          schema: { type: boolean, default: false }
       responses:
         "200":
           description: OK
           content:
-            text/csv:
-              schema: { type: string }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
 
   /audit-logs:
     get:

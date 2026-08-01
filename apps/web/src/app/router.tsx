@@ -40,28 +40,20 @@ import Categories from "../admin/pages/catalog/Categories";
 import AdminServiceAreas from "../admin/pages/catalog/ServiceAreas";
 import Services from "../admin/pages/catalog/Services";
 import AddOns from "../admin/pages/catalog/AddOns";
-import CatalogChecklist from "../admin/pages/catalog/CatalogChecklist";
-import AdminReviews from "../admin/pages/quality/Reviews";
 import AdminComplaints from "../admin/pages/quality/Complaints";
 import AdminComplaintDetail from "../admin/pages/quality/ComplaintDetail";
 import SubscriptionsList from "../admin/pages/subscriptions/List";
 import SubscriptionEditor from "../admin/pages/subscriptions/Editor";
-import CommercialAccounts from "../admin/pages/commercial/Accounts";
-import CommercialContracts from "../admin/pages/commercial/Contracts";
 import RevenueReport from "../admin/pages/reports/Revenue";
 import ServicesReport from "../admin/pages/reports/Services";
-import QualityReport from "../admin/pages/reports/Quality";
 import ExportReport from "../admin/pages/reports/Export";
-import AuditLogViewer from "../admin/pages/reports/AuditLogViewer";
 import WebsiteContent from "../admin/pages/content/WebsiteContent";
 import FAQs from "../admin/pages/content/FAQs";
+import SocialMedia from "../admin/pages/content/SocialMedia";
 import SystemSettings from "../admin/pages/settings/SystemSettings";
 import DiscountCodes from "../admin/pages/pricing/DiscountCodes";
-import PricingRules from "../admin/pages/pricing/PricingRules";
 import NotificationTemplates from "../admin/pages/notifications/Templates";
 import NotificationLog from "../admin/pages/notifications/Log";
-import AdminAccountsList from "../admin/pages/accounts/List";
-import JobRuns from "../admin/pages/reports/JobRuns";
 import RescheduleRequestsList from "../admin/pages/reschedule-requests/List";
 import AdminCustomersList from "../admin/pages/customers/List";
 import AdminCustomerDetail from "../admin/pages/customers/Detail";
@@ -438,39 +430,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/catalog/checklist",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <CatalogChecklist />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/catalog/services/:slug/images",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <ServiceImages />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/quality/reviews",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <AdminReviews />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
     path: "/admin/quality/complaints",
     errorElement: <RouteErrorPage />,
     element: (
@@ -488,6 +447,17 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <AdminComplaintDetail />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/catalog/services/:slug/images",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <ServiceImages />
         </AdminShell>
       </RequireRole>
     ),
@@ -526,28 +496,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/commercial",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <CommercialAccounts />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/commercial/:id",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <CommercialContracts />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
     path: "/admin/reports/revenue",
     errorElement: <RouteErrorPage />,
     element: (
@@ -570,45 +518,12 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/reports/quality",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <QualityReport />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
     path: "/admin/reports/export",
     errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
           <ExportReport />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/reports/audit-log",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <AuditLogViewer />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/reports/job-runs",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <JobRuns />
         </AdminShell>
       </RequireRole>
     ),
@@ -647,23 +562,23 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/content/social-media",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <SocialMedia />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
     path: "/admin/settings",
     errorElement: <RouteErrorPage />,
     element: (
       <RequireRole role="ADMIN">
         <AdminShell>
           <SystemSettings />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/accounts",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <AdminAccountsList />
         </AdminShell>
       </RequireRole>
     ),
@@ -697,17 +612,6 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <DiscountCodes />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/pricing/rules",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <PricingRules />
         </AdminShell>
       </RequireRole>
     ),

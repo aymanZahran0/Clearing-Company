@@ -85,6 +85,7 @@ export const baseApi = createApi({
     "PricingRule",
     "ContentBlock",
     "Faq",
+    "SocialMediaLink",
     "Setting",
     "NotificationTemplate",
     "NotificationLog",

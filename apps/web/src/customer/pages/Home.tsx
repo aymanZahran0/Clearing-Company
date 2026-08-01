@@ -6,7 +6,6 @@ import { HowItWorksSection } from "../components/home/HowItWorksSection";
 import { WhyChooseUsSection } from "../components/home/WhyChooseUsSection";
 import { FaqPreviewSection } from "../components/home/FaqPreviewSection";
 import { ContactCtaSection } from "../components/home/ContactCtaSection";
-import { PublicFooter } from "../components/home/PublicFooter";
 
 // Content-block keys with a dedicated, structured section component
 // (plan.md D3). Any other active SECTION block still renders, generically,
@@ -31,7 +30,7 @@ export default function Home() {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    <main className="home-page overflow-hidden bg-paper text-ink">
+    <main className="home-page overflow-hidden text-ink">
       <HeroSection />
       <ServicesSection />
       <HowItWorksSection />
@@ -48,7 +47,6 @@ export default function Home() {
           </div>
         </section>
       ))}
-      <PublicFooter />
     </main>
   );
 }

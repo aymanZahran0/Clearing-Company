@@ -8,6 +8,7 @@ import { enumLabel } from "../../../lib/enumLabels";
 import { enumOptions } from "../../../lib/enumOptions";
 import { SuspendCustomerDialog } from "./SuspendCustomerDialog";
 import { ReactivateCustomerDialog } from "./ReactivateCustomerDialog";
+import { ViewDetailsLink } from "../../components/ViewDetailsLink";
 
 const STATUSES: CustomerSummary["status"][] = ["ACTIVE", "INVITED", "SUSPENDED"];
 
@@ -98,9 +99,10 @@ export default function CustomersList() {
           { title: t("admin:customers.bookingsCount"), dataIndex: "bookingsCount" },
           {
             title: t("admin:common.actions"),
+            align: "center",
             render: (_: unknown, row: CustomerSummary) => (
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/admin/customers/${row.id}`}>{t("admin:customers.viewDetails")}</Link>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <ViewDetailsLink to={`/admin/customers/${row.id}`} />
                 {row.status === "SUSPENDED" ? (
                   <ReactivateCustomerDialog customerId={row.id} triggerSize="small" />
                 ) : (

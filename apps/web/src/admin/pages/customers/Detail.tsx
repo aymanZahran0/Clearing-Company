@@ -1,4 +1,4 @@
-import { Button, Descriptions, List, Skeleton, Tag } from "antd";
+import { Descriptions, List, Skeleton, Tag } from "antd";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { useGetCustomerQuery } from "../../../api/customersApi";
@@ -8,6 +8,7 @@ import { formatCurrency, formatDateTime, formatSaudiPhoneForDisplay } from "../.
 import { enumLabel } from "../../../lib/enumLabels";
 import { SuspendCustomerDialog } from "./SuspendCustomerDialog";
 import { ReactivateCustomerDialog } from "./ReactivateCustomerDialog";
+import { ViewDetailsLink } from "../../components/ViewDetailsLink";
 
 const STATUS_COLOR: Record<string, string> = { ACTIVE: "green", INVITED: "gold", SUSPENDED: "red" };
 
@@ -80,9 +81,7 @@ export default function CustomerDetail() {
         renderItem={(booking) => (
           <List.Item
             actions={[
-              <Link key="view" to={`/admin/bookings/${booking.id}`}>
-                <Button size="small">{t("admin:customers.viewDetails")}</Button>
-              </Link>,
+              <ViewDetailsLink key="view" to={`/admin/bookings/${booking.id}`} />,
             ]}
           >
             <span>

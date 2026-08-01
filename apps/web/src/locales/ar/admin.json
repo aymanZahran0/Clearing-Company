@@ -113,8 +113,8 @@
   "checklistTemplate": {
     "addItem": "إضافة عنصر",
     "currentVersion": "الإصدار الحالي: {{version}}",
-    "labelAr": "التسمية (عربي)",
-    "labelEn": "التسمية (إنجليزي)",
+    "labelAr": "التسمية",
+    "labelEn": "التسمية",
     "minItemsError": "أضف عنصراً واحداً على الأقل",
     "published": "تم نشر الإصدار {{version}}",
     "publishError": "تعذر نشر قالب القائمة",
@@ -157,11 +157,10 @@
   },
   "content": {
     "active": "نشط",
-    "answerAr": "الإجابة (عربي)",
-    "answerEn": "الإجابة (إنجليزي)",
+    "answerAr": "الإجابة",
     "blockSaved": "تم حفظ عنصر المحتوى",
     "blockSaveError": "تعذر حفظ عنصر المحتوى",
-    "bodyAr": "النص (عربي)",
+    "bodyAr": "النص",
     "bodyEn": "النص (إنجليزي)",
     "contentBlock": "عنصر المحتوى",
     "faqAdded": "تمت إضافة سؤال شائع",
@@ -171,9 +170,8 @@
     "newFaq": "سؤال شائع جديد",
     "newFaqItem": "سؤال شائع جديد",
     "newOrUpdateBlock": "إضافة / تحديث عنصر",
-    "questionAr": "السؤال (عربي)",
-    "questionEn": "السؤال (إنجليزي)",
-    "titleAr": "العنوان (عربي)",
+    "questionAr": "السؤال",
+    "titleAr": "العنوان",
     "titleEn": "العنوان (إنجليزي)",
     "type": "النوع",
     "websiteContentTitle": "محتوى الموقع"
@@ -266,6 +264,7 @@
     "rescheduleRequests": "طلبات إعادة الجدولة",
     "websiteContent": "محتوى الموقع",
     "faqs": "الأسئلة الشائعة",
+    "socialMedia": "التواصل الاجتماعي",
     "systemSettings": "إعدادات النظام",
     "adminAccounts": "حسابات المسؤولين",
     "discountCodes": "رموز الخصم",
@@ -295,6 +294,12 @@
     "calculation": "طريقة الاحتساب",
     "calculationType": "نوع الاحتساب",
     "code": "الرمز",
+    "activate": "تفعيل",
+    "cannotDeleteUsedCode": "لا يمكن حذف رمز استُخدم من قبل حفاظاً على سجل الحجوزات",
+    "codeActivated": "تم تفعيل رمز الخصم",
+    "codeDeactivated": "تم تعطيل رمز الخصم",
+    "codeDeleted": "تم حذف رمز الخصم",
+    "deleteCodeConfirm": "هل تريد حذف رمز الخصم نهائياً؟",
     "disable": "تعطيل",
     "discountCodeCreated": "تم إنشاء رمز الخصم",
     "discountCodeCreateError": "تعذر إنشاء رمز الخصم",
@@ -313,11 +318,20 @@
     "validRange": "الفترة الصالحة"
   },
   "quality": {
+    "address": "عنوان الخدمة",
+    "bookingReference": "رقم الحجز",
     "category": "الفئة",
     "changeStatus": "تغيير الحالة",
     "complaintsTitle": "الشكاوى",
     "createReworkBooking": "إنشاء حجز إعادة تنفيذ",
     "description": "الوصف",
+    "customerName": "اسم العميل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الجوال",
+    "service": "الخدمة",
+    "serviceDate": "موعد الخدمة",
+    "submittedAt": "تاريخ تقديم الشكوى",
+    "updatedAt": "آخر تحديث",
     "lowRatingReviewsTitle": "التقييمات المنخفضة",
     "qualityIssue": "مشكلة جودة",
     "resolution": "الحل",
@@ -336,13 +350,17 @@
     "averageRating": "متوسط التقييم",
     "completedBookings": "الحجوزات المكتملة",
     "count": "العدد",
-    "downloadCsv": "تنزيل ملف CSV",
+    "dateRangeHelp": "اتركها فارغة لتصدير جميع الحجوزات",
+    "dateRangeLabel": "الفترة الزمنية",
+    "downloadExcel": "تنزيل ملف Excel",
     "entityId": "معرّف الكيان",
     "entityType": "نوع الكيان",
     "exportBookingsTitle": "تصدير الحجوزات",
+    "exportDescription": "نزّل بيانات الحجوزات كملف Excel منسّق لفترة زمنية محددة، مع إمكانية تضمين بيانات العملاء الحساسة عند الحاجة.",
     "exportError": "تعذر إنشاء ملف التصدير",
+    "exportSuccess": "تم تنزيل ملف التصدير بنجاح",
     "filterByEntityType": "تصفية حسب نوع الكيان (مثل الحجز)",
-    "includePii": "تضمين الهاتف والعنوان (يُسجَّل في سجل التدقيق)",
+    "includePii": "تضمين الهاتف والعنوان",
     "qualityIssueStatus": "حالة مشكلة الجودة",
     "qualityReportTitle": "تقرير الجودة",
     "revenue": "الإيرادات",
@@ -398,7 +416,7 @@
     "weekView": "عرض الأسبوع"
   },
   "serviceImages": {
-    "altTextAr": "نص بديل (عربي)",
+    "altTextAr": "نص بديل",
     "altTextEn": "نص بديل (إنجليزي)",
     "delete": "حذف",
     "title": "الصور",
@@ -406,9 +424,31 @@
     "uploadError": "تعذر رفع الصورة — تحقق من نوع الملف (JPEG/PNG/WebP) وحجمه (٥ ميجابايت كحد أقصى)",
     "uploadImage": "رفع صورة"
   },
+  "socialMedia": {
+    "title": "روابط التواصل الاجتماعي",
+    "description": "أضف رابط كل حساب وفعّل الحسابات التي تريد إظهارها في الموقع.",
+    "active": "مفعّل",
+    "urlPlaceholder": "https://...",
+    "urlRequired": "الرجاء إدخال رابط صالح",
+    "saved": "تم حفظ {{platform}}"
+  },
   "settings": {
     "deleteConfirm": "هل تريد حذف هذا الإعداد نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleted": "تم حذف {{key}}",
+    "fields": {
+      "booking_horizon_weeks": {
+        "label": "مدة إتاحة الحجز بالأسابيع",
+        "description": "عدد الأسابيع المتاحة للعملاء لاختيار موعد حجز مسبق."
+      },
+      "default_locale": {
+        "label": "اللغة الافتراضية",
+        "description": "اللغة والمنطقة الافتراضيتان للنظام."
+      },
+      "tax_rate": {
+        "label": "نسبة الضريبة",
+        "description": "نسبة ضريبة القيمة المضافة المطبقة على الأسعار."
+      }
+    },
     "saved": "تم حفظ {{key}}",
     "saveError": "تعذر حفظ {{key}}",
     "title": "إعدادات النظام"

@@ -414,17 +414,6 @@ async function main() {
       data: { bookingId: booking.id, fromStatus: null, toStatus: status, reason: "Seeded sample booking" },
     });
 
-    if (status === "COMPLAINT_OPENED") {
-      await prisma.qualityIssue.create({
-        data: {
-          bookingId: booking.id,
-          source: "COMPLAINT",
-          category: "quality",
-          severity: "MEDIUM",
-          description: "Seeded sample complaint",
-        },
-      });
-    }
   }
 
   // US1/US5: sample public-site content so a fresh environment's Home page
@@ -486,6 +475,14 @@ async function main() {
       await prisma.faqItem.create({ data: item });
     }
   }
+
+  // WhatsApp reuses the number already wired into the click-to-chat CTA
+  // (apps/web/src/lib/whatsapp.ts) so the two stay in sync by default.
+  await prisma.socialMediaLink.upsert({
+    where: { platform: "WHATSAPP" },
+    update: {},
+    create: { platform: "WHATSAPP", url: "https://wa.me/966502266402", active: true },
+  });
 }
 
 main()

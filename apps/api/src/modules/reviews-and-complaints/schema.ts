@@ -22,9 +22,6 @@ export const listQualityIssuesQuerySchema = z.object({
 export type ListQualityIssuesQuery = z.infer<typeof listQualityIssuesQuerySchema>;
 
 export const updateQualityIssueSchema = z.object({
-  category: z.string().trim().min(1).max(100).optional(),
-  severity: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
-  ownerUserId: z.string().uuid().optional(),
   status: z.enum(["OPEN", "IN_REVIEW", "RESOLVED", "CLOSED"]).optional(),
   resolution: z.string().trim().max(2000).optional(),
 });

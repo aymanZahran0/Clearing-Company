@@ -1,55 +1,57 @@
 import { baseApi } from "./baseApi";
 
-export type QualityIssueSource = "REVIEW" | "COMPLAINT" | "CHECKLIST_FAILURE";
 export type QualityIssueSeverity = "LOW" | "MEDIUM" | "HIGH";
 export type QualityIssueStatus = "OPEN" | "IN_REVIEW" | "RESOLVED" | "CLOSED";
 
 export interface QualityIssue {
   id: string;
   bookingId: string;
-  source: QualityIssueSource;
+  source: "REVIEW" | "COMPLAINT" | "CHECKLIST_FAILURE";
   category: string;
   severity: QualityIssueSeverity;
   description: string;
   status: QualityIssueStatus;
-  ownerUserId: string | null;
   resolution: string | null;
-  reworkBookingId: string | null;
-  resolvedAt: string | null;
   createdAt: string;
-}
-
-export interface QualityIssueListResponse {
-  items: QualityIssue[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export interface QualityAlerts {
-  lowRatingCount: number;
-  agedOpenIssues: number;
-  agedThresholdDays: number;
+  updatedAt: string;
+  booking: {
+    referenceNumber: string;
+    preferredDate: string;
+    scheduledStartAt: string | null;
+    customer: {
+      user: {
+        fullName: string;
+        phoneNormalized: string | null;
+        email: string | null;
+      };
+    };
+    items: Array<{ service: { nameAr: string } }>;
+    address?: {
+      city: string;
+      neighborhood: string;
+      street: string | null;
+    };
+  };
 }
 
 export const qualityIssuesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createComplaint: builder.mutation<
       QualityIssue,
-      { bookingId: string; category: string; severity?: QualityIssueSeverity; description: string }
+      { bookingId: string; category: string; description: string }
     >({
-      query: ({ bookingId, ...body }) => ({ url: `/bookings/${bookingId}/complaints`, method: "POST", body }),
+      query: ({ bookingId, ...body }) => ({
+        url: `/bookings/${bookingId}/complaints`,
+        method: "POST",
+        body,
+      }),
       invalidatesTags: ["QualityIssue", "Booking"],
     }),
     listQualityIssues: builder.query<
-      QualityIssueListResponse,
-      { status?: QualityIssueStatus; source?: QualityIssueSource } | void
+      { items: QualityIssue[]; total: number },
+      { status?: QualityIssueStatus; source?: "COMPLAINT" } | void
     >({
       query: (args) => ({ url: "/quality-issues", params: args ?? undefined }),
-      providesTags: ["QualityIssue"],
-    }),
-    getQualityAlerts: builder.query<QualityAlerts, void>({
-      query: () => "/quality-issues/alerts",
       providesTags: ["QualityIssue"],
     }),
     getQualityIssue: builder.query<QualityIssue, string>({
@@ -58,20 +60,9 @@ export const qualityIssuesApi = baseApi.injectEndpoints({
     }),
     updateQualityIssue: builder.mutation<
       QualityIssue,
-      {
-        id: string;
-        category?: string;
-        severity?: QualityIssueSeverity;
-        ownerUserId?: string;
-        status?: QualityIssueStatus;
-        resolution?: string;
-      }
+      { id: string; status?: QualityIssueStatus; resolution?: string }
     >({
       query: ({ id, ...body }) => ({ url: `/quality-issues/${id}`, method: "PATCH", body }),
-      invalidatesTags: ["QualityIssue", "Booking"],
-    }),
-    createReworkBooking: builder.mutation<{ id: string; referenceNumber: string }, string>({
-      query: (id) => ({ url: `/quality-issues/${id}/rework`, method: "POST" }),
       invalidatesTags: ["QualityIssue", "Booking"],
     }),
   }),
@@ -80,8 +71,6 @@ export const qualityIssuesApi = baseApi.injectEndpoints({
 export const {
   useCreateComplaintMutation,
   useListQualityIssuesQuery,
-  useGetQualityAlertsQuery,
   useGetQualityIssueQuery,
   useUpdateQualityIssueMutation,
-  useCreateReworkBookingMutation,
 } = qualityIssuesApi;

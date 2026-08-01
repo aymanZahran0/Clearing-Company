@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Table, Tag, message } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Tooltip, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import {
   useCreateDiscountCodeMutation,
-  useDisableDiscountCodeMutation,
+  useDeleteDiscountCodeMutation,
   useListDiscountCodesQuery,
+  useUpdateDiscountCodeMutation,
   type DiscountCode,
   type DiscountCodeInput,
 } from "../../../api/discountCodesApi";
@@ -28,7 +30,8 @@ export default function DiscountCodes() {
   const { t } = useTranslation();
   const { data, isLoading } = useListDiscountCodesQuery();
   const [createCode, { isLoading: isCreating }] = useCreateDiscountCodeMutation();
-  const [disableCode] = useDisableDiscountCodeMutation();
+  const [updateCode, { isLoading: isUpdating }] = useUpdateDiscountCodeMutation();
+  const [deleteCode, { isLoading: isDeleting }] = useDeleteDiscountCodeMutation();
   const [open, setOpen] = useState(false);
 
   async function onFinish(values: FormValues) {
@@ -44,6 +47,24 @@ export default function DiscountCodes() {
       await createCode(body).unwrap();
       setOpen(false);
       message.success(t("admin:pricing.discountCodeCreated"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
+
+  async function onToggleActive(row: DiscountCode, active: boolean) {
+    try {
+      await updateCode({ id: row.id, body: { active } }).unwrap();
+      message.success(t(active ? "admin:pricing.codeActivated" : "admin:pricing.codeDeactivated"));
+    } catch {
+      // toast shown by the global RTK Query error middleware
+    }
+  }
+
+  async function onDelete(id: string) {
+    try {
+      await deleteCode(id).unwrap();
+      message.success(t("admin:pricing.codeDeleted"));
     } catch {
       // toast shown by the global RTK Query error middleware
     }
@@ -78,16 +99,48 @@ export default function DiscountCodes() {
           {
             title: t("admin:content.active"),
             dataIndex: "active",
-            render: (v: boolean) => <Tag>{v ? t("admin:common.active") : t("admin:common.disabled")}</Tag>,
+            align: "center",
+            render: (active: boolean, row: DiscountCode) => (
+              <Tooltip title={t(active ? "admin:pricing.disable" : "admin:pricing.activate")}>
+                <Switch
+                  checked={active}
+                  loading={isUpdating}
+                  aria-label={t(active ? "admin:pricing.disable" : "admin:pricing.activate") as string}
+                  onChange={(checked) => onToggleActive(row, checked)}
+                />
+              </Tooltip>
+            ),
           },
           {
             title: t("admin:common.actions"),
-            render: (_: unknown, row: DiscountCode) =>
-              row.active && (
-                <Button danger size="small" onClick={() => disableCode(row.id)}>
-                  {t("admin:pricing.disable")}
-                </Button>
-              ),
+            align: "center",
+            render: (_: unknown, row: DiscountCode) => {
+              const hasUsage = row.usageCount > 0;
+              const button = (
+                <Button
+                  danger
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  aria-label={t("admin:common.delete") as string}
+                  disabled={hasUsage}
+                  loading={isDeleting}
+                />
+              );
+
+              return hasUsage ? (
+                <Tooltip title={t("admin:pricing.cannotDeleteUsedCode")}>{button}</Tooltip>
+              ) : (
+                <Popconfirm
+                  title={t("admin:pricing.deleteCodeConfirm")}
+                  okText={t("admin:common.delete")}
+                  cancelText={t("common.cancel")}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => onDelete(row.id)}
+                >
+                  {button}
+                </Popconfirm>
+              );
+            },
           },
         ]}
       />
