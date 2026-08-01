@@ -43,6 +43,10 @@ const helmet: typeof import("helmet").default = require("helmet");
 export function createApp() {
   const app = express();
 
+  // Vercel terminates TLS and forwards the client IP through one trusted
+  // proxy hop. This is required for accurate express-rate-limit keys.
+  app.set("trust proxy", 1);
+
   // Order matters: logging first (captures everything), then security
   // headers, CORS, body parsing, rate limiting, routes, error handler last.
   app.use(requestLogger);
