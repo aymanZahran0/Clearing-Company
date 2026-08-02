@@ -45,6 +45,19 @@ import { PublicFooter } from "../../customer/components/home/PublicFooter";
 
 const { Header, Content, Sider } = Layout;
 
+// The marketing footer belongs only to top-level destinations exposed in
+// the customer navbar. Task/detail/auth flows stay focused and footer-free.
+const PUBLIC_FOOTER_ROUTES = new Set([
+  "/",
+  "/services",
+  "/service-areas",
+  "/faq",
+  "/bookings",
+  "/subscriptions",
+  "/notifications",
+  "/invoices",
+]);
+
 /**
  * RTL-aware shell shared by all Customer Portal screens. Nav items collapse
  * into a Drawer below the `sm` breakpoint so the header never overflows on
@@ -59,6 +72,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const user = useSelector((state: RootState) => state.auth.user);
   const [logout] = useLogoutMutation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const showPublicFooter = PUBLIC_FOOTER_ROUTES.has(location.pathname);
 
   // Keep the mobile navigation in sync with routing, including navigations
   // triggered outside the menu (breadcrumbs, redirects, or browser history).
@@ -91,7 +105,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      "flex min-h-11 items-center rounded-md px-3 py-3 text-sm transition-colors duration-200 sm:inline-flex sm:text-base",
+      "mobile-type-nav flex min-h-11 items-center rounded-md px-3 py-3 text-base transition-colors duration-200 sm:inline-flex",
       isActive
         ? "bg-[#E7F4F9] font-bold text-[#00375B]"
         : "text-[#006477] hover:bg-gray-50 hover:text-[#00375B]",
@@ -241,7 +255,7 @@ export function AppShell({ children }: PropsWithChildren) {
       <Button
         type="text"
         size="large"
-        className={`flex max-w-32 items-center gap-2 px-3 text-sm font-semibold sm:hidden ${
+        className={`mobile-type-nav flex max-w-32 items-center gap-2 px-3 font-semibold sm:hidden ${
           location.pathname.startsWith("/profile")
             ? "bg-[#E7F4F9] text-[#00375B] hover:!bg-[#E7F4F9]"
             : "bg-gray-50 hover:!bg-gray-100"
@@ -304,7 +318,7 @@ export function AppShell({ children }: PropsWithChildren) {
         >
           {children}
         </div>
-        {!["/login", "/register"].includes(location.pathname) && <PublicFooter />}
+        {showPublicFooter && <PublicFooter />}
       </Content>
       {!["/login", "/register"].includes(location.pathname) && <WhatsAppFloatingButton />}
     </Layout>
@@ -409,7 +423,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   };
 
   const accountButtonClass =
-    "flex max-w-32 items-center gap-2 px-3 text-sm font-semibold sm:max-w-56 sm:text-base bg-gray-50 hover:!bg-gray-100";
+    "mobile-type-nav flex max-w-32 items-center gap-2 px-3 font-semibold sm:max-w-56 bg-gray-50 hover:!bg-gray-100";
 
   const accountDropdown = user ? (
     <Dropdown menu={accountMenu} trigger={["click"]} placement="bottom">

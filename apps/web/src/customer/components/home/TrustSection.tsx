@@ -29,14 +29,14 @@ export function TrustSection({ block }: TrustSectionProps) {
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {stats?.completedBookingsCount !== undefined && (
               <div className="rounded-2xl bg-white px-6 py-5">
-                <p className="text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                <p className="mobile-type-metric text-2xl font-black text-primary sm:text-3xl">
                   <CountUp value={stats.completedBookingsCount}>{(count) => t("content:home.trust.completedBookings", { count })}</CountUp>
                 </p>
               </div>
             )}
             {stats?.averageRating !== undefined && (
               <div className="rounded-2xl bg-white px-6 py-5">
-                <p className="text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                <p className="mobile-type-metric text-2xl font-black text-primary sm:text-3xl">
                   <CountUp value={stats.averageRating} decimals={1}>{(rating) => `${rating}/5`}</CountUp>
                 </p>
               </div>

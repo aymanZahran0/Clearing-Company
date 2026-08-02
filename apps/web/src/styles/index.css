@@ -145,6 +145,13 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
 .home-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 639px) {
+  .mobile-type-display { font-size: 1.875rem; font-weight: 800; }
+  .mobile-type-page-title { font-size: 1.5rem; font-weight: 800; }
+  .mobile-type-subheading { font-size: 1rem; font-weight: 700; }
+  .mobile-type-metric { font-size: 1.5rem; font-weight: 800; }
+  .mobile-type-price { font-size: 1.125rem; font-weight: 800; }
+  .mobile-type-nav { font-size: .875rem; }
+  .mobile-type-leading { line-height: 1.75; }
   .home-section-title { font-size: 1.5rem; font-weight: 800; line-height: 1.35; }
   .home-hero { padding-block: 3.5rem; }
   .home-hero-visual { min-height: 16rem; }

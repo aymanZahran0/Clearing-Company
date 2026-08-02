@@ -14,7 +14,7 @@ export default function ServiceAreas() {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-bold sm:text-2xl">{t("content:serviceAreas.title")}</h1>
+      <h1 className="mobile-type-page-title mb-4 text-2xl font-bold">{t("content:serviceAreas.title")}</h1>
       {isLoading && <Skeleton active />}
       <Row gutter={[16, 16]}>
         {data?.map((area) => (

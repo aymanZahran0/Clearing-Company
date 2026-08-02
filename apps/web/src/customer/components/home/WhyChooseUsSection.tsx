@@ -41,7 +41,7 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
             <h2 id="why-us-title" className="home-section-title">
               {t("content:home.whyUs.title")}
             </h2>
-            <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:leading-8">{intro}</p>
+            <p className="mobile-type-leading mt-5 max-w-xl text-base leading-8 text-muted">{intro}</p>
 
             <div className="mt-8 space-y-6">
               {FALLBACK_FEATURE_KEYS.map((n) => (
@@ -94,7 +94,7 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
               </h3>
               <div className="mt-7 grid grid-cols-2 gap-x-8 gap-y-7 text-start">
                 <div>
-                  <p className="m-0 text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                  <p className="mobile-type-metric m-0 text-3xl font-black text-primary">
                     +
                     <CountUp value={stats?.completedBookingsCount ?? 0}>
                       {(count) => count}
@@ -105,7 +105,7 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
                   </p>
                 </div>
                 <div>
-                  <p className="m-0 text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                  <p className="mobile-type-metric m-0 text-3xl font-black text-primary">
                     {stats?.averageRating !== undefined ? (
                       <CountUp value={stats.averageRating} decimals={1}>
                         {(rating) => `${rating}/5`}
