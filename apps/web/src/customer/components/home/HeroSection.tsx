@@ -8,7 +8,7 @@ interface HeroSectionProps { block?: ContentBlock; }
 
 export function HeroSection({ block }: HeroSectionProps) {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const title = block ? (isAr ? block.titleAr : block.titleEn || block.titleAr) : t("content:home.hero.fallbackTitle");
   const body = block ? (isAr ? block.bodyAr : block.bodyEn || block.bodyAr) : t("content:home.hero.fallbackBody");
 

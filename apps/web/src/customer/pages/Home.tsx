@@ -19,7 +19,7 @@ const KNOWN_SECTION_KEYS = new Set(["home-hero", "home-why-us", "home-trust", "h
 export default function Home() {
   const { i18n } = useTranslation();
   const { data } = useListPublicContentBlocksQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
 
   const sections = (data ?? []).filter((block) => block.type === "SECTION");
   const whyUsBlock = sections.find((b) => b.key === "home-why-us");

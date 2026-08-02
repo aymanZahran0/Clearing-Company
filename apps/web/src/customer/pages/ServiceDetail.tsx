@@ -13,7 +13,7 @@ export default function ServiceDetail() {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { data: service, isLoading } = useGetServiceBySlugQuery(slug ?? "", { skip: !slug });
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
 
   if (isLoading) {
     return (

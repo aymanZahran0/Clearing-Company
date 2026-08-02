@@ -217,7 +217,7 @@ export default function Services() {
               virtual={false}
               options={(categories ?? []).map((c) => ({
                 value: c.id,
-                label: i18n.language === "ar" ? c.nameAr : c.nameEn,
+                label: i18n.language.startsWith("ar") ? c.nameAr : c.nameEn,
               }))}
             />
           </Form.Item>

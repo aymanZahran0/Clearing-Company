@@ -20,7 +20,7 @@ export default function Services() {
           {
             title: t("admin:reports.service"),
             render: (_: unknown, row: { nameAr: string; nameEn: string }) =>
-              i18n.language === "ar" ? row.nameAr : row.nameEn,
+              i18n.language.startsWith("ar") ? row.nameAr : row.nameEn,
           },
           { title: t("admin:reports.completedBookings"), dataIndex: "count" },
           {

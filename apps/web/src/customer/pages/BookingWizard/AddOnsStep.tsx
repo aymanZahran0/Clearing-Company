@@ -30,7 +30,7 @@ export function AddOnsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
         {service?.addOns.map((addOn) => (
           <Checkbox key={addOn.id} value={addOn.id} className="flex items-center justify-between">
             <span>
-              {i18n.language === "ar" ? addOn.nameAr : addOn.nameEn} —{" "}
+              {i18n.language.startsWith("ar") ? addOn.nameAr : addOn.nameEn} —{" "}
               {formatCurrency(addOn.unitPrice, i18n.language)}
             </span>
           </Checkbox>

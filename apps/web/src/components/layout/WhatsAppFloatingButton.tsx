@@ -8,7 +8,7 @@ import { buildWhatsAppUrl } from "../../lib/whatsapp";
 // contact section.
 export function WhatsAppFloatingButton() {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const message = isAr
     ? "مرحبًا، أريد حجز خدمة تنظيف."
     : "Hello, I would like to book a cleaning service.";

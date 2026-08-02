@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import dayjs from "dayjs";
 import "dayjs/locale/ar-sa";
 import { store } from "./store";
-import { RTL_LOCALES } from "../lib/i18n";
+import { isArabicLocale } from "../lib/i18n";
 import { AuthBootstrap } from "../features/auth/AuthBootstrap";
 import "../lib/i18n";
 
@@ -18,16 +18,16 @@ import "../lib/i18n";
  */
 function LocaleAwareConfigProvider({ children }: PropsWithChildren) {
   const { i18n } = useTranslation();
-  const direction = RTL_LOCALES.has(i18n.language) ? "rtl" : "ltr";
-  const isArabic = RTL_LOCALES.has(i18n.language);
+  const isArabic = isArabicLocale(i18n.language);
+  const direction = isArabic ? "rtl" : "ltr";
 
   useEffect(() => {
     document.documentElement.dir = direction;
     document.documentElement.lang = i18n.language;
     // Locale-sensitive dayjs .format() calls (e.g. weekday/month names in
     // the Admin schedule views) otherwise always render in English.
-    dayjs.locale(RTL_LOCALES.has(i18n.language) ? "ar-sa" : "en");
-  }, [direction, i18n.language]);
+    dayjs.locale(isArabic ? "ar-sa" : "en");
+  }, [direction, i18n.language, isArabic]);
 
   return (
     <ConfigProvider

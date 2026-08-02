@@ -86,7 +86,7 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   function toggleLocale() {
-    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
+    i18n.changeLanguage(i18n.language.startsWith("ar") ? "en" : "ar");
   }
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -267,7 +267,7 @@ export function AppShell({ children }: PropsWithChildren) {
           {desktopAuthLinks}
           {accountDropdown}
           <Button size="large" onClick={toggleLocale} aria-label="Toggle language">
-            {i18n.language === "ar" ? "EN" : "AR"}
+            {i18n.language.startsWith("ar") ? "EN" : "AR"}
           </Button>
         </div>
         <div className="flex items-center gap-1 sm:hidden">
@@ -281,7 +281,7 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
       </Header>
       <Drawer
-        placement={i18n.language === "ar" ? "right" : "left"}
+        placement={i18n.language.startsWith("ar") ? "right" : "left"}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={280}
@@ -290,7 +290,7 @@ export function AppShell({ children }: PropsWithChildren) {
           {navItems}
           {drawerAuthLinks}
           <Button size="large" className="mx-3 mt-3" onClick={toggleLocale}>
-            {i18n.language === "ar" ? "English" : "العربية"}
+            {i18n.language.startsWith("ar") ? "English" : "العربية"}
           </Button>
         </div>
       </Drawer>
@@ -375,7 +375,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   }
 
   function toggleLocale() {
-    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
+    i18n.changeLanguage(i18n.language.startsWith("ar") ? "en" : "ar");
   }
 
   const menu = (
@@ -462,7 +462,7 @@ export function AdminShell({ children }: PropsWithChildren) {
           <div className="flex items-center gap-2">
             {accountDropdown}
             <Button size="large" onClick={toggleLocale} aria-label="Toggle language">
-              {i18n.language === "ar" ? "EN" : "AR"}
+              {i18n.language.startsWith("ar") ? "EN" : "AR"}
             </Button>
             <Button
               className="lg:hidden"
@@ -481,7 +481,7 @@ export function AdminShell({ children }: PropsWithChildren) {
             {menu}
           </Sider>
           <Drawer
-            placement={i18n.language === "ar" ? "right" : "left"}
+            placement={i18n.language.startsWith("ar") ? "right" : "left"}
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
             width={260}

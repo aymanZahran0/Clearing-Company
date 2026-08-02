@@ -11,7 +11,7 @@ interface ContactCtaSectionProps {
 
 export function ContactCtaSection({ block }: ContactCtaSectionProps) {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const whatsappMessage = isAr
     ? "مرحبًا، أريد حجز خدمة تنظيف."
     : "Hello, I would like to book a cleaning service.";

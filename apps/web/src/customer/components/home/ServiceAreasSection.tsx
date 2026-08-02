@@ -10,7 +10,7 @@ import { Reveal } from "./HomeMotion";
 export function ServiceAreasSection() {
   const { t, i18n } = useTranslation();
   const { data: areas, isLoading } = useListServiceAreasQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
 
   if (!isLoading && (areas ?? []).length === 0) return null;
 

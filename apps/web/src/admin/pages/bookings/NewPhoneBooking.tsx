@@ -184,7 +184,7 @@ export default function NewPhoneBooking() {
                 size="large"
                 options={areas?.map((a) => ({
                   value: a.id,
-                  label: i18n.language === "ar" ? a.nameAr : a.nameEn,
+                  label: i18n.language.startsWith("ar") ? a.nameAr : a.nameEn,
                 }))}
               />
             </Form.Item>

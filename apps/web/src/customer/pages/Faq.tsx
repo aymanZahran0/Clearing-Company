@@ -10,7 +10,7 @@ import { useListPublicFaqsQuery } from "../../api/contentApi";
 export default function Faq() {
   const { t, i18n } = useTranslation();
   const { data, isLoading } = useListPublicFaqsQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const faqs = data ?? [];
 
   return (

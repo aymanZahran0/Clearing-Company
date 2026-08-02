@@ -16,7 +16,9 @@ import enEnums from "../locales/en/enums.json";
 
 // Arabic is the primary locale (constitution Principle III); English is a
 // fully supported secondary locale, not a stub.
-export const RTL_LOCALES = new Set(["ar"]);
+export function isArabicLocale(language?: string) {
+  return language?.toLowerCase().split("-")[0] === "ar";
+}
 
 // research.md R11: namespaced by app area so each admin/customer/catalog/
 // content feature owns its own translation file instead of one growing
@@ -36,6 +38,12 @@ i18n
     detection: {
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
+      // Mobile browsers commonly expose Arabic as ar-SA/ar-EG. Normalize it
+      // so every content and layout branch sees the supported base locale.
+      convertDetectedLanguage: (language) => {
+        const normalized = language.toLowerCase();
+        return normalized.split("-")[0] ?? normalized;
+      },
     },
   });
 

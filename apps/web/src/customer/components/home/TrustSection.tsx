@@ -14,7 +14,7 @@ interface TrustSectionProps {
 export function TrustSection({ block }: TrustSectionProps) {
   const { t, i18n } = useTranslation();
   const { data: stats } = useGetPublicStatsQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const hasStats = stats?.completedBookingsCount !== undefined || stats?.averageRating !== undefined;
 
   return (

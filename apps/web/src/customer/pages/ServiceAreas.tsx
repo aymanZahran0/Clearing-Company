@@ -10,7 +10,7 @@ import { formatCurrency } from "../../lib/formatters";
 export default function ServiceAreas() {
   const { t, i18n } = useTranslation();
   const { data, isLoading } = useListServiceAreasQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
 
   return (
     <div className="p-4 sm:p-6">

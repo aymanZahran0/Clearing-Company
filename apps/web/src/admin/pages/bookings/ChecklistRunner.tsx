@@ -70,7 +70,7 @@ export function ChecklistRunner({ bookingId }: { bookingId: string }) {
         return (
           <div key={item.id} className="mb-4 rounded border border-gray-200 p-3">
             <div className="mb-2 flex items-center gap-2">
-              <span className="font-medium">{i18n.language === "ar" ? item.labelAr : item.labelEn}</span>
+              <span className="font-medium">{i18n.language.startsWith("ar") ? item.labelAr : item.labelEn}</span>
               {item.required && <Tag color="red">{t("admin:checklist.required")}</Tag>}
             </div>
 

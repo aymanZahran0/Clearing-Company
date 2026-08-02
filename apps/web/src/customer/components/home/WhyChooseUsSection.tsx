@@ -19,7 +19,7 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
   const { t, i18n } = useTranslation();
   const { data: areas, isLoading: areasLoading } = useListServiceAreasQuery();
   const { data: stats } = useGetPublicStatsQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const hasStats =
     stats?.completedBookingsCount !== undefined ||
     stats?.averageRating !== undefined;

@@ -11,7 +11,7 @@ const MAX_FAQS_SHOWN = 4;
 export function FaqPreviewSection() {
   const { t, i18n } = useTranslation();
   const { data: faqs, isLoading } = useListPublicFaqsQuery();
-  const isAr = i18n.language === "ar";
+  const isAr = i18n.language.startsWith("ar");
   const preview = (faqs ?? []).slice(0, MAX_FAQS_SHOWN);
 
   if (!isLoading && preview.length === 0) return null;
