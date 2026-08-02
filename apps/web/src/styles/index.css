@@ -145,12 +145,18 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
 .home-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 639px) {
+  .home-section-title { font-size: 1.5rem; font-weight: 800; line-height: 1.35; }
   .home-hero { padding-block: 3.5rem; }
   .home-hero-visual { min-height: 16rem; }
   .home-hero-mark { height: 15rem; }
   .home-services-header { align-items: stretch; flex-direction: column; gap: 1.25rem; }
   .home-services-view-all { align-self: flex-start; }
   .home-services-grid { grid-template-columns: 1fr; }
+  .home-service-card h2, .home-service-card h3 { font-size: 1rem; font-weight: 800; }
+  .home-service-card > p { font-size: .875rem; line-height: 1.65; }
+  .home-service-card-footer strong { font-size: .875rem; }
+  .home-service-details { font-size: .8125rem; }
+  .home-faq .ant-collapse-header { font-size: .9375rem; }
 }
 
 @media (min-width: 640px) and (max-width: 959px) {

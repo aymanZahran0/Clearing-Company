@@ -17,8 +17,8 @@ export function HeroSection({ block }: HeroSectionProps) {
       <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-14">
         <div className="text-center lg:text-start">
           <span className="home-kicker">{t("content:home.hero.kicker")}</span>
-          <h1 className="mt-5 text-4xl font-black leading-tight text-ink sm:text-5xl" style={{ textWrap: "balance" }}>{title}</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg lg:mx-0" style={{ textWrap: "pretty" }}>{body}</p>
+          <h1 className="mt-5 text-3xl font-extrabold leading-tight text-ink sm:text-5xl sm:font-black" style={{ textWrap: "balance" }}>{title}</h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8 lg:mx-0" style={{ textWrap: "pretty" }}>{body}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
             <Link to="/services" className="home-button-link"><Button type="primary" size="large" className="home-primary-button">{t("content:home.hero.primaryCta")}</Button></Link>
             <Link to="/services" className="home-button-link"><Button size="large" className="home-outline-button">{t("content:home.hero.secondaryCta")}</Button></Link>

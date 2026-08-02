@@ -60,7 +60,7 @@ export default function ServiceDetail() {
         <section className="py-7 sm:py-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="m-0 text-3xl font-black text-ink sm:text-4xl">{serviceName}</h1>
+              <h1 className="m-0 text-2xl font-extrabold text-ink sm:text-4xl sm:font-black">{serviceName}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
                 <span className="inline-flex items-center gap-2">
                   <ClockCircleOutlined aria-hidden="true" />
@@ -79,7 +79,7 @@ export default function ServiceDetail() {
                   : t("customer:serviceDetail.price")}
               </p>
               {hasPrice ? (
-                <p className="mb-0 mt-1 text-3xl font-black text-primary">
+                <p className="mb-0 mt-1 text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
                   {formatCurrency(listedPrice!, i18n.language)}
                 </p>
               ) : (
@@ -92,15 +92,15 @@ export default function ServiceDetail() {
         </section>
 
         <section className="rounded-xl border border-hairline bg-white p-6">
-          <h2 className="m-0 text-lg font-extrabold">{t("customer:serviceDetail.about")}</h2>
-          <p className="mb-0 mt-3 max-w-4xl text-base leading-8 text-muted">
+          <h2 className="m-0 text-base font-bold sm:text-lg sm:font-extrabold">{t("customer:serviceDetail.about")}</h2>
+          <p className="mb-0 mt-3 max-w-4xl text-base leading-7 text-muted sm:leading-8">
             {serviceDescription || t("customer:serviceDetail.descriptionFallback")}
           </p>
         </section>
 
         {service.addOns.length > 0 && (
           <section className="mt-5 rounded-xl border border-hairline bg-white p-6">
-            <h2 className="m-0 text-lg font-extrabold">
+            <h2 className="m-0 text-base font-bold sm:text-lg sm:font-extrabold">
               {t("customer:serviceDetail.availableAddOns")}
             </h2>
             <ul className="mb-0 mt-4 space-y-4 p-0">
@@ -128,7 +128,7 @@ export default function ServiceDetail() {
                 ? t("customer:serviceDetail.startingFrom")
                 : t("customer:serviceDetail.price")}
             </p>
-            <p className="mb-0 mt-1 text-xl font-black text-ink">
+            <p className="mb-0 mt-1 text-lg font-extrabold text-ink sm:text-xl sm:font-black">
               {hasPrice
                 ? formatCurrency(listedPrice!, i18n.language)
                 : t("customer:serviceDetail.customQuote")}

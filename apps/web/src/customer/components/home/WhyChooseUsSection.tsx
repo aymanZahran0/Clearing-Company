@@ -20,9 +20,6 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
   const { data: areas, isLoading: areasLoading } = useListServiceAreasQuery();
   const { data: stats } = useGetPublicStatsQuery();
   const isAr = i18n.language.startsWith("ar");
-  const hasStats =
-    stats?.completedBookingsCount !== undefined ||
-    stats?.averageRating !== undefined;
   const intro = block
     ? isAr
       ? block.bodyAr
@@ -44,7 +41,7 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
             <h2 id="why-us-title" className="home-section-title">
               {t("content:home.whyUs.title")}
             </h2>
-            <p className="mt-5 max-w-xl text-base leading-8 text-muted">{intro}</p>
+            <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:leading-8">{intro}</p>
 
             <div className="mt-8 space-y-6">
               {FALLBACK_FEATURE_KEYS.map((n) => (
@@ -95,43 +92,33 @@ export function WhyChooseUsSection({ block, trustBlock }: WhyChooseUsSectionProp
               <h3 className="m-0 text-base font-extrabold text-ink">
                 {t("content:home.trust.title")}
               </h3>
-              {hasStats ? (
-                <div className="mt-7 grid grid-cols-2 gap-x-8 gap-y-7 text-start">
-                  {stats?.completedBookingsCount !== undefined && (
-                    <div>
-                      <p className="m-0 text-3xl font-black text-primary">
-                        +
-                        <CountUp value={stats.completedBookingsCount}>
-                          {(count) => count}
-                        </CountUp>
-                      </p>
-                      <p className="mb-0 mt-2 text-sm text-muted">
-                        {t("content:home.trust.completedBookingsLabel")}
-                      </p>
-                    </div>
-                  )}
-                  {stats?.averageRating !== undefined && (
-                    <div>
-                      <p className="m-0 text-3xl font-black text-primary">
-                        <CountUp value={stats.averageRating} decimals={1}>
-                          {(rating) => `${rating}/5`}
-                        </CountUp>
-                      </p>
-                      <p className="mb-0 mt-2 text-sm text-muted">
-                        {t("content:home.trust.averageRatingLabel")}
-                      </p>
-                    </div>
-                  )}
+              <div className="mt-7 grid grid-cols-2 gap-x-8 gap-y-7 text-start">
+                <div>
+                  <p className="m-0 text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                    +
+                    <CountUp value={stats?.completedBookingsCount ?? 0}>
+                      {(count) => count}
+                    </CountUp>
+                  </p>
+                  <p className="mb-0 mt-2 text-sm text-muted">
+                    {t("content:home.trust.completedBookingsLabel")}
+                  </p>
                 </div>
-              ) : (
-                <p className="mb-0 mt-4 text-sm leading-7 text-muted">
-                  {trustBlock
-                    ? isAr
-                      ? trustBlock.bodyAr
-                      : trustBlock.bodyEn || trustBlock.bodyAr
-                    : t("content:home.trust.fallbackBody")}
-                </p>
-              )}
+                <div>
+                  <p className="m-0 text-2xl font-extrabold text-primary sm:text-3xl sm:font-black">
+                    {stats?.averageRating !== undefined ? (
+                      <CountUp value={stats.averageRating} decimals={1}>
+                        {(rating) => `${rating}/5`}
+                      </CountUp>
+                    ) : (
+                      "—/5"
+                    )}
+                  </p>
+                  <p className="mb-0 mt-2 text-sm text-muted">
+                    {t("content:home.trust.averageRatingLabel")}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

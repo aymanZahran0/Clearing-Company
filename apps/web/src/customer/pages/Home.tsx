@@ -40,7 +40,7 @@ export default function Home() {
       {unknownSections.map((block) => (
         <section key={block.id} className="home-section px-4 sm:px-6">
           <div className="mx-auto max-w-4xl">
-            <h2 className="mb-2 text-2xl font-bold">
+            <h2 className="mb-2 text-xl font-bold sm:text-2xl">
               {isAr ? block.titleAr : block.titleEn || block.titleAr}
             </h2>
             <p className="text-base">{isAr ? block.bodyAr : block.bodyEn || block.bodyAr}</p>

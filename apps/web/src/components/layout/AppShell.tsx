@@ -91,7 +91,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      "flex min-h-11 items-center rounded-md px-3 py-3 text-base transition-colors duration-200 sm:inline-flex",
+      "flex min-h-11 items-center rounded-md px-3 py-3 text-sm transition-colors duration-200 sm:inline-flex sm:text-base",
       isActive
         ? "bg-[#E7F4F9] font-bold text-[#00375B]"
         : "text-[#006477] hover:bg-gray-50 hover:text-[#00375B]",
@@ -226,9 +226,14 @@ export function AppShell({ children }: PropsWithChildren) {
   ) : null;
 
   const drawerAuthLinks = !user ? (
-    <NavLink to="/register" className={navLinkClass} onClick={() => setDrawerOpen(false)}>
-      {t("nav.register")}
-    </NavLink>
+    <>
+      <NavLink to="/login" className={navLinkClass} onClick={() => setDrawerOpen(false)}>
+        {t("nav.login")}
+      </NavLink>
+      <NavLink to="/register" className={navLinkClass} onClick={() => setDrawerOpen(false)}>
+        {t("nav.register")}
+      </NavLink>
+    </>
   ) : null;
 
   const mobileAccountButton = user && accountMenu ? (
@@ -236,7 +241,7 @@ export function AppShell({ children }: PropsWithChildren) {
       <Button
         type="text"
         size="large"
-        className={`flex max-w-32 items-center gap-2 px-3 font-semibold sm:hidden ${
+        className={`flex max-w-32 items-center gap-2 px-3 text-sm font-semibold sm:hidden ${
           location.pathname.startsWith("/profile")
             ? "bg-[#E7F4F9] text-[#00375B] hover:!bg-[#E7F4F9]"
             : "bg-gray-50 hover:!bg-gray-100"
@@ -248,11 +253,7 @@ export function AppShell({ children }: PropsWithChildren) {
         <DownOutlined className="text-xs" />
       </Button>
     </Dropdown>
-  ) : (
-    <Link to="/login" className="sm:hidden" aria-label={t("nav.login") as string}>
-      <Button type="text" size="large" icon={<UserOutlined className="text-xl" />} />
-    </Link>
-  );
+  ) : null;
 
   return (
     <Layout className="min-h-screen">
@@ -408,7 +409,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   };
 
   const accountButtonClass =
-    "flex max-w-32 items-center gap-2 px-3 font-semibold sm:max-w-56 bg-gray-50 hover:!bg-gray-100";
+    "flex max-w-32 items-center gap-2 px-3 text-sm font-semibold sm:max-w-56 sm:text-base bg-gray-50 hover:!bg-gray-100";
 
   const accountDropdown = user ? (
     <Dropdown menu={accountMenu} trigger={["click"]} placement="bottom">
