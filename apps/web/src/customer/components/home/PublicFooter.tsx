@@ -51,7 +51,7 @@ export function PublicFooter() {
           <a
             href={`tel:${WHATSAPP_NUMBER}`}
             dir="ltr"
-            className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink transition-colors hover:text-primary"
+            className="mt-0 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink transition-colors hover:text-primary"
           >
             <PhoneFilled className="text-primary" />
             {CONTACT_PHONE_DISPLAY}
