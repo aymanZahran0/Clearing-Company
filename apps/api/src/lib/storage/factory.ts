@@ -1,5 +1,10 @@
 import path from "node:path";
-import { LocalStorageAdapter, S3StorageAdapter, type StorageAdapter } from "./index.js";
+import {
+  LocalStorageAdapter,
+  S3StorageAdapter,
+  VercelBlobStorageAdapter,
+  type StorageAdapter,
+} from "./index.js";
 
 let cached: StorageAdapter | null = null;
 
@@ -12,12 +17,22 @@ export function getStorageAdapter(): StorageAdapter {
 
   const bucket = process.env.OBJECT_STORAGE_BUCKET;
   const driver =
-    process.env.OBJECT_STORAGE_DRIVER ??
-    (process.env.OBJECT_STORAGE_ENDPOINT ||
-    process.env.OBJECT_STORAGE_PUBLIC_URL ||
-    process.env.AWS_ACCESS_KEY_ID
-      ? "s3"
-      : "local");
+    process.env.BLOB_READ_WRITE_TOKEN
+      ? "vercel-blob"
+      : process.env.OBJECT_STORAGE_DRIVER ??
+        (process.env.OBJECT_STORAGE_ENDPOINT ||
+        process.env.OBJECT_STORAGE_PUBLIC_URL ||
+        process.env.AWS_ACCESS_KEY_ID
+          ? "s3"
+          : "local");
+
+  if (driver === "vercel-blob") {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error("BLOB_READ_WRITE_TOKEN is required for the Vercel Blob storage driver");
+    }
+    cached = new VercelBlobStorageAdapter();
+    return cached;
+  }
 
   if (driver === "local") {
     cached = new LocalStorageAdapter(

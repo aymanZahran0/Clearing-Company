@@ -6,7 +6,12 @@ import type { RootState } from "../app/store";
 import i18n from "../lib/i18n";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api/v1",
+  // Production requests stay on the web origin and are rewritten to the API
+  // by Vercel. This makes the httpOnly refresh cookie first-party, so browser
+  // third-party-cookie blocking cannot log the user out on a hard refresh.
+  baseUrl: import.meta.env.DEV
+    ? import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api/v1"
+    : "/api/v1",
   credentials: "include", // sends the httpOnly refresh-token cookie
   prepareHeaders: (headers, { getState }) => {
     const accessToken = (getState() as RootState).auth.accessToken;

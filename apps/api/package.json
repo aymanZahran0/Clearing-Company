@@ -24,6 +24,7 @@
     "@aws-sdk/client-s3": "^3.1085.0",
     "@nuqaa-asir/shared": "*",
     "@prisma/client": "^5.20.0",
+    "@vercel/blob": "^2.6.1",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
