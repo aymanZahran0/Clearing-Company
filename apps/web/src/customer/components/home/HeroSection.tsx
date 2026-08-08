@@ -2,10 +2,14 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "antd";
 import type { ContentBlock } from "../../../api/contentApi";
-import homeSectionImage from "../../../assets/home-section.png";
+import bucketArtwork from "../../../assets/cleaning.png";
+import sprayArtwork from "../../../assets/cleaning2.png";
 
 interface HeroSectionProps { block?: ContentBlock; }
 
+// Centered, full-bleed gradient hero (Nuqaa Navy → Teal, DESIGN.md's two
+// committed brand tones) — a deliberate landing moment reserved for this
+// one band on the page, not a repeated device.
 export function HeroSection({ block }: HeroSectionProps) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language.startsWith("ar");
@@ -13,20 +17,16 @@ export function HeroSection({ block }: HeroSectionProps) {
   const body = block ? (isAr ? block.bodyAr : block.bodyEn || block.bodyAr) : t("content:home.hero.fallbackBody");
 
   return (
-    <section className="home-hero relative overflow-hidden px-4 sm:px-6">
-      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-14">
-        <div className="text-center lg:text-start">
-          <span className="home-kicker">{t("content:home.hero.kicker")}</span>
-          <h1 className="mobile-type-display mt-5 text-4xl font-black leading-tight text-ink sm:text-5xl" style={{ textWrap: "balance" }}>{title}</h1>
-          <p className="mobile-type-leading mx-auto mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg lg:mx-0" style={{ textWrap: "pretty" }}>{body}</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-            <Link to="/services" className="home-button-link"><Button type="primary" size="large" className="home-primary-button">{t("content:home.hero.primaryCta")}</Button></Link>
-            <Link to="/services" className="home-button-link"><Button size="large" className="home-outline-button">{t("content:home.hero.secondaryCta")}</Button></Link>
-          </div>
-        </div>
-        <div className="home-hero-visual" aria-hidden="true">
-          <div className="home-hero-plate" />
-          <div className="home-hero-mark"><img src={homeSectionImage} alt="" className="h-full w-full object-cover" /></div>
+    <section className="home-hero text-center" aria-labelledby="home-hero-title">
+      <img src={bucketArtwork} alt="" className="home-hero-art home-hero-art--left" aria-hidden="true" />
+      <img src={sprayArtwork} alt="" className="home-hero-art home-hero-art--right" aria-hidden="true" />
+      <div className="home-hero-content mx-auto max-w-3xl px-4 sm:px-6">
+        <span className="home-kicker home-kicker--on-dark">{t("content:home.hero.kicker")}</span>
+        <h1 id="home-hero-title" className="home-hero-title mobile-type-display">{title}</h1>
+        <p className="home-hero-body mobile-type-leading mx-auto" style={{ textWrap: "pretty" }}>{body}</p>
+        <div className="home-hero-actions flex flex-wrap justify-center gap-3">
+          <Link to="/services" className="home-button-link"><Button type="primary" size="large" className="home-primary-button home-hero-primary-button">{t("content:home.hero.primaryCta")}</Button></Link>
+          <Link to="/services" className="home-button-link"><Button size="large" className="home-outline-button home-hero-outline-button">{t("content:home.hero.secondaryCta")}</Button></Link>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useListPublicContentBlocksQuery } from "../../api/contentApi";
 import { HeroSection } from "../components/home/HeroSection";
+import { TrustBadgeRow } from "../components/home/TrustBadgeRow";
 import { ServicesSection } from "../components/home/ServicesSection";
 import { HowItWorksSection } from "../components/home/HowItWorksSection";
 import { WhyChooseUsSection } from "../components/home/WhyChooseUsSection";
@@ -32,6 +33,7 @@ export default function Home() {
   return (
     <main className="home-page overflow-hidden text-ink">
       <HeroSection />
+      <TrustBadgeRow />
       <ServicesSection />
       <HowItWorksSection />
       <WhyChooseUsSection block={whyUsBlock} trustBlock={trustBlock} />

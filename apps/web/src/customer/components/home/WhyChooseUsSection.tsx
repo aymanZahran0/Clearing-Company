@@ -11,7 +11,7 @@ interface WhyChooseUsSectionProps {
   trustBlock?: ContentBlock;
 }
 
-const FALLBACK_FEATURE_KEYS = [1, 2, 3] as const;
+const FALLBACK_FEATURE_KEYS = [1, 2, 3, 4] as const;
 
 // The benefits, live service areas, and verified public statistics share one
 // composition so the related trust signals are understood at a glance.

@@ -13,6 +13,7 @@ export function HowItWorksSection() {
     <section className="home-section bg-white px-4 sm:px-6">
       <Reveal>
       <div className="mx-auto max-w-6xl">
+        <p className="mb-3 text-center text-sm font-extrabold text-accent">{t("content:home.howItWorks.kicker")}</p>
         <h2 className="home-section-title pb-5 text-center">{t("content:home.howItWorks.title")}</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEP_KEYS.map((n) => (

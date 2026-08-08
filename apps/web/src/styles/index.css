@@ -64,25 +64,45 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
 .home-section-title { margin: 0; color: oklch(18% 0.02 250); font-size: clamp(1.75rem, 3vw, 2.125rem); font-weight: 900; line-height: 1.3; text-wrap: balance; }
 
 .home-hero {
-  padding-block: clamp(4rem, 8vw, 6rem);
-  background: linear-gradient(
-    135deg,
-    oklch(96% 0.025 205) 0%,
-    oklch(99% 0.006 230) 52%,
-    oklch(94% 0.035 225) 100%
-  );
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(34rem, 64vw, 39rem);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding-block: clamp(2.1rem, 4.5vw, 3.4rem);
+  /* Bold bookend gradient in the two committed brand tones (DESIGN.md
+     primary/accent) — reserved for the hero only, so it reads as a
+     deliberate landing moment rather than a repeated device. */
+  background: radial-gradient(circle at 50% 8%, rgb(65 189 210 / .34), transparent 31%), radial-gradient(ellipse at 50% 58%, rgb(0 116 139 / .28), transparent 48%), linear-gradient(105deg, #002c46 0%, #075b6d 48%, #002a44 100%);
+}
+.home-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(0 20 35 / .06), rgb(0 20 35 / .38)); pointer-events: none; }
+.home-hero-content { position: relative; z-index: 2; width: 100%; }
+.home-hero-title { max-width: 18ch; margin: 1rem auto 0; color: #f1f6f7; font-size: clamp(2.45rem, 4.15vw, 3.65rem); font-weight: 900; line-height: 1.18; text-shadow: 0 3px 1px rgb(0 22 34 / .72), 0 9px 18px rgb(0 20 32 / .36); text-wrap: balance; }
+.home-hero-body { max-width: 48rem; margin-block-start: 1.25rem; color: rgb(239 249 250 / .82); font-size: clamp(1rem, 1.25vw, 1.2rem); line-height: 1.85; }
+.home-hero-actions { margin-block-start: 2rem; }
+.home-hero-art { --hero-art-opacity: .92; position: absolute; z-index: 1; width: clamp(24rem, 35vw, 38rem); height: auto; opacity: var(--hero-art-opacity); mix-blend-mode: screen; filter: saturate(1.12) contrast(1.05); -webkit-mask-image: radial-gradient(ellipse 56% 50% at 50% 50%, #000 43%, transparent 100%); mask-image: radial-gradient(ellipse 56% 50% at 50% 50%, #000 43%, transparent 100%); pointer-events: none; }
+.home-hero-art--left { left: clamp(-10.5rem, -7vw, -4rem); top: 50%; transform: translateY(-50%); animation: home-hero-art-left-in .95s cubic-bezier(.16, 1, .3, 1) both; }
+.home-hero-art--right { right: clamp(-10.5rem, -7vw, -4rem); top: 50%; transform: translateY(-50%); animation: home-hero-art-right-in .95s .12s cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes home-hero-art-left-in {
+  from { opacity: 0; transform: translate(-4rem, -50%) scale(.9); filter: saturate(.8) contrast(1.05) blur(8px); }
+  to { opacity: var(--hero-art-opacity); transform: translate(0, -50%) scale(1); filter: saturate(1.12) contrast(1.05) blur(0); }
+}
+@keyframes home-hero-art-right-in {
+  from { opacity: 0; transform: translate(4rem, -50%) scale(.9); filter: saturate(.8) contrast(1.05) blur(8px); }
+  to { opacity: var(--hero-art-opacity); transform: translate(0, -50%) scale(1); filter: saturate(1.12) contrast(1.05) blur(0); }
 }
 .home-kicker { display: inline-flex; align-items: center; border-radius: 999px; padding: .45rem 1rem; background: oklch(94% 0.03 210); color: oklch(34% 0.09 220); font-size: .8125rem; font-weight: 800; }
 .home-kicker::before { content: ""; width: .45rem; height: .45rem; margin-inline-end: .5rem; border-radius: 50%; background: oklch(60% 0.13 200); }
-.home-hero-visual { position: relative; min-height: clamp(18rem, 42vw, 26.25rem); display: grid; place-items: center; }
-.home-hero-plate { position: absolute; inset: 1rem; border-radius: 1.75rem; background: linear-gradient(135deg, oklch(88% 0.05 200), oklch(92% 0.03 230)); transform: rotate(-2deg); }
-[dir="rtl"] .home-hero-plate { transform: rotate(2deg); }
-.home-hero-mark { position: relative; width: min(100%, 31rem); height: clamp(17rem, 38vw, 24rem); border-radius: 1.25rem; padding: clamp(1.25rem, 4vw, 2.5rem); overflow: hidden; background: white; box-shadow: 0 30px 60px -20px oklch(25% 0.05 240 / .35); }
+.home-kicker--on-dark { border: 1px solid rgb(218 247 250 / .62); background: linear-gradient(180deg, rgb(219 248 250 / .28), rgb(113 194 205 / .12)); color: #effcfd; box-shadow: inset 0 0 10px rgb(208 249 253 / .2), 0 0 16px rgb(68 193 209 / .18); }
+.home-kicker--on-dark::before { background: #e8fcff; box-shadow: 0 0 8px #9cecf5; }
 
 .home-button-link { display: inline-flex; }
 .home-primary-button, .home-outline-button { min-height: 44px; border-radius: 12px !important; padding-inline: 1.5rem !important; font-weight: 800 !important; transition: transform .2s ease, color .2s ease, border-color .2s ease, background .2s ease !important; }
 .home-primary-button:hover, .home-outline-button:hover { transform: translateY(-2px); }
 .home-primary-button { box-shadow: 0 10px 24px -8px oklch(32% 0.09 240 / .55); }
+.home-outline-button { background: white !important; border-color: oklch(85% 0.015 250) !important; color: oklch(30% 0.02 250) !important; }
+.home-outline-button:hover { border-color: oklch(60% 0.1 210) !important; color: oklch(40% 0.1 220) !important; }
 .home-whatsapp-button {
   min-height: 44px;
   border-color: #0b6b52 !important;
@@ -99,8 +119,14 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
   background: #07533f !important;
   transform: translateY(-2px);
 }
-.home-outline-button { background: white !important; border-color: oklch(85% 0.015 250) !important; color: oklch(30% 0.02 250) !important; }
-.home-outline-button:hover { border-color: oklch(60% 0.1 210) !important; color: oklch(40% 0.1 220) !important; }
+
+/* On the dark hero gradient only: invert the two button treatments so both
+   stay accessible against navy/teal instead of reusing the light-surface
+   colors above. */
+.home-hero-primary-button { background: #fff !important; border-color: #fff !important; color: #00375B !important; box-shadow: 0 10px 24px -10px rgb(0 0 0 / .35) !important; }
+.home-hero-primary-button:hover { background: rgb(255 255 255 / .9) !important; border-color: rgb(255 255 255 / .9) !important; color: #00375B !important; }
+.home-hero-outline-button { background: transparent !important; border-color: rgb(255 255 255 / .6) !important; color: #fff !important; }
+.home-hero-outline-button:hover { background: rgb(255 255 255 / .12) !important; border-color: #fff !important; color: #fff !important; }
 
 .home-services { background: var(--customer-page-bg); }
 .home-services-header { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-block-end: 2.25rem; }
@@ -153,7 +179,13 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
   .mobile-type-nav { font-size: .875rem; }
   .mobile-type-leading { line-height: 1.75; }
   .home-section-title { font-size: 1.5rem; font-weight: 800; line-height: 1.35; }
-  .home-hero { padding-block: 3.5rem; }
+  .home-hero { min-height: 39rem; padding-block: 2.6rem 4rem; }
+  .home-hero-title { max-width: 18ch; margin-block-start: 1rem; font-size: 2.15rem; }
+  .home-hero-body { max-width: 31ch; margin-block-start: 1rem; font-size: .95rem; line-height: 1.75; }
+  .home-hero-actions { margin-block-start: 1.55rem; }
+  .home-hero-art { --hero-art-opacity: .54; width: 22rem; }
+  .home-hero-art--left { left: -11.8rem; }
+  .home-hero-art--right { right: -11.8rem; }
   .home-hero-visual { min-height: 16rem; }
   .home-hero-mark { height: 15rem; }
   .home-services-header { align-items: stretch; flex-direction: column; gap: 1.25rem; }
@@ -171,7 +203,7 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-reveal, .home-service-card, .home-step-card, .home-feature-row, .home-primary-button, .home-whatsapp-button, .home-outline-button { animation: none !important; transition-duration: .01ms !important; }
+  .home-reveal, .home-hero-art, .home-service-card, .home-step-card, .home-feature-row, .home-primary-button, .home-whatsapp-button, .home-outline-button { animation: none !important; transition-duration: .01ms !important; }
   .home-reveal { opacity: 1; transform: none; }
 }
 

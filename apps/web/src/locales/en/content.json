@@ -15,6 +15,15 @@
       "primaryCta": "Book Now",
       "secondaryCta": "Browse Services"
     },
+    "trustBadges": {
+      "title": "Why customers trust us",
+      "punctuality": "On-time service",
+      "quality": "Guaranteed quality",
+      "pricing": "Clear pricing",
+      "booking": "Fast booking",
+      "team": "Trained teams",
+      "materials": "Safe materials"
+    },
     "services": {
       "title": "Our Services",
       "headline": "Cleaning solutions for every need",
@@ -25,6 +34,7 @@
       "empty": "No services available right now"
     },
     "howItWorks": {
+      "kicker": "Simple steps",
       "title": "How Booking Works",
       "step1Title": "Choose a Service",
       "step1Body": "Browse our services and pick what fits your needs.",
@@ -43,7 +53,9 @@
       "fallbackFeature2Title": "Quality Guaranteed",
       "fallbackFeature2Body": "A quality checklist for every service, with follow-up on any issue.",
       "fallbackFeature3Title": "Easy, Flexible Booking",
-      "fallbackFeature3Body": "Book online or call us directly, and reschedule easily when you need to."
+      "fallbackFeature3Body": "Book online or call us directly, and reschedule easily when you need to.",
+      "fallbackFeature4Title": "Transparent Pricing, No Hidden Fees",
+      "fallbackFeature4Body": "Know the full price before you confirm your booking."
     },
     "serviceAreas": {
       "title": "Service Areas",

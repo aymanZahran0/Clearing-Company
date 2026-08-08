@@ -15,6 +15,15 @@
       "primaryCta": "احجز الآن",
       "secondaryCta": "استعرض الخدمات"
     },
+    "trustBadges": {
+      "title": "أبرز مزايانا",
+      "punctuality": "التزام بالمواعيد",
+      "quality": "جودة مضمونة",
+      "pricing": "أسعار واضحة",
+      "booking": "حجز سريع",
+      "team": "فرق مدربة",
+      "materials": "مواد آمنة"
+    },
     "services": {
       "headline": "حلول تنظيف تناسب كل احتياج",
       "details": "التفاصيل",
@@ -25,6 +34,7 @@
       "empty": "لا تتوفر خدمات حاليًا"
     },
     "howItWorks": {
+      "kicker": "خطوات بسيطة",
       "title": "كيف يعمل الحجز",
       "step1Title": "اختر الخدمة",
       "step1Body": "تصفح خدماتنا واختر ما يناسب احتياجك.",
@@ -43,7 +53,9 @@
       "fallbackFeature2Title": "ضمان الجودة",
       "fallbackFeature2Body": "قائمة فحص جودة لكل خدمة، مع متابعة أي ملاحظة بعد التنفيذ.",
       "fallbackFeature3Title": "حجز سهل ومرن",
-      "fallbackFeature3Body": "احجز عبر الموقع أو اتصل بنا مباشرة، وأعد الجدولة بسهولة عند الحاجة."
+      "fallbackFeature3Body": "احجز عبر الموقع أو اتصل بنا مباشرة، وأعد الجدولة بسهولة عند الحاجة.",
+      "fallbackFeature4Title": "أسعار شفافة بلا رسوم خفية",
+      "fallbackFeature4Body": "تعرف على السعر الكامل قبل تأكيد الحجز مباشرة."
     },
     "serviceAreas": {
       "title": "مناطق الخدمة",
