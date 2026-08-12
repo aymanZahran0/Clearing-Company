@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "antd";
 import type { ContentBlock } from "../../../api/contentApi";
-import bucketArtwork from "../../../assets/cleaning.png";
-import sprayArtwork from "../../../assets/cleaning2.png";
+import bucketArtwork from "../../../assets/cleaning.webp";
+import sprayArtwork from "../../../assets/cleaning2.webp";
 
 interface HeroSectionProps { block?: ContentBlock; }
 
@@ -18,8 +18,26 @@ export function HeroSection({ block }: HeroSectionProps) {
 
   return (
     <section className="home-hero text-center" aria-labelledby="home-hero-title">
-      <img src={bucketArtwork} alt="" className="home-hero-art home-hero-art--left" aria-hidden="true" />
-      <img src={sprayArtwork} alt="" className="home-hero-art home-hero-art--right" aria-hidden="true" />
+      <img
+        src={bucketArtwork}
+        alt=""
+        width="1024"
+        height="683"
+        decoding="async"
+        fetchPriority="high"
+        className="home-hero-art home-hero-art--left"
+        aria-hidden="true"
+      />
+      <img
+        src={sprayArtwork}
+        alt=""
+        width="1024"
+        height="683"
+        decoding="async"
+        fetchPriority="high"
+        className="home-hero-art home-hero-art--right"
+        aria-hidden="true"
+      />
       <div className="home-hero-content mx-auto max-w-3xl px-4 sm:px-6">
         <span className="home-kicker home-kicker--on-dark">{t("content:home.hero.kicker")}</span>
         <h1 id="home-hero-title" className="home-hero-title mobile-type-display">{title}</h1>
