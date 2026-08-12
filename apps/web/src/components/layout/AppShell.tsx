@@ -72,6 +72,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const user = useSelector((state: RootState) => state.auth.user);
   const [logout] = useLogoutMutation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const isHomePage = location.pathname === "/";
   const showPublicFooter = PUBLIC_FOOTER_ROUTES.has(location.pathname);
 
   // Keep the mobile navigation in sync with routing, including navigations
@@ -310,9 +311,11 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
       </Drawer>
       <Content className="customer-site pt-20">
-        <div className="app-breadcrumb-wrap app-breadcrumb-wrap--customer">
-          <AppBreadcrumb />
-        </div>
+        {!isHomePage && (
+          <div className="app-breadcrumb-wrap app-breadcrumb-wrap--customer">
+            <AppBreadcrumb />
+          </div>
+        )}
         <div
           className={`customer-page-content ${location.pathname === "/faq" ? "bg-white" : ""}`}
         >
