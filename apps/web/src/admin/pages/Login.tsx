@@ -1,6 +1,6 @@
 import { Button, Form, Input, message } from "antd";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
@@ -15,6 +15,7 @@ interface LoginFormValues {
 export default function AdminLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -27,7 +28,13 @@ export default function AdminLogin() {
       }
       dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
-      navigate("/admin");
+      // Must agree with RequireGuest's own post-login redirect (both react
+      // to the same dispatch above) — otherwise whichever one wins the
+      // race decides where the Admin lands, same class of bug as the
+      // Customer login flow.
+      const from = (location.state as { from?: { pathname: string; search: string; hash: string } })?.from;
+      const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/admin";
+      navigate(redirectTo, { replace: true });
     } catch {
       // toast shown by the global RTK Query error middleware
     }

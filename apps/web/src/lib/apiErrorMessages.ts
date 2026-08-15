@@ -36,6 +36,10 @@ const API_ERROR_MESSAGES: Record<string, { ar: string; en: string }> = {
     ar: "رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية",
     en: "Reset token is invalid or has expired",
   },
+  "Current password is incorrect": {
+    ar: "كلمة المرور الحالية غير صحيحة",
+    en: "Current password is incorrect",
+  },
   "Missing or invalid Authorization header": {
     ar: "يجب تسجيل الدخول للمتابعة",
     en: "Missing or invalid Authorization header",

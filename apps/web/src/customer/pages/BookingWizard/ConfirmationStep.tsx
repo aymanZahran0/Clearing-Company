@@ -130,7 +130,7 @@ export function ConfirmationStep({ onBack }: { onBack: () => void }) {
         )}
         <Space className="mt-4 flex justify-between">
           <Button size="large" onClick={onBack}>
-            {t("common.cancel")}
+            {t("common.back")}
           </Button>
           <WizardConfirmButton htmlType="submit" loading={isLoading}>
             {t("auth.submit")}

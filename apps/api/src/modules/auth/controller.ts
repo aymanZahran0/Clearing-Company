@@ -71,6 +71,12 @@ export async function resetPasswordHandler(req: Request, res: Response) {
   res.status(200).json({ message: "Password updated" });
 }
 
+export async function changePasswordHandler(req: Request, res: Response) {
+  await authService.changePassword(req.user!.id, req.body);
+  res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
+  res.status(200).json({ message: "Password updated" });
+}
+
 export async function meHandler(req: Request, res: Response) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
   res.status(200).json(toPublicUser(user));

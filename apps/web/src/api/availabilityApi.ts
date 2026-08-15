@@ -23,6 +23,8 @@ export interface OperatingHoursEntry {
   weekday: number;
   openTime: string;
   closeTime: string;
+  slotDurationMinutes: number;
+  defaultCapacity: number;
   active: boolean;
 }
 

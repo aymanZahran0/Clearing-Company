@@ -1,0 +1,3 @@
+ALTER TABLE "OperatingHours"
+ADD COLUMN "slotDurationMinutes" INTEGER NOT NULL DEFAULT 120,
+ADD COLUMN "defaultCapacity" INTEGER NOT NULL DEFAULT 3;

@@ -407,6 +407,8 @@
     "operatingHoursSaved": "تم حفظ ساعات العمل",
     "operatingHoursSaveError": "تعذر حفظ ساعات العمل",
     "operatingHoursTitle": "ساعات العمل",
+    "slotDuration": "مدة الموعد (بالدقائق)",
+    "defaultCapacity": "السعة الافتراضية",
     "previous": "السابق",
     "reasonOptional": "السبب (اختياري)",
     "start": "البداية",

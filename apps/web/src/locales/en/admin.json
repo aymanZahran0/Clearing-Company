@@ -407,6 +407,8 @@
     "operatingHoursSaved": "Operating hours saved",
     "operatingHoursSaveError": "Could not save operating hours",
     "operatingHoursTitle": "Operating Hours",
+    "slotDuration": "Slot duration (minutes)",
+    "defaultCapacity": "Default capacity",
     "previous": "Previous",
     "reasonOptional": "Reason (optional)",
     "start": "Start",

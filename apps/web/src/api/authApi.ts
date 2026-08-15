@@ -45,6 +45,15 @@ export const authApi = baseApi.injectEndpoints({
     >({
       query: (body) => ({ url: "/auth/reset-password", method: "POST", body }),
     }),
+    // Changes the password for the currently authenticated user. Succeeding
+    // revokes every session (including this one, mirroring resetPassword),
+    // so the caller must sign the user out client-side afterwards.
+    changePassword: builder.mutation<
+      { message: string },
+      { oldPassword: string; newPassword: string }
+    >({
+      query: (body) => ({ url: "/auth/change-password", method: "POST", body }),
+    }),
     me: builder.query<PublicUser, void>({
       query: () => "/auth/me",
       providesTags: ["User"],
@@ -59,5 +68,6 @@ export const {
   useLogoutMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
   useMeQuery,
 } = authApi;

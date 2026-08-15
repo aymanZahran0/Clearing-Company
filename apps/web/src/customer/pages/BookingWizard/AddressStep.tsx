@@ -93,7 +93,7 @@ export function AddressStep({ onNext, onBack }: { onNext: () => void; onBack: ()
 
       <Space className="mt-6 flex justify-between">
         <Button size="large" onClick={onBack}>
-          {t("common.cancel")}
+          {t("common.back")}
         </Button>
         <WizardConfirmButton disabled={!selected} onClick={handleNext}>
           {t("common.confirm")}

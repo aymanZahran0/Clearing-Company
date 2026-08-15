@@ -95,7 +95,7 @@ export function QuoteReviewStep({ onNext, onBack }: { onNext: () => void; onBack
       />
       <Space className="mt-6 flex justify-between">
         <Button size="large" onClick={onBack}>
-          {t("common.cancel")}
+          {t("common.back")}
         </Button>
         <WizardConfirmButton disabled={!quote} onClick={onNext}>
           {t("common.confirm")}

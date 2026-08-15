@@ -27,7 +27,11 @@ export default function Login() {
         navigate("/admin", { replace: true });
         return;
       }
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/bookings";
+      // Preserve the full path the guard redirected from — pathname alone
+      // drops query params like `/booking/new?serviceId=...`, silently
+      // losing the service the customer picked before being sent to log in.
+      const from = (location.state as { from?: { pathname: string; search: string; hash: string } })?.from;
+      const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/bookings";
       navigate(redirectTo, { replace: true });
     } catch {
       // toast shown by the global RTK Query error middleware

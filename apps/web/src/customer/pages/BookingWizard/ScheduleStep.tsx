@@ -48,7 +48,7 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
       />
       <Space className="mt-6 flex justify-between">
         <Button size="large" onClick={onBack}>
-          {t("common.cancel")}
+          {t("common.back")}
         </Button>
         <WizardConfirmButton disabled={!wizard.requestedDate} onClick={handleNext}>
           {t("common.confirm")}

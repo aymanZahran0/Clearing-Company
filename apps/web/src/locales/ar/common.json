@@ -29,6 +29,10 @@
     "identifier": "رقم الجوال أو البريد الإلكتروني",
     "forgotPassword": "نسيت كلمة المرور؟",
     "resetPassword": "إعادة تعيين كلمة المرور",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "changePasswordSuccess": "تم تغيير كلمة المرور، يرجى تسجيل الدخول مرة أخرى",
     "marketingConsent": "أوافق على تلقي عروض تسويقية",
     "submit": "إرسال"
   },
@@ -37,6 +41,7 @@
     "error": "حدث خطأ ما",
     "save": "حفظ",
     "cancel": "إلغاء",
+    "back": "رجوع",
     "confirm": "تأكيد",
     "yes": "نعم",
     "no": "لا"

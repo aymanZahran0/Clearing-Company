@@ -29,6 +29,10 @@
     "identifier": "Mobile number or email",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset Password",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "changePasswordSuccess": "Password changed, please log in again",
     "marketingConsent": "I agree to receive marketing offers",
     "submit": "Submit"
   },
@@ -37,6 +41,7 @@
     "error": "Something went wrong",
     "save": "Save",
     "cancel": "Cancel",
+    "back": "Back",
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No"

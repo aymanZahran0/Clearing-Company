@@ -4,7 +4,14 @@ import { ApiError } from "@nuqaa-asir/shared";
 import { prisma } from "../../lib/prisma.js";
 import { normalizeSaudiPhone } from "../../lib/phoneNormalization.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../lib/jwt.js";
-import type { ForgotPasswordInput, LoginInput, RegisterInput, ResetPasswordInput } from "./schema.js";
+import { sendPasswordResetEmail } from "../../lib/email.js";
+import type {
+  ChangePasswordInput,
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+} from "./schema.js";
 
 const BCRYPT_ROUNDS = 12;
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -174,7 +181,7 @@ export async function forgotPassword(input: ForgotPasswordInput) {
   if (!user) return;
 
   const rawToken = randomBytes(32).toString("hex");
-  await prisma.passwordResetToken.create({
+  const resetToken = await prisma.passwordResetToken.create({
     data: {
       userId: user.id,
       tokenHash: hashToken(rawToken),
@@ -182,8 +189,20 @@ export async function forgotPassword(input: ForgotPasswordInput) {
     },
   });
 
-  // TODO(notifications): send `rawToken` via the notification module once
-  // it exists (Phase 3+). For now the token is created but not dispatched.
+  if (!user.email) {
+    await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+    return;
+  }
+
+  const sent = await sendPasswordResetEmail({
+    email: user.email,
+    fullName: user.fullName,
+    rawToken,
+  });
+  if (!sent) {
+    // Never leave an undispatched reset token usable.
+    await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+  }
 }
 
 export async function resetPassword(input: ResetPasswordInput) {
@@ -212,6 +231,36 @@ export async function resetPassword(input: ResetPasswordInput) {
     }),
     prisma.refreshToken.updateMany({
       where: { userId: record.userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
+}
+
+// Self-service change from an authenticated session (distinct from the
+// token-based forgot/reset flow above — this requires proving knowledge of
+// the current password instead of an emailed/SMSed token). Mirrors
+// resetPassword's session handling: every outstanding refresh token is
+// revoked, so all devices (including the current one) need to log back in
+// with the new password.
+export async function changePassword(userId: string, input: ChangePasswordInput) {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+  if (!user.passwordHash || !(await bcrypt.compare(input.oldPassword, user.passwordHash))) {
+    throw new ApiError(401, "UNAUTHORIZED", "Current password is incorrect");
+  }
+
+  const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        refreshTokenVersion: { increment: 1 },
+      },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     }),
   ]);

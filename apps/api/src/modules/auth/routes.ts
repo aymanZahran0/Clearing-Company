@@ -4,12 +4,14 @@ import { authenticate } from "../../middleware/authenticate.js";
 import { strictRateLimit } from "../../middleware/rateLimit.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
 } from "./schema.js";
 import {
+  changePasswordHandler,
   forgotPasswordHandler,
   loginHandler,
   logoutHandler,
@@ -46,5 +48,12 @@ authRouter.post(
   strictRateLimit,
   validateRequest({ body: resetPasswordSchema }),
   asyncHandler(resetPasswordHandler)
+);
+authRouter.post(
+  "/change-password",
+  authenticate,
+  strictRateLimit,
+  validateRequest({ body: changePasswordSchema }),
+  asyncHandler(changePasswordHandler)
 );
 authRouter.get("/me", authenticate, asyncHandler(meHandler));

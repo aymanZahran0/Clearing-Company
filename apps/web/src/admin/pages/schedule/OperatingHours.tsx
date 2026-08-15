@@ -14,6 +14,8 @@ function defaultRows(): OperatingHoursEntry[] {
     weekday,
     openTime: "09:00",
     closeTime: "18:00",
+    slotDurationMinutes: 120,
+    defaultCapacity: 3,
     active: weekday !== 5, // Friday off by default
   }));
 }
@@ -76,6 +78,31 @@ export default function OperatingHours() {
                 size="large"
                 value={row.closeTime}
                 onChange={(e) => updateRow(row.weekday, { closeTime: e.target.value })}
+              />
+            ),
+          },
+          {
+            title: t("admin:schedule.slotDuration"),
+            render: (_: unknown, row: OperatingHoursEntry) => (
+              <Input
+                size="large"
+                type="number"
+                min={15}
+                step={15}
+                value={row.slotDurationMinutes}
+                onChange={(e) => updateRow(row.weekday, { slotDurationMinutes: Number(e.target.value) })}
+              />
+            ),
+          },
+          {
+            title: t("admin:schedule.defaultCapacity"),
+            render: (_: unknown, row: OperatingHoursEntry) => (
+              <Input
+                size="large"
+                type="number"
+                min={1}
+                value={row.defaultCapacity}
+                onChange={(e) => updateRow(row.weekday, { defaultCapacity: Number(e.target.value) })}
               />
             ),
           },

@@ -479,11 +479,13 @@ model BookingStatusHistory {
 
 // data-model.md §15.
 model OperatingHours {
-  id        String  @id @default(uuid())
-  weekday   Int // 0=Sunday..6=Saturday
-  openTime  String // "HH:mm"
-  closeTime String // "HH:mm"
-  active    Boolean @default(true)
+  id                  String  @id @default(uuid())
+  weekday             Int // 0=Sunday..6=Saturday
+  openTime            String // "HH:mm"
+  closeTime           String // "HH:mm"
+  slotDurationMinutes Int     @default(120)
+  defaultCapacity     Int     @default(3)
+  active              Boolean @default(true)
 
   @@unique([weekday])
 }

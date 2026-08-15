@@ -13,7 +13,12 @@ export const operatingHoursSchema = z.array(
     weekday: z.number().int().min(0).max(6),
     openTime: z.string().regex(/^\d{2}:\d{2}$/),
     closeTime: z.string().regex(/^\d{2}:\d{2}$/),
+    slotDurationMinutes: z.number().int().min(15).max(720).default(120),
+    defaultCapacity: z.number().int().positive().default(3),
     active: z.boolean().default(true),
+  }).refine((entry) => entry.openTime < entry.closeTime, {
+    message: "Opening time must be before closing time",
+    path: ["closeTime"],
   })
 );
 

@@ -38,7 +38,7 @@ export function AddOnsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
       </Checkbox.Group>
       <Space className="mt-6 flex justify-between">
         <Button size="large" onClick={onBack}>
-          {t("common.cancel")}
+          {t("common.back")}
         </Button>
         <WizardConfirmButton onClick={() => handleNext(wizard.addOnIds)}>
           {t("common.confirm")}
