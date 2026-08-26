@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isArabicLocale } from "../../src/lib/i18n";
+import { DEFAULT_LOCALE, isArabicLocale } from "../../src/lib/i18n";
+
+describe("default locale", () => {
+  it("uses Arabic for a first visit", () => {
+    expect(DEFAULT_LOCALE).toBe("ar");
+  });
+});
 
 describe("isArabicLocale", () => {
   it.each(["ar", "ar-SA", "ar-EG", "AR-sa"])("recognizes %s as RTL Arabic", (locale) => {

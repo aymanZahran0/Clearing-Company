@@ -16,6 +16,8 @@ import enEnums from "../locales/en/enums.json";
 
 // Arabic is the primary locale (constitution Principle III); English is a
 // fully supported secondary locale, not a stub.
+export const DEFAULT_LOCALE = "ar";
+
 export function isArabicLocale(language?: string) {
   return language?.toLowerCase().split("-")[0] === "ar";
 }
@@ -31,12 +33,16 @@ i18n
       ar: { common: arCommon, admin: arAdmin, customer: arCustomer, catalog: arCatalog, content: arContent, enums: arEnums },
       en: { common: enCommon, admin: enAdmin, customer: enCustomer, catalog: enCatalog, content: enContent, enums: enEnums },
     },
-    fallbackLng: import.meta.env.VITE_DEFAULT_LOCALE ?? "ar",
+    supportedLngs: ["ar", "en"],
+    fallbackLng: DEFAULT_LOCALE,
     ns: ["common", "admin", "customer", "catalog", "content", "enums"],
     defaultNS: "common",
     interpolation: { escapeValue: false },
     detection: {
-      order: ["localStorage", "navigator"],
+      // Respect an explicit choice made with the language toggle. On a new
+      // device, do not inherit the browser language: Arabic is the product's
+      // required first-visit locale regardless of device settings.
+      order: ["localStorage"],
       caches: ["localStorage"],
       // Mobile browsers commonly expose Arabic as ar-SA/ar-EG. Normalize it
       // so every content and layout branch sees the supported base locale.
