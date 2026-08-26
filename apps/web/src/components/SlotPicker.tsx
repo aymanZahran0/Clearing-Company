@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, Empty, Skeleton } from "antd";
+import { Calendar, Empty, Select, Skeleton } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +9,7 @@ export interface SlotPickerOption {
   startTime: string;
   endTime: string;
   disabled?: boolean;
-  /** e.g. "(2/3)" — shown under the time range when provided. */
+  /** e.g. "(2/3)" — shown under the start time when provided. */
   spotsLabel?: string;
 }
 
@@ -20,9 +20,8 @@ interface SlotPickerProps {
   loading?: boolean;
 }
 
-// Calendar-first replacement for the old flat <Select> of "date time–time
-// (n/n)" strings: pick a day on a compact month grid (days with availability
-// are dotted), then pick a time chip for that day. Used by both the Admin
+// Pick a day on a compact month grid (days with availability are dotted),
+// then choose its start time from a standard select field. Used by both the Admin
 // schedule/reschedule dialogs and the Customer booking wizard / reschedule
 // request so the picking experience is consistent everywhere a time slot is
 // chosen.
@@ -92,31 +91,21 @@ export function SlotPicker({ slots, value, onChange, loading }: SlotPickerProps)
         {!selectedDate && slots.length === 0 && (
           <Empty description={t("slotPicker.noSlotsAvailable")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
-        <div className="flex flex-wrap gap-2">
-          {daySlots.map((slot) => (
-            <button
-              type="button"
-              key={slot.id}
-              disabled={slot.disabled}
-              onClick={() => onChange?.(slot.id)}
-              aria-pressed={value === slot.id}
-              className={`min-h-11 min-w-11 rounded-lg border px-3 py-2 text-sm transition-colors ${
-                value === slot.id
-                  ? "border-primary bg-primary text-white"
-                  : slot.disabled
-                    ? "cursor-not-allowed border-hairline bg-paper text-muted"
-                    : "cursor-pointer border-hairline bg-white hover:border-primary"
-              }`}
-            >
-              {slot.startTime}–{slot.endTime}
-              {slot.spotsLabel && (
-                <span className={`block text-xs ${value === slot.id ? "text-white/80" : "text-muted"}`}>
-                  {slot.spotsLabel}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {daySlots.length > 0 && (
+          <Select
+            size="large"
+            className="w-full"
+            aria-label={t("slotPicker.selectTime")}
+            value={daySlots.some((slot) => slot.id === value) ? value : undefined}
+            placeholder={t("slotPicker.selectTime")}
+            onChange={(slotId) => onChange?.(slotId)}
+            options={daySlots.map((slot) => ({
+              value: slot.id,
+              label: slot.startTime,
+              disabled: slot.disabled,
+            }))}
+          />
+        )}
       </div>
     </div>
   );

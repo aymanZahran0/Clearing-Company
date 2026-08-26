@@ -58,6 +58,7 @@
   },
   "slotPicker": {
     "availableTimes": "الأوقات المتاحة",
+    "selectTime": "اختر الوقت",
     "noSlotsForDate": "لا توجد مواعيد متاحة في هذا اليوم",
     "noSlotsAvailable": "لا توجد مواعيد متاحة"
   }

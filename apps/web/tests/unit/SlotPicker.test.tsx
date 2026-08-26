@@ -42,10 +42,10 @@ describe("SlotPicker", () => {
     expect(secondAvailableDay).not.toBeNull();
     fireEvent.click(secondAvailableDay!);
 
-    const timeButton = await screen.findByRole("button", {
-      name: /13:00.*15:00/,
-    });
-    fireEvent.click(timeButton);
+    const timeField = await screen.findByRole("combobox", { name: "اختر الوقت" });
+    expect(screen.queryByText("15:00")).not.toBeInTheDocument();
+    fireEvent.mouseDown(timeField);
+    fireEvent.click(await screen.findByText("13:00"));
 
     expect(onChange).toHaveBeenCalledWith("afternoon-26");
   });

@@ -72,8 +72,6 @@ export function RescheduleDialog({ booking, onDone }: { booking: Booking; onDone
                 date: slot.date,
                 startTime: slot.startTime,
                 endTime: slot.endTime,
-                disabled: slot.remaining <= 0,
-                spotsLabel: t("customer:scheduleStep.slotsLeft", { count: slot.remaining }),
               }))}
             />
           </Form.Item>

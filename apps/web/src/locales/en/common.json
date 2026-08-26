@@ -58,6 +58,7 @@
   },
   "slotPicker": {
     "availableTimes": "Available times",
+    "selectTime": "Select a time",
     "noSlotsForDate": "No time slots for this day",
     "noSlotsAvailable": "No time slots available"
   }

@@ -80,8 +80,6 @@ export const baseApi = createApi({
     "QualityIssue",
     "Review",
     "Report",
-    "OperatingHours",
-    "ClosedDate",
     "TimeSlot",
     "ChecklistTemplate",
     "ChecklistRun",

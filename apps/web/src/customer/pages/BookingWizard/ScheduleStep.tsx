@@ -42,8 +42,6 @@ export function ScheduleStep({ onNext, onBack }: { onNext: () => void; onBack: (
           date: slot.date,
           startTime: slot.startTime,
           endTime: slot.endTime,
-          disabled: slot.remaining <= 0,
-          spotsLabel: t("customer:scheduleStep.slotsLeft", { count: slot.remaining }),
         }))}
       />
       <Space className="mt-6 flex justify-between">

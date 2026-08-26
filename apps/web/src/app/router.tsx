@@ -31,9 +31,6 @@ import AdminBookingsList from "../admin/pages/bookings/List";
 import AdminBookingDetail from "../admin/pages/bookings/Detail";
 import CalendarDay from "../admin/pages/schedule/CalendarDay";
 import CalendarWeek from "../admin/pages/schedule/CalendarWeek";
-import TimeSlots from "../admin/pages/schedule/TimeSlots";
-import OperatingHours from "../admin/pages/schedule/OperatingHours";
-import ClosedDates from "../admin/pages/schedule/ClosedDates";
 import ChecklistTemplateEditor from "../admin/pages/catalog/ChecklistTemplateEditor";
 import ServiceImages from "../admin/pages/catalog/ServiceImages";
 import Categories from "../admin/pages/catalog/Categories";
@@ -337,39 +334,6 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <CalendarWeek />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/schedule/time-slots",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <TimeSlots />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/schedule/operating-hours",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <OperatingHours />
-        </AdminShell>
-      </RequireRole>
-    ),
-  },
-  {
-    path: "/admin/schedule/closed-dates",
-    errorElement: <RouteErrorPage />,
-    element: (
-      <RequireRole role="ADMIN">
-        <AdminShell>
-          <ClosedDates />
         </AdminShell>
       </RequireRole>
     ),
