@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /bookings/
+Disallow: /profile
+Disallow: /addresses
+Disallow: /invoices
+Disallow: /notifications
+Disallow: /booking/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /track
+
+Sitemap: https://www.nuqaa-asir.com/sitemap.xml
+
