@@ -4,6 +4,7 @@ export interface OperationsSummary {
   todaysBookings: number;
   unscheduledConfirmed: number;
   overdueBookings: number;
+  statusCounts: Partial<Record<import("./bookingsApi").BookingStatus, number>>;
 }
 
 export interface RevenueReport {

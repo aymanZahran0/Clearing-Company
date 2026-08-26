@@ -13,7 +13,7 @@ export async function getOperationsSummary() {
   const todayEnd = new Date(now);
   todayEnd.setUTCHours(23, 59, 59, 999);
 
-  const [todaysBookings, unscheduledConfirmed, overdueBookings] = await Promise.all([
+  const [todaysBookings, unscheduledConfirmed, overdueBookings, groupedStatuses] = await Promise.all([
     prisma.booking.count({
       where: { scheduledStartAt: { gte: todayStart, lte: todayEnd } },
     }),
@@ -21,9 +21,14 @@ export async function getOperationsSummary() {
     prisma.booking.count({
       where: { status: { in: [...ACTIVE_STATUSES] }, scheduledStartAt: { lt: now } },
     }),
+    prisma.booking.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
 
-  return { todaysBookings, unscheduledConfirmed, overdueBookings };
+  const statusCounts = Object.fromEntries(
+    groupedStatuses.map((entry) => [entry.status, entry._count._all])
+  );
+
+  return { todaysBookings, unscheduledConfirmed, overdueBookings, statusCounts };
 }
 
 export async function getRevenueReport(from?: Date, to?: Date) {
