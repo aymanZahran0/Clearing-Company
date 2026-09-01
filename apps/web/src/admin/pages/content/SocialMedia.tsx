@@ -30,8 +30,9 @@ const PLATFORMS: { platform: SocialMediaPlatform; icon: JSX.Element }[] = [
 export default function SocialMedia() {
   const { t } = useTranslation();
   const { data, isLoading } = useListAllSocialMediaLinksQuery();
-  const [upsert, { isLoading: isSaving }] = useUpsertSocialMediaLinkMutation();
+  const [upsert] = useUpsertSocialMediaLinkMutation();
   const [drafts, setDrafts] = useState<Record<string, { url: string; active: boolean }>>({});
+  const [savingPlatforms, setSavingPlatforms] = useState<SocialMediaPlatform[]>([]);
 
   // Server data (existing rows) seeds the draft state once it arrives;
   // platforms with no row yet start as an empty, inactive draft so every
@@ -64,11 +65,14 @@ export default function SocialMedia() {
       message.error(t("admin:socialMedia.urlRequired"));
       return;
     }
+    setSavingPlatforms((current) => [...current, platform]);
     try {
       await upsert({ platform, url: draft.url.trim(), active: draft.active }).unwrap();
       message.success(t("admin:socialMedia.saved", { platform: enumLabel("socialMediaPlatform", platform) }));
     } catch {
       // toast shown by the global RTK Query error middleware
+    } finally {
+      setSavingPlatforms((current) => current.filter((savingPlatform) => savingPlatform !== platform));
     }
   }
 
@@ -102,7 +106,12 @@ export default function SocialMedia() {
                   />
                   <span className="text-sm text-gray-500">{t("admin:socialMedia.active")}</span>
                 </div>
-                <Button type="primary" size="large" loading={isSaving} onClick={() => onSave(platform)}>
+                <Button
+                  type="primary"
+                  size="large"
+                  loading={savingPlatforms.includes(platform)}
+                  onClick={() => onSave(platform)}
+                >
                   {t("admin:common.save")}
                 </Button>
               </div>

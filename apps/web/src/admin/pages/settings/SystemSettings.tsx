@@ -7,9 +7,10 @@ import { useDeleteSettingMutation, useListSettingsQuery, useUpdateSettingMutatio
 export default function SystemSettings() {
   const { t } = useTranslation();
   const { data, isLoading, refetch } = useListSettingsQuery();
-  const [updateSetting, { isLoading: isSaving }] = useUpdateSettingMutation();
+  const [updateSetting] = useUpdateSettingMutation();
   const [deleteSetting] = useDeleteSettingMutation();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [savingKeys, setSavingKeys] = useState<string[]>([]);
 
   const settingLabel = (key: string) =>
     t(`admin:settings.fields.${key}.label`, { defaultValue: key });
@@ -32,12 +33,15 @@ export default function SystemSettings() {
     } catch {
       // plain string values (e.g. "ar-SA") are valid as-is
     }
+    setSavingKeys((current) => [...current, key]);
     try {
       await updateSetting({ key, value }).unwrap();
       refetch();
       message.success(t("admin:settings.saved", { key: settingLabel(key) }));
     } catch {
       // toast shown by the global RTK Query error middleware
+    } finally {
+      setSavingKeys((current) => current.filter((savingKey) => savingKey !== key));
     }
   }
 
@@ -58,7 +62,11 @@ export default function SystemSettings() {
             className="mb-2"
           />
           <div className="flex gap-2">
-            <Button type="primary" loading={isSaving} onClick={() => onSave(setting.key)}>
+            <Button
+              type="primary"
+              loading={savingKeys.includes(setting.key)}
+              onClick={() => onSave(setting.key)}
+            >
               {t("admin:common.save")}
             </Button>
             <Popconfirm

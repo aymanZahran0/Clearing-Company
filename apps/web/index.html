@@ -61,7 +61,14 @@
     </script>
   </head>
   <body>
-    <div id="root">
+    <div id="root"></div>
+    <!--
+      SEO/no-JS fallback only. React never renders <noscript> content when
+      JS is enabled, so this never flashes on screen before the app's own
+      loading spinner (AuthBootstrap) mounts — it only reaches crawlers and
+      users with JS disabled.
+    -->
+    <noscript>
       <main lang="ar" dir="rtl">
         <header>
           <h1>نقاء عسير لخدمات التنظيف في أبها وخميس مشيط</h1>
@@ -86,7 +93,7 @@
           </p>
         </section>
       </main>
-    </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
