@@ -1,8 +1,13 @@
 import { useState } from "react";
-import { Input, Select, Table, Tag } from "antd";
+import { Button, Input, Popconfirm, Select, Table, Tag, Tooltip, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { useSearchCustomersQuery, type CustomerSummary } from "../../../api/customersApi";
+import {
+  useDeleteCustomerMutation,
+  useSearchCustomersQuery,
+  type CustomerSummary,
+} from "../../../api/customersApi";
 import { formatDateTime, formatSaudiPhoneForDisplay } from "../../../lib/formatters";
 import { enumLabel } from "../../../lib/enumLabels";
 import { enumOptions } from "../../../lib/enumOptions";
@@ -27,6 +32,16 @@ export default function CustomersList() {
   const [status, setStatus] = useState<CustomerSummary["status"] | undefined>();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useSearchCustomersQuery({ search, status, page, pageSize: 20 });
+  const [deleteCustomer, { isLoading: isDeleting }] = useDeleteCustomerMutation();
+
+  async function removeCustomer(customer: CustomerSummary) {
+    try {
+      await deleteCustomer(customer.id).unwrap();
+      message.success(t("admin:customers.deleted"));
+    } catch {
+      // The global RTK Query middleware shows the API error.
+    }
+  }
 
   return (
     <div className="p-4 sm:p-6">
@@ -107,6 +122,34 @@ export default function CustomersList() {
                   <ReactivateCustomerDialog customerId={row.id} triggerSize="small" />
                 ) : (
                   <SuspendCustomerDialog customerId={row.id} triggerSize="small" />
+                )}
+                {row.bookingsCount > 0 ? (
+                  <Tooltip title={t("admin:customers.cannotDeleteWithBookings")}>
+                    <Button
+                      size="small"
+                      danger
+                      disabled
+                      icon={<DeleteOutlined />}
+                      aria-label={t("admin:customers.delete")}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Popconfirm
+                    title={t("admin:customers.deleteTitle")}
+                    description={t("admin:customers.deleteConfirmBody", { name: row.fullName })}
+                    okText={t("admin:customers.delete")}
+                    cancelText={t("common.cancel")}
+                    okButtonProps={{ danger: true, loading: isDeleting }}
+                    onConfirm={() => removeCustomer(row)}
+                  >
+                    <Button
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      aria-label={t("admin:customers.delete")}
+                      title={t("admin:customers.delete")}
+                    />
+                  </Popconfirm>
                 )}
               </div>
             ),

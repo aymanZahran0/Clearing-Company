@@ -5,7 +5,6 @@ import { generateBookingReference, generateVerificationToken } from "../../lib/b
 import { assertTransition } from "../../lib/bookingStateMachine.js";
 import { recordAuditEntry } from "../../middleware/auditLogger.js";
 import { createInvitedCustomer } from "../customers/service.js";
-import { assertChecklistComplete, markChecklistCompleted } from "../checklists/service.js";
 import { notify } from "../notifications/service.js";
 import { autoRejectPendingRequestsForBooking } from "../reschedule-requests/service.js";
 import type {
@@ -653,9 +652,8 @@ export async function startExecution(id: string, actor: ActorContext) {
   });
 }
 
-// FR-048/FR-051/T124: blocks completion unless every required checklist
-// item has been answered; queues the FEEDBACK_REQUEST notification
-// best-effort (FR-070: a notification failure never blocks the booking
+// Completes an in-progress booking and queues the FEEDBACK_REQUEST
+// notification best-effort (a notification failure never blocks the booking
 // action itself).
 export async function completeBooking(id: string, actor: ActorContext) {
   const booking = await prisma.booking.findUnique({ where: { id } });
@@ -663,7 +661,6 @@ export async function completeBooking(id: string, actor: ActorContext) {
     throw new ApiError(404, "NOT_FOUND", "Booking not found");
   }
   assertTransition(booking.status, "COMPLETED");
-  await assertChecklistComplete(id);
 
   const updated = await prisma.$transaction(async (tx) => {
     const result = await tx.booking.update({
@@ -681,8 +678,6 @@ export async function completeBooking(id: string, actor: ActorContext) {
     });
     return result;
   });
-
-  await markChecklistCompleted(id, actor.actorUserId);
 
   await notify({
     bookingId: id,

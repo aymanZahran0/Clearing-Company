@@ -147,6 +147,10 @@ const API_ERROR_MESSAGES: Record<string, { ar: string; en: string }> = {
     ar: "هذا العميل غير موقوف حالياً",
     en: "This Customer is not currently suspended",
   },
+  "A customer with booking history cannot be deleted": {
+    ar: "لا يمكن حذف عميل لديه طلبات",
+    en: "Customers with requests cannot be deleted",
+  },
 
   // pricing / discounts
   "Pricing rule not found": {

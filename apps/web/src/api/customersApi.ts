@@ -71,6 +71,10 @@ export const customersApi = baseApi.injectEndpoints({
       query: ({ id, reason }) => ({ url: `/customers/${id}/reactivate`, method: "POST", body: { reason } }),
       invalidatesTags: ["Customer"],
     }),
+    deleteCustomer: builder.mutation<void, string>({
+      query: (id) => ({ url: `/customers/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Customer"],
+    }),
   }),
 });
 
@@ -83,4 +87,5 @@ export const {
   useUpdateCustomerMutation,
   useSuspendCustomerMutation,
   useReactivateCustomerMutation,
+  useDeleteCustomerMutation,
 } = customersApi;

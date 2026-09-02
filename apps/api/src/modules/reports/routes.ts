@@ -55,7 +55,10 @@ reportsRouter.get(
       { actorUserId: req.user!.id, ipAddress: req.ip, userAgent: req.headers["user-agent"] }
     );
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=bookings-export.xlsx");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=bookings-export.xlsx; filename*=UTF-8''%D8%AA%D8%B5%D8%AF%D9%8A%D8%B1-%D8%A7%D9%84%D8%AD%D8%AC%D9%88%D8%B2%D8%A7%D8%AA.xlsx"
+    );
     res.send(buffer);
   })
 );

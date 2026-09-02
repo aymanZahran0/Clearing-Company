@@ -21,6 +21,7 @@ export type ApiErrorCode =
   | "ACCOUNT_SUSPENDED"
   | "CUSTOMER_ALREADY_SUSPENDED"
   | "CUSTOMER_NOT_SUSPENDED"
+  | "CUSTOMER_HAS_BOOKINGS"
   | "INTERNAL_ERROR";
 
 export class ApiError extends Error {

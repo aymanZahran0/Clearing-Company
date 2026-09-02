@@ -37,7 +37,7 @@ export default function Export() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "bookings-export.xlsx";
+      link.download = "تصدير-الحجوزات.xlsx";
       link.click();
       URL.revokeObjectURL(url);
       message.success(t("admin:reports.exportSuccess"));

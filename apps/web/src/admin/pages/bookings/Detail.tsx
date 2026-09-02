@@ -1,4 +1,4 @@
-import { Button, Descriptions, Skeleton, Tag, Timeline, Tooltip } from "antd";
+import { Button, Descriptions, Skeleton, Tag, Timeline } from "antd";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import {
@@ -9,14 +9,12 @@ import {
   useMarkEnRouteMutation,
   useStartExecutionMutation,
 } from "../../../api/bookingsApi";
-import { useGetChecklistRunQuery } from "../../../api/checklistsApi";
 import { formatCurrency, formatDateTime, formatSaudiPhoneForDisplay } from "../../../lib/formatters";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { RejectDialog } from "./RejectDialog";
 import { ScheduleDialog } from "./ScheduleDialog";
 import { RescheduleDialog } from "./RescheduleDialog";
 import { CancelDialog } from "./CancelDialog";
-import { ChecklistRunner } from "./ChecklistRunner";
 import { RecordPaymentDialog } from "../payments/RecordPaymentDialog";
 import { PaymentsList } from "../payments/Invoices";
 import { enumLabel } from "../../../lib/enumLabels";
@@ -39,9 +37,6 @@ export default function BookingDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: booking, isLoading, refetch } = useGetBookingQuery(id ?? "", { skip: !id });
   const { data: history } = useGetBookingHistoryQuery(id ?? "", { skip: !id });
-  const { data: checklistRun } = useGetChecklistRunQuery(id ?? "", {
-    skip: !id || booking?.status !== "IN_PROGRESS",
-  });
   const [markEnRoute, { isLoading: isMarkingEnRoute }] = useMarkEnRouteMutation();
   const [markArrived, { isLoading: isMarkingArrived }] = useMarkArrivedMutation();
   const [startExecution, { isLoading: isStarting }] = useStartExecutionMutation();
@@ -64,16 +59,6 @@ export default function BookingDetail() {
     );
   }
 
-  // Mirrors the backend's assertChecklistComplete gate (FR-048): every
-  // required item needs an answered result before COMPLETED is allowed, so
-  // the button reflects that instead of letting the click round-trip fail.
-  const answeredIds = new Set(
-    (checklistRun?.results ?? [])
-      .filter((r) => r.value !== null && r.value !== undefined)
-      .map((r) => r.templateItemId),
-  );
-  const checklistComplete =
-    !!checklistRun && checklistRun.template.items.filter((item) => item.required).every((item) => answeredIds.has(item.id));
   const localizeHistoryReason = (reason: string) => {
     const key = HISTORY_REASON_KEYS[reason];
     return key ? t(`admin:bookings.historyReasons.${key}`) : reason;
@@ -179,21 +164,15 @@ export default function BookingDetail() {
       )}
 
       {booking.status === "IN_PROGRESS" && (
-        <div className="mb-6">
-          <h2 className="mb-2 text-base font-medium">{t("admin:bookings.qualityChecklist")}</h2>
-          <ChecklistRunner bookingId={booking.id} />
-          <Tooltip title={checklistComplete ? undefined : t("admin:checklist.completionRequired")}>
-            <Button
-              type="primary"
-              size="large"
-              className="mt-4"
-              disabled={!checklistComplete}
-              loading={isCompleting}
-              onClick={() => runAction(() => completeBooking(booking.id).unwrap())}
-            >
-              {t("admin:bookings.completeBooking")}
-            </Button>
-          </Tooltip>
+        <div className="mb-6 flex flex-wrap gap-3">
+          <Button
+            type="primary"
+            size="large"
+            loading={isCompleting}
+            onClick={() => runAction(() => completeBooking(booking.id).unwrap())}
+          >
+            {t("admin:bookings.completeBooking")}
+          </Button>
         </div>
       )}
 

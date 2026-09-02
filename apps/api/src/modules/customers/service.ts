@@ -242,6 +242,36 @@ export async function reactivateCustomer(userId: string, input: ReactivateCustom
   return getCustomerSummaryById(userId);
 }
 
+export async function deleteCustomer(userId: string, actor: ActorContext) {
+  const profile = await getCustomerProfileOrThrow(userId);
+
+  if (profile._count.bookings > 0) {
+    throw new ApiError(
+      409,
+      "CUSTOMER_HAS_BOOKINGS",
+      "A customer with booking history cannot be deleted"
+    );
+  }
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  await recordAuditEntry({
+    actorUserId: actor.actorUserId,
+    action: "CUSTOMER_DELETED",
+    entityType: "User",
+    entityId: userId,
+    beforeSnapshot: {
+      fullName: profile.user.fullName,
+      phone: profile.user.phoneNormalized,
+      email: profile.user.email,
+      status: profile.user.status,
+    },
+    afterSnapshot: null,
+    ipAddress: actor.ipAddress,
+    userAgent: actor.userAgent,
+  });
+}
+
 // FR-041/FR-042/FR-043: Admin-only fields, including internalNotes, which
 // must never appear in the Customer-facing serializer above.
 export async function updateCustomerAsAdmin(

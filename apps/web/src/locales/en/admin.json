@@ -209,7 +209,12 @@
     "recentBookings": "Recent Bookings",
     "noAddresses": "No addresses on file",
     "noBookings": "No bookings",
-    "backToList": "Back to List"
+    "backToList": "Back to List",
+    "delete": "Delete customer",
+    "deleteTitle": "Delete customer?",
+    "deleteConfirmBody": "Delete {{name}} permanently? This action cannot be undone.",
+    "deleted": "Customer deleted",
+    "cannotDeleteWithBookings": "Customers with requests cannot be deleted"
   },
   "dashboard": {
     "allRequestsTitle": "All requests by status",

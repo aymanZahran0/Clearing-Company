@@ -32,6 +32,6 @@ test.describe("Admin reviews operational and revenue reports (User Story 8)", ()
     const downloadPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: /Download Excel file|تنزيل ملف Excel/ }).click();
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toBe("bookings-export.xlsx");
+    expect(download.suggestedFilename()).toBe("تصدير-الحجوزات.xlsx");
   });
 });

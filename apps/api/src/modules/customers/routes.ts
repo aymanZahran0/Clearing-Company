@@ -88,6 +88,16 @@ customersRouter.patch(
   })
 );
 
+customersRouter.delete(
+  "/customers/:id",
+  authenticate,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    await service.deleteCustomer(requireParam(req, "id"), actorFrom(req));
+    res.status(204).send();
+  })
+);
+
 // FR-013/FR-014/FR-017a: status lifecycle, distinct from the Admin-account
 // lifecycle module (US5 scenario 13) and unreachable by Customer tokens
 // (requireRole("ADMIN") — US5 scenario 11).

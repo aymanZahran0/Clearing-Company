@@ -4,6 +4,18 @@ import { recordAuditEntry } from "../../middleware/auditLogger.js";
 
 const ACTIVE_STATUSES = ["CONFIRMED", "RESCHEDULED", "IN_PROGRESS"] as const;
 
+const BOOKING_STATUS_LABELS_AR: Record<string, string> = {
+  DRAFT: "مسودة",
+  PENDING: "قيد الانتظار",
+  CONFIRMED: "مؤكد",
+  RESCHEDULED: "تمت إعادة الجدولة",
+  IN_PROGRESS: "قيد التنفيذ",
+  COMPLETED: "مكتمل",
+  CANCELLED: "ملغي",
+  REJECTED: "مرفوض",
+  COMPLAINT_OPENED: "توجد شكوى مفتوحة",
+};
+
 // T164: powers the finalized Admin dashboard (today's bookings, unscheduled
 // confirmed, overdue).
 export async function getOperationsSummary() {
@@ -120,24 +132,24 @@ export async function exportBookingsWorkbook(
   workbook.creator = "Nuqaa Asir";
   workbook.created = new Date();
 
-  const sheet = workbook.addWorksheet("Bookings", {
+  const sheet = workbook.addWorksheet("الحجوزات", {
     views: [{ rightToLeft: true, state: "frozen", ySplit: 1 }],
   });
 
   sheet.columns = [
-    { header: "Reference Number", key: "referenceNumber", width: 22 },
-    { header: "Status", key: "status", width: 16 },
-    { header: "Customer Name", key: "customerName", width: 24 },
-    { header: "Service", key: "serviceName", width: 26 },
-    { header: "Scheduled At", key: "scheduledStartAt", width: 20 },
-    { header: "Total (SAR)", key: "total", width: 14 },
-    { header: "Created At", key: "createdAt", width: 20 },
+    { header: "رقم المرجع", key: "referenceNumber", width: 22 },
+    { header: "الحالة", key: "status", width: 22 },
+    { header: "اسم العميل", key: "customerName", width: 24 },
+    { header: "الخدمة", key: "serviceName", width: 26 },
+    { header: "الموعد المجدول", key: "scheduledStartAt", width: 20 },
+    { header: "الإجمالي (ر.س)", key: "total", width: 14 },
+    { header: "تاريخ الإنشاء", key: "createdAt", width: 20 },
     ...(filters.includePii
       ? [
-          { header: "Phone", key: "phone", width: 16 },
-          { header: "City", key: "city", width: 14 },
-          { header: "Neighborhood", key: "neighborhood", width: 18 },
-          { header: "Street", key: "street", width: 22 },
+          { header: "رقم الهاتف", key: "phone", width: 16 },
+          { header: "المدينة", key: "city", width: 14 },
+          { header: "الحي", key: "neighborhood", width: 18 },
+          { header: "الشارع", key: "street", width: 22 },
         ]
       : []),
   ];
@@ -153,7 +165,7 @@ export async function exportBookingsWorkbook(
   for (const booking of bookings) {
     sheet.addRow({
       referenceNumber: booking.referenceNumber,
-      status: booking.status,
+      status: BOOKING_STATUS_LABELS_AR[booking.status] ?? booking.status,
       customerName: booking.customer.user.fullName,
       serviceName: booking.items[0]?.service.nameAr ?? "",
       scheduledStartAt: booking.scheduledStartAt ?? null,

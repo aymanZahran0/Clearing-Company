@@ -209,7 +209,12 @@
     "recentBookings": "الحجوزات الأخيرة",
     "noAddresses": "لا توجد عناوين مسجلة",
     "noBookings": "لا توجد حجوزات",
-    "backToList": "العودة إلى القائمة"
+    "backToList": "العودة إلى القائمة",
+    "delete": "حذف العميل",
+    "deleteTitle": "حذف العميل؟",
+    "deleteConfirmBody": "هل تريد حذف {{name}} نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleted": "تم حذف العميل",
+    "cannotDeleteWithBookings": "لا يمكن حذف عميل لديه طلبات"
   },
   "dashboard": {
     "allRequestsTitle": "جميع الطلبات حسب الحالة",
