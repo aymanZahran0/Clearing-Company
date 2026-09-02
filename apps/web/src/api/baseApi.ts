@@ -22,6 +22,10 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
+export function shouldAttemptReauth(status: FetchBaseQueryError["status"] | undefined, accessToken: string | null) {
+  return status === 401 && Boolean(accessToken);
+}
+
 /**
  * Wraps the base query so a 401 triggers a single silent refresh attempt
  * (calling /auth/refresh via the refresh-token cookie) before retrying the
@@ -35,7 +39,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 ) => {
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error?.status === 401) {
+  // A 401 is only an expired-session signal when the request actually used
+  // an access token. Public auth mutations (most importantly /auth/login)
+  // also return 401 for expected business errors such as ACCOUNT_SUSPENDED.
+  // Refreshing and resetting RTK Query for those requests removes the active
+  // mutation before its rejected action can reach errorToastMiddleware.
+  const accessToken = (api.getState() as RootState).auth.accessToken;
+  if (shouldAttemptReauth(result.error?.status, accessToken)) {
     const refreshResult = await rawBaseQuery(
       { url: "/auth/refresh", method: "POST" },
       api,
