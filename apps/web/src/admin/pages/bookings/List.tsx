@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Checkbox, Select, Table, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useListAllBookingsQuery, type BookingStatus } from "../../../api/bookingsApi";
 import { formatCurrency, formatDateTime } from "../../../lib/formatters";
 import { enumLabel } from "../../../lib/enumLabels";
@@ -23,9 +23,20 @@ const STATUSES: BookingStatus[] = [
 export default function BookingsList() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<BookingStatus | undefined>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusParam = searchParams.get("status");
+  const status = STATUSES.includes(statusParam as BookingStatus)
+    ? (statusParam as BookingStatus)
+    : undefined;
   const [needsScheduling, setNeedsScheduling] = useState(false);
   const { data, isLoading } = useListAllBookingsQuery({ status, needsScheduling: needsScheduling || undefined });
+
+  const handleStatusChange = (nextStatus: BookingStatus | undefined) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextStatus) nextParams.set("status", nextStatus);
+    else nextParams.delete("status");
+    setSearchParams(nextParams, { replace: true });
+  };
 
   return (
     <div className="p-4 sm:p-6">
@@ -38,7 +49,8 @@ export default function BookingsList() {
             size="large"
             className="w-full sm:w-64"
             options={enumOptions("bookingStatus", STATUSES)}
-            onChange={setStatus}
+            value={status}
+            onChange={handleStatusChange}
           />
           <Checkbox checked={needsScheduling} onChange={(e) => setNeedsScheduling(e.target.checked)}>
             {t("admin:bookings.needsScheduling")}

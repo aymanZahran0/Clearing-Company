@@ -51,7 +51,7 @@ export default function Dashboard() {
         <section className="admin-status-section" aria-labelledby="request-status-title">
           <div className="admin-panel-heading"><h2 id="request-status-title">{t("admin:dashboard.allRequestsTitle")}</h2><p>{t("admin:dashboard.allRequestsDescription")}</p></div>
           <div className="admin-status-grid">
-            {REQUEST_STATUSES.map((status) => <Link className={`admin-status-card tone-${BOOKING_STATUS_META[status].tone}`} to="/admin/bookings" key={status}>
+            {REQUEST_STATUSES.map((status) => <Link className={`admin-status-card tone-${BOOKING_STATUS_META[status].tone}`} to={`/admin/bookings?status=${status}`} key={status}>
               <span className="admin-status-icon" aria-hidden="true">{BOOKING_STATUS_META[status].icon}</span>
               <span>{enumLabel("bookingStatus", status)}</span>
               <strong>{(summary?.statusCounts?.[status] ?? 0).toLocaleString()}</strong>
