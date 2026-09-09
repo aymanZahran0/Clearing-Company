@@ -68,6 +68,7 @@ export async function forgotPasswordHandler(req: Request, res: Response) {
 
 export async function resetPasswordHandler(req: Request, res: Response) {
   await authService.resetPassword(req.body);
+  res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
   res.status(200).json({ message: "Password updated" });
 }
 

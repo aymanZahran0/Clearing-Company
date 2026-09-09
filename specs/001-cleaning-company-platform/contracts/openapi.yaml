@@ -105,7 +105,7 @@ paths:
   /auth/forgot-password:
     post:
       tags: [Auth]
-      summary: Request a password reset link
+      summary: Request a password reset link by email
       security: []
       requestBody:
         required: true
@@ -113,11 +113,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [identifier]
+              required: [email]
               properties:
-                identifier: { type: string, description: email or phone }
+                email: { type: string, format: email, maxLength: 254 }
       responses:
-        "202": { description: Reset instructions sent if account exists (no enumeration) }
+        "202": { description: Request accepted; generic response regardless of account existence or email delivery }
         "429": { $ref: "#/components/responses/RateLimited" }
 
   /auth/reset-password:
