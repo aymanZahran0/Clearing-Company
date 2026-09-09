@@ -43,4 +43,27 @@ describe("login error toast", () => {
     expect(messageError).toHaveBeenCalledWith("تم إيقاف هذا الحساب");
     expect(next).toHaveBeenCalledWith(action);
   });
+
+  it("does not show a session-expired toast for a guest's startup refresh", async () => {
+    const { errorToastMiddleware } = await import("../../src/api/errorToastMiddleware");
+    const next = vi.fn();
+    const action = {
+      type: "api/executeMutation/rejected",
+      payload: {
+        status: 401,
+        data: { error: { code: "UNAUTHORIZED", message: "Invalid or expired refresh token" } },
+      },
+      meta: {
+        arg: { endpointName: "refresh" },
+        requestId: "startup-refresh",
+        requestStatus: "rejected",
+        rejectedWithValue: true,
+      },
+    };
+
+    errorToastMiddleware({} as never)(next)(action);
+
+    expect(messageError).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(action);
+  });
 });
