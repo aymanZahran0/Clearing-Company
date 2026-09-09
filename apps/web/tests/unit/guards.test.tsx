@@ -138,13 +138,13 @@ describe("RequireRole", () => {
     expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
   });
 
-  it("redirects to /admin/login when unauthenticated, even for the correct role check", () => {
+  it("redirects to /login when accessing an admin route while unauthenticated", () => {
     renderWithStore(
       <RequireRole role="ADMIN">
         <div>Admin Area</div>
       </RequireRole>,
       { accessToken: null, user: null }
     );
-    expect(screen.getByText("Admin Login Page")).toBeInTheDocument();
+    expect(screen.getByText("Login Page")).toBeInTheDocument();
   });
 });

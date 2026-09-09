@@ -18,7 +18,7 @@ export function RequireRole({ role, children }: RequireRoleProps) {
   const fallbackPath = user?.role === "ADMIN" ? "/admin" : "/";
 
   return (
-    <RequireAuth loginPath={role === "ADMIN" ? "/admin/login" : "/login"}>
+    <RequireAuth>
       {user?.role === role ? <>{children}</> : <Navigate to={fallbackPath} replace />}
     </RequireAuth>
   );

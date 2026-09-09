@@ -384,7 +384,7 @@ export function AdminShell({ children }: PropsWithChildren) {
     await logout();
     dispatch(clearAuth());
     dispatch(baseApi.util.resetApiState());
-    navigate("/admin/login");
+    navigate("/login");
   }
 
   function toggleLocale() {
