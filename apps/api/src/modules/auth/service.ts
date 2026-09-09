@@ -83,7 +83,7 @@ export async function login(input: LoginInput) {
   const isEmail = input.identifier.includes("@");
   const user = await prisma.user.findFirst({
     where: isEmail
-      ? { email: input.identifier.trim().toLowerCase() }
+      ? { email: { equals: input.identifier.trim(), mode: "insensitive" } }
       : { phoneNormalized: safeNormalize(input.identifier) },
   });
 
@@ -169,16 +169,12 @@ export async function logout(rawRefreshToken: string | undefined) {
 }
 
 export async function forgotPassword(input: ForgotPasswordInput) {
-  const isEmail = input.identifier.includes("@");
   const user = await prisma.user.findFirst({
-    where: isEmail
-      ? { email: input.identifier.trim().toLowerCase() }
-      : { phoneNormalized: safeNormalize(input.identifier) },
+    where: { email: { equals: input.email.trim(), mode: "insensitive" } },
   });
 
-  // Always behave the same way regardless of whether the account exists,
-  // to avoid account enumeration via response timing/shape.
-  if (!user) return;
+  // Keep the response generic for unknown accounts and delivery failures.
+  if (!user?.email) return;
 
   const rawToken = randomBytes(32).toString("hex");
   const resetToken = await prisma.passwordResetToken.create({
@@ -188,11 +184,6 @@ export async function forgotPassword(input: ForgotPasswordInput) {
       expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
     },
   });
-
-  if (!user.email) {
-    await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
-    return;
-  }
 
   const sent = await sendPasswordResetEmail({
     email: user.email,
@@ -217,23 +208,34 @@ export async function resetPassword(input: ResetPasswordInput) {
 
   const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
 
-  await prisma.$transaction([
-    prisma.user.update({
+  await prisma.$transaction(async (tx) => {
+    // Serialize resets for the same account, including requests using different
+    // links. Recheck token validity after acquiring the account lock.
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${record.userId} FOR UPDATE`;
+    const now = new Date();
+    const claimed = await tx.passwordResetToken.updateMany({
+      where: { id: record.id, usedAt: null, expiresAt: { gt: now } },
+      data: { usedAt: now },
+    });
+    if (claimed.count !== 1) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Reset token is invalid or has expired");
+    }
+    await tx.user.update({
       where: { id: record.userId },
       data: {
         passwordHash,
         refreshTokenVersion: { increment: 1 }, // invalidates all outstanding sessions
       },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: record.id },
-      data: { usedAt: new Date() },
-    }),
-    prisma.refreshToken.updateMany({
+    });
+    await tx.passwordResetToken.updateMany({
+      where: { userId: record.userId, usedAt: null },
+      data: { usedAt: now },
+    });
+    await tx.refreshToken.updateMany({
       where: { userId: record.userId, revokedAt: null },
-      data: { revokedAt: new Date() },
-    }),
-  ]);
+      data: { revokedAt: now },
+    });
+  });
 }
 
 // Self-service change from an authenticated session (distinct from the
@@ -262,6 +264,10 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
     prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
+    }),
+    prisma.passwordResetToken.updateMany({
+      where: { userId, usedAt: null },
+      data: { usedAt: new Date() },
     }),
   ]);
 }

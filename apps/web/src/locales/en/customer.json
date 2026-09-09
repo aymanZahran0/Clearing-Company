@@ -95,7 +95,25 @@
     "bookNow": "Book now"
   },
   "forgotPassword": {
-    "checkInstructions": "Check your phone/email for instructions."
+    "email": "Email address",
+    "description": "Enter the email address on your account. We'll send you a password reset link valid for one hour.",
+    "emailRequired": "Enter your email address.",
+    "emailInvalid": "Enter a valid email address.",
+    "sendLink": "Send reset link",
+    "checkEmail": "Check your email",
+    "checkInstructions": "If an account matches this email address, you'll receive a reset link. Check your spam folder too. If it doesn't arrive after a few minutes, try again.",
+    "tryAgain": "Try again or use another email",
+    "backToLogin": "Back to sign in"
+  },
+  "resetPassword": {
+    "invalidLink": "This reset link is missing, invalid, or has expired. Request a new link to continue.",
+    "requestLink": "Request a new reset link",
+    "passwordRequired": "Enter your new password.",
+    "passwordLength": "Use between 8 and 200 characters.",
+    "confirmPassword": "Confirm new password",
+    "confirmRequired": "Enter your new password again.",
+    "passwordMismatch": "The passwords don't match.",
+    "success": "Your password has been reset. Sign in with your new password."
   },
   "quoteReview": {
     "discount": "Discount",

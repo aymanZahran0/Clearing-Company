@@ -4,7 +4,7 @@ import { saudiPhoneSchema } from "@nuqaa-asir/shared";
 export const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(200),
   phone: saudiPhoneSchema,
-  email: z.string().trim().email().optional(),
+  email: z.string().trim().email().toLowerCase().optional(),
   password: z.string().min(8).max(200),
   marketingConsent: z.boolean().default(false),
 });
@@ -17,7 +17,7 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const forgotPasswordSchema = z.object({
-  identifier: z.string().trim().min(3),
+  email: z.string().trim().email().max(254).toLowerCase(),
 });
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
