@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../api/authApi";
 import { setCredentials } from "../../features/auth/authSlice";
 import { baseApi } from "../../api/baseApi";
+import { getLoginRedirect } from "../../features/auth/loginRedirect";
 
 interface LoginFormValues {
   identifier: string;
@@ -23,16 +24,7 @@ export default function Login() {
       const result = await login(values).unwrap();
       dispatch(baseApi.util.resetApiState());
       dispatch(setCredentials(result));
-      if (result.user.role === "ADMIN") {
-        navigate("/admin", { replace: true });
-        return;
-      }
-      // Preserve the full path the guard redirected from — pathname alone
-      // drops query params like `/booking/new?serviceId=...`, silently
-      // losing the service the customer picked before being sent to log in.
-      const from = (location.state as { from?: { pathname: string; search: string; hash: string } })?.from;
-      const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/bookings";
-      navigate(redirectTo, { replace: true });
+      navigate(getLoginRedirect(result.user.role, location.state), { replace: true });
     } catch {
       // toast shown by the global RTK Query error middleware
     }

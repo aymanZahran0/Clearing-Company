@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { AppShell, AdminShell } from "../components/layout/AppShell";
 import NotFoundPage from "../pages/NotFoundPage";
 import RouteErrorPage from "../pages/RouteErrorPage";
@@ -24,7 +24,6 @@ import ReviewForm from "../customer/pages/ReviewForm";
 import ComplaintForm from "../customer/pages/ComplaintForm";
 import Subscriptions from "../customer/pages/Subscriptions";
 import CustomerNotifications from "../customer/pages/Notifications";
-import AdminLogin from "../admin/pages/Login";
 import AdminDashboard from "../admin/pages/Dashboard";
 import NewPhoneBooking from "../admin/pages/bookings/NewPhoneBooking";
 import AdminBookingsList from "../admin/pages/bookings/List";
@@ -117,7 +116,7 @@ const router = createBrowserRouter([
     path: "/login",
     errorElement: <RouteErrorPage />,
     element: (
-      <RequireGuest>
+      <RequireGuest authenticatedPath="/bookings">
         <AppShell>
           <Login />
         </AppShell>
@@ -266,11 +265,7 @@ const router = createBrowserRouter([
   {
     path: "/admin/login",
     errorElement: <RouteErrorPage />,
-    element: (
-      <RequireGuest authenticatedPath="/admin">
-        <AdminLogin />
-      </RequireGuest>
-    ),
+    element: <Navigate to="/login" replace />,
   },
   {
     path: "/admin",
