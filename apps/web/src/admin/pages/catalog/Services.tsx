@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Upload, message } from "antd";
-import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { useTranslation } from "react-i18next";
 import { useListAllCategoriesQuery } from "../../../api/serviceCategoriesApi";
 import {
   useCreateServiceMutation,
   useDeleteServiceMutation,
+  useDeleteServiceImageMutation,
   useListServicesQuery,
   usePermanentlyDeleteServiceMutation,
   useUploadServiceImageMutation,
@@ -38,14 +39,45 @@ export default function Services() {
   const { data: categories } = useListAllCategoriesQuery();
   const { data, isLoading } = useListServicesQuery({ includeInactive: true });
   const [createService, { isLoading: isCreating }] = useCreateServiceMutation();
-  const [updateService] = useUpdateServiceMutation();
+  const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation();
   const [deleteService] = useDeleteServiceMutation();
   const [permanentlyDeleteService] = usePermanentlyDeleteServiceMutation();
   const [uploadServiceImage, { isLoading: isUploading }] = useUploadServiceImageMutation();
+  const [deleteServiceImage, { isLoading: isDeletingImage }] = useDeleteServiceImageMutation();
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageList, setImageList] = useState<UploadFile[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string>();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  useEffect(() => {
+    setPreviewOpen(false);
+    if (!imageFile) {
+      setPreviewUrl(undefined);
+      return;
+    }
+    const url = URL.createObjectURL(imageFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+  const isSaving = isCreating || isUpdating || isUploading;
+
+  async function removeImage(imageId: string) {
+    const serviceId = editing?.id;
+    setDeletingImageId(imageId);
+    try {
+      await deleteServiceImage(imageId).unwrap();
+      setEditing((current) => current && current.id === serviceId
+        ? { ...current, images: [] }
+        : current);
+      message.success(t("catalog:serviceImageDeleted"));
+    } catch {
+      // Keep the image visible on failure; the global middleware shows the error.
+    } finally {
+      setDeletingImageId(null);
+    }
+  }
 
   function openCreate() {
     setEditing(null);
@@ -79,7 +111,6 @@ export default function Services() {
           serviceId: savedService.id,
           file: imageFile,
           altTextAr: values.nameAr,
-          sortOrder: -((editing?.images.length ?? 0) + 1),
         }).unwrap();
       }
       setOpen(false);
@@ -192,7 +223,9 @@ export default function Services() {
       </div>
       <Modal
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => { if (!isDeletingImage && !isSaving) setOpen(false); }}
+        closable={!isDeletingImage && !isSaving}
+        maskClosable={!isDeletingImage && !isSaving}
         footer={null}
         title={editing ? t("catalog:editService") : t("catalog:newService")}
         destroyOnClose
@@ -228,33 +261,88 @@ export default function Services() {
             <Input.TextArea rows={2} />
           </Form.Item>
           <Form.Item label={t("catalog:serviceImage")}>
-            {editing?.images[0] && imageList.length === 0 && (
-              <div className="mb-3">
-                <Image
-                  src={editing.images[0].url}
-                  alt={editing.images[0].altTextAr ?? editing.nameAr}
-                  width={120}
-                  height={80}
-                  className="rounded-lg object-cover"
-                />
+            {!!editing?.images.length && (
+              <div className="mb-3 flex flex-wrap gap-4">
+                {editing.images.slice(0, 1).map((image) => (
+                  <div key={image.id} className="flex items-center gap-3">
+                    <Image
+                      src={image.url}
+                      alt={image.altTextAr ?? editing.nameAr}
+                      width={120}
+                      height={80}
+                      className="rounded-lg object-cover"
+                    />
+
+                  </div>
+                ))}
               </div>
             )}
-            <Upload
-              accept="image/jpeg,image/png,image/webp"
-              beforeUpload={(file) => {
-                setImageFile(file);
-                setImageList([file]);
-                return false;
-              }}
-              fileList={imageList}
-              maxCount={1}
-              onRemove={() => {
-                setImageFile(null);
-                setImageList([]);
-              }}
-            >
-              <Button icon={<UploadOutlined />}>{t("catalog:chooseServiceImage")}</Button>
-            </Upload>
+            <div className="flex items-center gap-2">
+              <Upload
+                disabled={isDeletingImage || isSaving}
+                accept="image/jpeg,image/png,image/webp"
+                beforeUpload={(file) => {
+                  setImageFile(file);
+                  setImageList([file]);
+                  return false;
+                }}
+                fileList={imageList}
+                showUploadList={false}
+                maxCount={1}
+                onRemove={() => {
+                  setImageFile(null);
+                  setImageList([]);
+                }}
+              >
+                <Button icon={<UploadOutlined />}>{t("catalog:chooseServiceImage")}</Button>
+              </Upload>
+              {imageFile && (
+                  <div className="ms-auto flex min-w-0 items-center gap-2 rounded-lg bg-[#F3F8F7] px-3 py-2">
+                    <span className="min-w-0 max-w-48 truncate" title={imageFile.name}>{imageFile.name}</span>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EyeOutlined />}
+                      aria-label={t("catalog:viewServiceImage")}
+                      title={t("catalog:viewServiceImage")}
+                      disabled={!previewUrl}
+                      onClick={() => setPreviewOpen(true)}
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      aria-label={t("catalog:deleteServiceImage")}
+                      title={t("catalog:deleteServiceImage")}
+                      disabled={isDeletingImage || isSaving}
+                      onClick={() => { setImageFile(null); setImageList([]); }}
+                    />
+                  </div>
+              )}
+              {!!editing?.images.length && (
+                <Popconfirm
+                  title={t("catalog:deleteServiceImage")}
+                  description={t("catalog:deleteServiceImageConfirm")}
+                  okText={t("catalog:delete")}
+                  cancelText={t("common.cancel")}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => removeImage(editing.images[0]!.id)}
+                  disabled={isDeletingImage || isSaving}
+                >
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    size="small"
+                    className="mt-1"
+                    aria-label={t("catalog:deleteServiceImage")}
+                    title={t("catalog:deleteServiceImage")}
+                    loading={deletingImageId === editing.images[0]?.id}
+                    disabled={isDeletingImage || isSaving}
+                  />
+                </Popconfirm>
+              )}
+            </div>
             <div className="mt-2 text-sm text-muted">{t("catalog:serviceImageHint")}</div>
           </Form.Item>
           <Form.Item name="pricingType" label={t("catalog:pricingType")} rules={[{ required: true }]}>
@@ -272,10 +360,18 @@ export default function Services() {
           <Form.Item name="requiresManualQuote" label={t("catalog:requiresManualQuote")} valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Button type="primary" htmlType="submit" size="large" block loading={isCreating || isUploading}>
+          <Button type="primary" htmlType="submit" size="large" block loading={isSaving} disabled={isDeletingImage}>
             {t("admin:common.save")}
           </Button>
         </Form>
+      </Modal>
+      <Modal
+        open={previewOpen && !!imageFile && open}
+        onCancel={() => setPreviewOpen(false)}
+        title={t("catalog:viewServiceImage")}
+        footer={null}
+      >
+        <img src={previewUrl} alt={imageFile?.name ?? ""} className="max-h-[70vh] w-full object-contain" />
       </Modal>
     </div>
   );

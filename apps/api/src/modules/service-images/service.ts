@@ -3,6 +3,20 @@ import sharp from "sharp";
 import { ApiError } from "@nuqaa-asir/shared";
 import { prisma } from "../../lib/prisma.js";
 import { getStorageAdapter } from "../../lib/storage/factory.js";
+import { logger } from "../../lib/logging.js";
+
+async function removeStoredImages(images: { url: string }[]) {
+  for (const image of images) {
+    try {
+      const pathname = new URL(image.url, "http://localhost").pathname;
+      const index = pathname.indexOf("/services/");
+      if (index >= 0) await getStorageAdapter().delete(pathname.slice(index + 1));
+    } catch (error) {
+      // Catalog changes have committed. A storage outage must not restore old images.
+      logger.error({ err: error, imageUrl: image.url }, "Failed to remove unused service image from storage");
+    }
+  }
+}
 
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 5 * 1024 * 1024; // data-model.md §7: max 5MB
@@ -44,15 +58,30 @@ export async function uploadServiceImage(
 
   const { url } = await getStorageAdapter().upload({ key, body: cleaned, contentType: file.mimetype });
 
-  return prisma.serviceImage.create({
-    data: {
-      serviceId,
-      url,
-      altTextAr: input.altTextAr,
-      altTextEn: input.altTextEn,
-      sortOrder: input.sortOrder ?? 0,
-    },
-  });
+  let replacement;
+  try {
+    replacement = await prisma.$transaction(async (tx) => {
+      // Serialize replacements/deletions for this service, including concurrent uploads.
+      await tx.$queryRaw`SELECT id FROM "Service" WHERE id = ${serviceId} FOR UPDATE`;
+      const previous = await tx.serviceImage.findMany({ where: { serviceId } });
+      await tx.serviceImage.deleteMany({ where: { serviceId } });
+      const image = await tx.serviceImage.create({
+        data: {
+          serviceId,
+          url,
+          altTextAr: input.altTextAr,
+          altTextEn: input.altTextEn,
+          sortOrder: 0,
+        },
+      });
+      return { image, previous };
+    });
+  } catch (error) {
+    await removeStoredImages([{ url }]);
+    throw error;
+  }
+  await removeStoredImages(replacement.previous);
+  return replacement.image;
 }
 
 export async function deleteServiceImage(id: string) {
@@ -60,11 +89,15 @@ export async function deleteServiceImage(id: string) {
   if (!image) {
     throw new ApiError(404, "NOT_FOUND", "Image not found");
   }
-  const pathname = new URL(image.url, "http://localhost").pathname;
-  const servicePathIndex = pathname.indexOf("/services/");
-  const key = servicePathIndex >= 0 ? pathname.slice(servicePathIndex + 1) : null;
-  if (key) {
-    await getStorageAdapter().delete(key);
-  }
-  await prisma.serviceImage.delete({ where: { id } });
+  const removed = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "Service" WHERE id = ${image.serviceId} FOR UPDATE`;
+    // Do not delete a newer replacement if this request references a stale image.
+    if (!await tx.serviceImage.findUnique({ where: { id } })) {
+      throw new ApiError(404, "NOT_FOUND", "Service image not found");
+    }
+    const images = await tx.serviceImage.findMany({ where: { serviceId: image.serviceId } });
+    await tx.serviceImage.deleteMany({ where: { serviceId: image.serviceId } });
+    return images;
+  });
+  await removeStoredImages(removed);
 }
