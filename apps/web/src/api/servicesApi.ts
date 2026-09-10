@@ -1,8 +1,10 @@
-import { baseApi } from "./baseApi";
+import { apiBaseUrl, baseApi } from "./baseApi";
+import { withServiceImageDelivery } from "./serviceImageDelivery";
 
 export interface ServiceImage {
   id: string;
   url: string;
+  sortOrder?: number;
   altTextAr: string | null;
   altTextEn: string | null;
 }
@@ -70,10 +72,12 @@ export const servicesApi = baseApi.injectEndpoints({
     }),
     listServices: builder.query<Service[], { categoryId?: string; includeInactive?: boolean } | void>({
       query: (args) => ({ url: "/services", params: args ?? undefined }),
+      transformResponse: (services: Service[]) => services.map((service) => withServiceImageDelivery(service, apiBaseUrl)),
       providesTags: ["Service"],
     }),
     getServiceBySlug: builder.query<Service, string>({
       query: (slug) => `/services/${slug}`,
+      transformResponse: (service: Service) => withServiceImageDelivery(service, apiBaseUrl),
       providesTags: ["Service"],
     }),
     createService: builder.mutation<Service, ServiceWritableFields>({

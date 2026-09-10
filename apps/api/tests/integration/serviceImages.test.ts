@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import bcrypt from "bcrypt";
+import sharp from "sharp";
 import { createApp } from "../../src/app.js";
 import { prisma } from "../../src/lib/prisma.js";
 
@@ -40,6 +41,47 @@ describe("Service image upload (T057, data-model.md §7)", () => {
       },
     });
   }
+
+  async function uploadImage(serviceId: string) {
+    const buffer = await sharp({
+      create: { width: 2, height: 2, channels: 3, background: "#ffffff" },
+    }).png().toBuffer();
+    const response = await request(app)
+      .post(`/api/v1/services/${serviceId}/images`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .attach("image", buffer, { filename: "image.png", contentType: "image/png" });
+    expect(response.status).toBe(201);
+    return response.body as { id: string; url: string };
+  }
+
+  it("keeps only the replacement and ignores stale deletion requests", async () => {
+    const svc = await createService();
+    const first = await uploadImage(svc.id);
+    const latest = await uploadImage(svc.id);
+    expect(latest.url).not.toBe(first.url);
+    const images = await prisma.serviceImage.findMany({ where: { serviceId: svc.id } });
+    expect(images.map((image) => image.id)).toEqual([latest.id]);
+    const staleDelete = await request(app).delete(`/api/v1/service-images/${first.id}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(staleDelete.status).toBe(404);
+    expect(await prisma.serviceImage.count({ where: { serviceId: svc.id } })).toBe(1);
+    const deletion = await request(app).delete(`/api/v1/service-images/${latest.id}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(deletion.status).toBe(204);
+    expect(await prisma.serviceImage.count({ where: { serviceId: svc.id } })).toBe(0);
+  });
+
+  it("deleting clears legacy images so an older upload cannot reappear", async () => {
+    const svc = await createService();
+    const current = await uploadImage(svc.id);
+    await prisma.serviceImage.create({ data: {
+      serviceId: svc.id, url: current.url, sortOrder: 1,
+    } });
+    const deletion = await request(app).delete(`/api/v1/service-images/${current.id}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(deletion.status).toBe(204);
+    expect(await prisma.serviceImage.count({ where: { serviceId: svc.id } })).toBe(0);
+  });
 
   it("rejects a non-image MIME type with 422", async () => {
     const svc = await createService();
