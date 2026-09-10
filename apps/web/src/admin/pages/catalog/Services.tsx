@@ -365,14 +365,17 @@ export default function Services() {
           </Button>
         </Form>
       </Modal>
-      <Modal
-        open={previewOpen && !!imageFile && open}
-        onCancel={() => setPreviewOpen(false)}
-        title={t("catalog:viewServiceImage")}
-        footer={null}
-      >
-        <img src={previewUrl} alt={imageFile?.name ?? ""} className="max-h-[70vh] w-full object-contain" />
-      </Modal>
+      {previewUrl && (
+        <Image
+          src={previewUrl}
+          alt={imageFile?.name ?? ""}
+          wrapperStyle={{ display: "none" }}
+          preview={{
+            visible: previewOpen && !!imageFile && open,
+            onVisibleChange: setPreviewOpen,
+          }}
+        />
+      )}
     </div>
   );
 }
