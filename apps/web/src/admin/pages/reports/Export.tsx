@@ -4,6 +4,7 @@ import type { Dayjs } from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../app/store";
+import { apiBaseUrl } from "../../../api/baseApi";
 
 const { RangePicker } = DatePicker;
 
@@ -20,7 +21,6 @@ export default function Export() {
   async function onExport() {
     setIsDownloading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api/v1";
       const params = new URLSearchParams();
       if (range) {
         params.set("from", range[0].toISOString());
@@ -28,7 +28,8 @@ export default function Export() {
       }
       params.set("includePii", String(includePii));
 
-      const response = await fetch(`${baseUrl}/reports/export.xlsx?${params.toString()}`, {
+      const response = await fetch(`${apiBaseUrl}/reports/export.xlsx?${params.toString()}`, {
+        credentials: "include",
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       if (!response.ok) throw new Error("Export failed");
