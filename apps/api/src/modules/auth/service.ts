@@ -11,6 +11,7 @@ import type {
   LoginInput,
   RegisterInput,
   ResetPasswordInput,
+  UpdateAdminAccountInput,
 } from "./schema.js";
 
 const BCRYPT_ROUNDS = 12;
@@ -270,4 +271,56 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
       data: { usedAt: new Date() },
     }),
   ]);
+}
+
+export async function updateAdminAccount(userId: string, input: UpdateAdminAccountInput) {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+  if (user.role !== "ADMIN") {
+    throw new ApiError(403, "FORBIDDEN", "Admin access required");
+  }
+  if (!user.passwordHash || !(await bcrypt.compare(input.currentPassword, user.passwordHash))) {
+    throw new ApiError(401, "UNAUTHORIZED", "Current password is incorrect");
+  }
+
+  const email = input.email?.toLowerCase();
+  if (email) {
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" }, id: { not: userId } },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ApiError(409, "CONFLICT", "Email is already in use");
+    }
+  }
+
+  const passwordHash = input.newPassword
+    ? await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS)
+    : undefined;
+  const now = new Date();
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.user.update({
+      where: { id: userId },
+      data: {
+        ...(email !== undefined ? { email } : {}),
+        ...(passwordHash
+          ? { passwordHash, refreshTokenVersion: { increment: 1 } }
+          : {}),
+      },
+    });
+    if (passwordHash) {
+      await tx.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: now },
+      });
+      await tx.passwordResetToken.updateMany({
+        where: { userId, usedAt: null },
+        data: { usedAt: now },
+      });
+    }
+    return result;
+  });
+
+  return { user: updated, passwordChanged: Boolean(passwordHash) };
 }

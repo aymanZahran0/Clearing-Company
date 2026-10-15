@@ -411,6 +411,12 @@ export function AdminShell({ children }: PropsWithChildren) {
   const accountMenu = {
     items: [
       {
+        key: "profile",
+        icon: <UserOutlined />,
+        label: t("nav.profile"),
+        onClick: () => navigate("/admin/profile"),
+      },
+      {
         key: "logout",
         danger: true,
         icon: <LogoutOutlined />,

@@ -32,3 +32,14 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8).max(200),
 });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+export const updateAdminAccountSchema = z
+  .object({
+    email: z.string().trim().email().max(254).toLowerCase().optional(),
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8).max(200).optional(),
+  })
+  .refine((value) => value.email !== undefined || value.newPassword !== undefined, {
+    message: "Provide an email or a new password",
+  });
+export type UpdateAdminAccountInput = z.infer<typeof updateAdminAccountSchema>;

@@ -454,6 +454,22 @@
     "saved": "{{platform}} saved"
   },
   "settings": {
+    "account": {
+      "title": "Administrator account",
+      "description": "Change the email used to sign in, or set a new password. Your current password is required to protect this account.",
+      "email": "Login email",
+      "emailHelp": "You will use this email the next time you sign in.",
+      "emailInvalid": "Enter a valid email address",
+      "currentPassword": "Current password",
+      "newPassword": "New password (optional)",
+      "passwordHelp": "At least 8 characters. Changing it signs you out on every device.",
+      "confirmPassword": "Confirm new password",
+      "passwordMismatch": "The passwords do not match",
+      "save": "Save account changes",
+      "saved": "Email updated",
+      "passwordChanged": "Account updated. Sign in again with your new credentials.",
+      "noChanges": "There are no account changes to save"
+    },
     "deleteConfirm": "Delete this setting permanently? This action cannot be undone.",
     "deleted": "{{key}} deleted",
     "fields": {

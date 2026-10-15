@@ -9,6 +9,7 @@ import {
   loginSchema,
   registerSchema,
   resetPasswordSchema,
+  updateAdminAccountSchema,
 } from "./schema.js";
 import {
   changePasswordHandler,
@@ -19,7 +20,9 @@ import {
   refreshHandler,
   registerHandler,
   resetPasswordHandler,
+  updateAdminAccountHandler,
 } from "./controller.js";
+import { requireRole } from "../../middleware/requireRole.js";
 
 export const authRouter = Router();
 
@@ -55,5 +58,13 @@ authRouter.post(
   strictRateLimit,
   validateRequest({ body: changePasswordSchema }),
   asyncHandler(changePasswordHandler)
+);
+authRouter.patch(
+  "/admin-account",
+  authenticate,
+  requireRole("ADMIN"),
+  strictRateLimit,
+  validateRequest({ body: updateAdminAccountSchema }),
+  asyncHandler(updateAdminAccountHandler)
 );
 authRouter.get("/me", authenticate, asyncHandler(meHandler));

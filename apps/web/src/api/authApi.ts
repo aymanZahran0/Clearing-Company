@@ -54,6 +54,13 @@ export const authApi = baseApi.injectEndpoints({
     >({
       query: (body) => ({ url: "/auth/change-password", method: "POST", body }),
     }),
+    updateAdminAccount: builder.mutation<
+      { user: PublicUser; passwordChanged: boolean },
+      { email?: string; currentPassword: string; newPassword?: string }
+    >({
+      query: (body) => ({ url: "/auth/admin-account", method: "PATCH", body }),
+      invalidatesTags: ["User"],
+    }),
     me: builder.query<PublicUser, void>({
       query: () => "/auth/me",
       providesTags: ["User"],
@@ -69,5 +76,6 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
+  useUpdateAdminAccountMutation,
   useMeQuery,
 } = authApi;

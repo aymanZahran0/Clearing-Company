@@ -397,6 +397,8 @@ body { font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif; }
 .app-breadcrumb-wrap--admin {
   position: sticky;
   top: 0;
+  z-index: 10;
+  isolation: isolate;
   padding: .75rem clamp(1rem, 3vw, 1.5rem);
 }
 

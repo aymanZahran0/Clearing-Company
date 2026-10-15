@@ -47,6 +47,7 @@ import WebsiteContent from "../admin/pages/content/WebsiteContent";
 import FAQs from "../admin/pages/content/FAQs";
 import SocialMedia from "../admin/pages/content/SocialMedia";
 import SystemSettings from "../admin/pages/settings/SystemSettings";
+import AdminProfile from "../admin/pages/profile/AdminProfile";
 import DiscountCodes from "../admin/pages/pricing/DiscountCodes";
 import NotificationTemplates from "../admin/pages/notifications/Templates";
 import NotificationLog from "../admin/pages/notifications/Log";
@@ -527,6 +528,17 @@ const router = createBrowserRouter([
       <RequireRole role="ADMIN">
         <AdminShell>
           <SocialMedia />
+        </AdminShell>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/admin/profile",
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireRole role="ADMIN">
+        <AdminShell>
+          <AdminProfile />
         </AdminShell>
       </RequireRole>
     ),
