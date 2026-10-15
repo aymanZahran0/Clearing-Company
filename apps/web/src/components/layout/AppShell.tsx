@@ -40,6 +40,7 @@ import logo from "../../assets/logo/logo.png";
 import { AppBreadcrumb } from "./AppBreadcrumb";
 import { WhatsAppFloatingButton } from "./WhatsAppFloatingButton";
 import { PublicFooter } from "../../customer/components/home/PublicFooter";
+import { PublicSeo } from "../seo/PublicSeo";
 
 const { Header, Content, Sider } = Layout;
 
@@ -270,6 +271,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <Layout className="min-h-screen">
+      <PublicSeo />
       <Header className="fixed inset-x-0 top-0 z-50 flex h-20 items-center justify-between border-b border-hairline bg-white px-4 shadow-sm">
         <Link to="/" className="flex min-h-11 items-center" aria-label={t("app.name") as string}>
           <span className="relative block h-16 w-32 overflow-hidden">

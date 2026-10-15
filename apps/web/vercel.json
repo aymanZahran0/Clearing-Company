@@ -40,6 +40,18 @@
       "destination": "https://nuqaa-asir-api.vercel.app/api/:path*"
     },
     {
+      "source": "/services",
+      "destination": "/services/index.html"
+    },
+    {
+      "source": "/service-areas",
+      "destination": "/service-areas/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/faq/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
